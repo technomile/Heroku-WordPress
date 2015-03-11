@@ -1,0 +1,25 @@
+<wpml-config>
+	<custom-fields>
+		<custom-field action="translate">_aioseop_title</custom-field>
+		<custom-field action="translate">_aioseop_description</custom-field>
+		<custom-field action="translate">_aioseop_keywords</custom-field>
+	</custom-fields>
+	<admin-texts>
+		<key name="aioseop_options">
+			<key name="aiosp_home_title" />
+			<key name="aiosp_home_description" />
+			<key name="aiosp_home_keywords" />
+			<key name="aiosp_post_title_format" />
+			<key name="aiosp_page_title_format" />
+			<key name="aiosp_category_title_format" />
+			<key name="aiosp_archive_title_format" />
+			<key name="aiosp_tag_title_format" />
+			<key name="aiosp_search_title_format" />
+			<key name="aiosp_description_format" />
+			<key name="aiosp_404_title_format" />
+			<key name="aiosp_paged_format" />
+		</key>
+	</admin-texts>    
+</wpml-config>
+
+

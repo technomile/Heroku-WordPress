@@ -1,0 +1,329 @@
+/*---------------------------------------------------------------------------------------------
+    generic
+---------------------------------------------------------------------------------------------*/
+
+.cfs_tooltip {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    vertical-align: top;
+}
+
+.cfs_tooltip:after {
+    content: "\f223";
+}
+
+.tooltip_inner {
+    display: none;
+}
+
+/*---------------------------------------------------------------------------------------------
+    #cfs_fields (container)
+---------------------------------------------------------------------------------------------*/
+
+#cfs_fields .inside {
+    margin: 0;
+    padding: 0;
+}
+
+#cfs_fields .table_footer {
+    padding: 10px;
+    text-align: right;
+}
+
+#cfs_fields .field_meta.even td {
+    background-color: #fcfcfc;
+}
+
+#cfs_fields .fields {
+    margin: 0;
+    background: #21759B;
+}
+
+#cfs_fields .fields a.cfs_edit_field {
+    font-weight: normal;
+    cursor: pointer;
+}
+
+#cfs_fields .fields .button-secondary.cfs_edit_field {
+    vertical-align: baseline;
+}
+
+#cfs_fields .fields li {
+    margin: 0;
+}
+
+#cfs_fields .fields li li {
+    margin: 0 0 0 10px;
+}
+
+#cfs_fields .fields li.loop ul {
+    min-height: 10px;
+}
+
+#cfs_fields .field.form_open {
+    border-bottom: 1px solid #DFDFDF;
+}
+
+#cfs_fields .field.form_open .field_meta td {
+    background-color: #21759B;
+    color: #fff;
+}
+
+#cfs_fields .field.form_open .field_meta td a {
+    color: #fff;
+}
+
+/*---------------------------------------------------------------------------------------------
+    #cfs_rules (container)
+---------------------------------------------------------------------------------------------*/
+
+#cfs_rules .select2 {
+    width: 99.95%;
+}
+
+/*---------------------------------------------------------------------------------------------
+    field_meta
+---------------------------------------------------------------------------------------------*/
+
+.field_meta table {
+    border: 0;
+    border-radius: 0;
+}
+
+.field_meta td {
+    border: 0;
+    border-bottom: 1px solid #dfdfdf;
+    padding: 8px 0;
+}
+
+.field_meta td.field_order {
+    width: 48px;
+    cursor: move;
+    position: relative;
+}
+
+.field_meta td.field_order:after {
+    content: '\f333';
+}
+
+.form_open .field_meta td.field_order:after {
+    color: #fff;
+}
+
+.field_meta td.field_name {
+    width: 180px;
+}
+
+.field_meta td.field_type {
+    width: 100px;
+}
+
+/*---------------------------------------------------------------------------------------------
+    field_form
+---------------------------------------------------------------------------------------------*/
+
+.field_form {
+    display: none;
+}
+
+.field_form table {
+    width: 100%;
+    border: none;
+    border-radius: 0;
+}
+
+.field_form td {
+    padding: 10px;
+}
+
+.field_form td.label {
+    width: 24%;
+    vertical-align: top;
+}
+
+.field_form td.label label {
+    color: #333;
+}
+
+.field_form td.label p.description {
+    color: #666;
+    font-style: normal;
+    margin: 6px 0 0 0 !important;
+}
+
+.field_form span.required {
+    margin-right: 5px;
+    color: red;
+}
+
+.field_form tr.field_basics table {
+    padding: 10px;
+    border-bottom: 1px solid #dfdfdf;
+}
+
+.field_form tr.field_basics td {
+    padding: 0 20px 0 0;
+    border: none;
+}
+
+.field_form tr.field_basics td:last-child {
+    padding: 0;
+}
+
+.field_form tr.field_label td {
+    border-top: 0;
+}
+
+.field_form tr.field_actions td {
+    background: #fff;
+}
+
+.field_form select,
+.field_form textarea,
+.field_form input[type="text"] {
+    width: 99%;
+    height: auto;
+    padding: 5px;
+    outline: none;
+}
+
+.field_form select.multiple {
+    height: 100px;
+}
+
+.ui-sortable-placeholder {
+    height: 5px;
+    background-color: orange;
+}
+
+/*---------------------------------------------------------------------------------------------
+    Buttons, links
+---------------------------------------------------------------------------------------------*/
+
+span.cfs_delete_field {
+    text-decoration: underline;
+    cursor: pointer;
+    color: red;
+}
+
+span.cfs_delete_field:hover {
+    text-decoration: none;
+    background: red;
+    color: #fff;
+}
+
+/*---------------------------------------------------------------------------------------------
+    Options
+---------------------------------------------------------------------------------------------*/
+
+#cfs_rules .inside,
+#cfs_extras .inside {
+    margin: 0;
+    padding: 0;
+}
+
+#cfs_rules table,
+#cfs_extras table {
+    width: 100%;
+    border-spacing: 0;
+}
+
+#cfs_rules table td,
+#cfs_extras table td {
+    padding: 10px;
+    border-top: 1px solid #fff;
+    border-bottom: 1px solid #dfdfdf;
+}
+
+#cfs_rules table tr:last-child td,
+#cfs_extras table tr:last-child td {
+    border-bottom: none;
+}
+
+#cfs_rules table td.label,
+#cfs_extras table td.label {
+    width: 120px;
+    background: #fff;
+    vertical-align: top;
+}
+
+#cfs_rules table td.label label,
+#cfs_extras table td.label label {
+    color: #333;
+    line-height: 1.5em;
+}
+
+#cfs_rules table td.label p.description,
+#cfs_extras table td.label p.description {
+    color: #666;
+    font-style: normal;
+    margin: 6px 0 0 0 !important;
+}
+
+#cfs_rules table select,
+#cfs_extras table select,
+#cfs_rules table textarea,
+#cfs_extras table textarea,
+#cfs_rules table input[type="text"],
+#cfs_extras table input[type="text"] {
+    width: 99.95%;
+    height: auto;
+    padding: 5px;
+    outline: none;
+}
+
+#wpcontent #cfs_extras table select.multiple {
+    height: 60px;
+}
+
+/*---------------------------------------------------------------------------------------------
+    Checkboxes
+---------------------------------------------------------------------------------------------*/
+
+span.checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    display: inline-block;
+    background: url(../images/checkbox-off.png) no-repeat;
+    vertical-align: bottom;
+    margin-right: 3px;
+}
+
+span.checkbox.active {
+    background: url(../images/checkbox-on.png) no-repeat;
+}
+
+/*---------------------------------------------------------------------------------------------
+    Hide some submit buttons
+---------------------------------------------------------------------------------------------*/
+
+#submitdiv #minor-publishing-actions,
+#submitdiv #misc-publishing-actions {
+    display: none;
+}
+
+
+/*---------------------------------------------------------------------------------------------
+    Icons
+---------------------------------------------------------------------------------------------*/
+
+.field_meta td.field_order:after,
+.cfs_tooltip:after {
+    display: block;
+    color: #adadad;
+
+    /* dashicons */
+    font-size: 20px;
+    font-family: dashicons;
+    width: 100%;
+    height: 20px;
+    line-height: 1;
+    font-weight: 400;
+    text-decoration: inherit;
+    vertical-align: top;
+    text-align: center;
+    -webkit-font-smoothing: antialiased;
+    -mos-osx-font-smoothing: grayscale;
+}

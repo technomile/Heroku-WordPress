@@ -1,0 +1,428 @@
+/*---------------------------------------------------------------------------------------------
+    Container
+---------------------------------------------------------------------------------------------*/
+
+#poststuff .cfs_input .inside {
+    margin: 0;
+    padding: 0;
+}
+
+.cfs_input .field {
+    padding: 10px;
+    border-top: 1px solid #fff;
+    border-bottom: 1px solid #dfdfdf;
+}
+
+.cfs_input .field:last-child {
+    border-bottom: none;
+}
+
+.cfs_input .field input[type="text"],
+.cfs_input .field textarea,
+.cfs_input .field select {
+    width: 99.8%;
+}
+
+.cfs_input .field label {
+    font-weight: bold;
+    padding: 0 0 0.4em 0;
+    cursor: default;
+    display: block;
+}
+
+.cfs_input .field p.notes {
+    margin: 0 0 1em 0;
+    color: #999;
+    font-size:0.9em;
+}
+
+.cfs_input.no_box {
+    background: none;
+    border: none;
+}
+
+.cfs_input.no_box .hndle,
+.cfs_input.no_box .handlediv {
+    display: none;
+}
+
+.cfs_input.no_box .field {
+    padding: 10px 0;
+    border: none;
+}
+
+.cfs_input .error {
+    padding: 5px;
+    margin: 5px 0;
+    background: #ffebe8;
+    border: 1px solid #c00;
+}
+
+.hidden {
+    display: none;
+}
+
+/*---------------------------------------------------------------------------------------------
+    Select
+---------------------------------------------------------------------------------------------*/
+
+.cfs_select select {
+    line-height:1;
+    height:auto;
+}
+
+.cfs_select select.multiple {
+    height: 100px !important;
+}
+
+/*---------------------------------------------------------------------------------------------
+    True / false
+---------------------------------------------------------------------------------------------*/
+
+.cfs_true_false .checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    display: inline-block;
+    background: url(../images/checkbox-off.png) no-repeat;
+    vertical-align: bottom;
+    margin-right: 3px;
+}
+
+.cfs_true_false .checkbox.active {
+    background: url(../images/checkbox-on.png) no-repeat;
+}
+
+/*---------------------------------------------------------------------------------------------
+    Date
+---------------------------------------------------------------------------------------------*/
+
+.cfs_input .cfs_date input.date {
+    width: 160px;
+    background: #fff url(../images/icon-calendar.png) right 4px center no-repeat;
+}
+
+
+/*---------------------------------------------------------------------------------------------
+    Color
+---------------------------------------------------------------------------------------------*/
+
+.cfs_input .cfs_color input.color {
+    width: 100px;
+}
+
+/*---------------------------------------------------------------------------------------------
+    Wysiwyg
+---------------------------------------------------------------------------------------------*/
+
+.cfs_wysiwyg table.mceLayout {
+    background: #fff;
+}
+
+.cfs_wysiwyg textarea {
+    height: 200px;
+}
+
+.cfs_wysiwyg .wp-media-buttons {
+    padding: 5px 0;
+}
+
+/*---------------------------------------------------------------------------------------------
+    File
+---------------------------------------------------------------------------------------------*/
+
+.cfs_file .file_url img {
+    padding: 5px;
+    background: #fff url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAIUlEQVQYV2NkYGCQBGJ08BxdgHGIKMTiF0wPgjwz2BUCADTeBYguWvyCAAAAAElFTkSuQmCC);
+    vertical-align: bottom;
+    box-shadow: 0 1px 2px #ddd;
+    max-width: 50%;
+    height: auto;
+}
+
+.cfs_file .media.button.hidden {
+    display: none;
+}
+
+/*---------------------------------------------------------------------------------------------
+    Relationship, User
+---------------------------------------------------------------------------------------------*/
+
+.cfs_relationship .post_list,
+.cfs_user .post_list {
+    float: left;
+    overflow-y: scroll;
+    background: #f5f5f5;
+    border: 1px solid #dfdfdf;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    height: 205px;
+    width: 49%;
+    -webkit-border-radius: 1px 1px 1px 1px;
+    border-radius: 1px 1px 1px 1px;
+}
+
+.cfs_relationship .post_list.selected_posts,
+.cfs_user .post_list.selected_posts {
+    float: right;
+}
+
+.cfs_relationship .post_list div,
+.cfs_user .post_list div {
+    padding: 4px 6px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.cfs_relationship .post_list.available_posts > div,
+.cfs_user .post_list.available_posts > div {
+    position: relative;
+    padding-right: 3em;
+}
+
+.cfs_relationship .post_list.available_posts > div:after,
+.cfs_user .post_list.available_posts > div:after {
+    position: absolute;
+    right: 1px;
+    top: 3px;
+    content: '\f139';
+    font-size: 19px;
+}
+
+.cfs_relationship .post_list div:last-child,
+.cfs_user .post_list div:last-child {
+    border-bottom: none;
+}
+
+.cfs_relationship .post_list div:hover,
+.cfs_user .post_list div:hover {
+    background: #eee;
+}
+
+.cfs_relationship .available_posts div.used,
+.cfs_user .available_posts div.used{
+    display: none;
+}
+
+.cfs_relationship .selected_posts div,
+.cfs_user .selected_posts div {
+    cursor: move;
+}
+
+.cfs_relationship .selected_posts div span.remove,
+.cfs_user .selected_posts div span.remove {
+    float: right;
+    width: 20px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.cfs_relationship .filter_posts,
+.cfs_user .filter_posts {
+    margin-bottom: 10px;
+}
+
+.cfs_input .field .cfs_relationship .cfs_filter_input,
+.cfs_input .field .cfs_user .cfs_filter_input{
+    width: 220px;
+    margin: 0;
+}
+
+.cfs_relationship .cfs_filter_help,
+.cfs_user .cfs_filter_help {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-top: 4px;
+    vertical-align: top;
+}
+
+.cfs_relationship .cfs_filter_help:before,
+.cfs_user .cfs_filter_help:before {
+    content: '\f348';
+}
+
+
+/*---------------------------------------------------------------------------------------------
+    Loop
+---------------------------------------------------------------------------------------------*/
+
+.cfs_delete_field {
+    float: right;
+    width: 20px;
+    height: 16px;
+}
+
+.cfs_toggle_field {
+    float: right;
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    top:-1px;
+}
+
+.cfs_toggle_field:before {
+    content: '\f140';
+}
+
+.open .cfs_toggle_field:before {
+    content: '\f142';
+}
+
+.cfs_input .cfs_loop label {
+    padding: 6px 0 0 0;
+}
+
+.cfs_input .cfs_loop .field {
+    border: none;
+    padding: 6px 0;
+}
+
+.cfs_input .cfs_loop_toggle {
+    float: right;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.cfs_input .cfs_loop_toggle:before {
+    content: '\f111';
+}
+
+.cfs_loop .loop_wrapper {
+    border: 1px solid #dfdfdf;
+    border-radius: 1px;
+    margin-bottom: 10px;
+}
+
+.cfs_loop .cfs_loop_head {
+    cursor: pointer;
+    padding: 5px 5px 5px 30px;
+    position: relative;
+    background: #f5f5f5;
+}
+
+.cfs_loop .cfs_loop_head:before {
+    padding: 4px 0;
+    display: block;
+    position: absolute;
+    left: 5px;
+    top: 0;
+    color: #adadad;
+    content: '\f333';
+    cursor: move;
+}
+
+.cfs_loop .notes {
+    font-size: 11px;
+    font-style: italic;
+    color: #999;
+    margin-bottom: 1.4em;
+}
+
+.cfs_loop .cfs_loop_body {
+    padding: 10px;
+    background: #f8f8f8;
+    display: none;
+}
+
+.cfs_loop .cfs_loop_body.open {
+    display: block;
+    background: #fbfbfb;
+    border-top: 1px solid #dfdfdf;
+}
+
+.cfs_loop .cfs_loop_body > label:first-of-type {
+    padding-top: 0;
+}
+
+.cfs_loop .cfs_loop_body > .field {
+    padding: 0 0 10px;
+}
+
+/*---------------------------------------------------------------------------------------------
+    Tabs
+---------------------------------------------------------------------------------------------*/
+
+.cfs-tabs {
+    display: block;
+    border-bottom: 1px solid #ccc;
+    margin: 20px 0 5px;
+}
+
+.cfs-tab {
+    display: inline-block;
+    padding: 5px 15px;
+    margin-left: 10px;
+    margin-bottom: -1px;
+    border: 1px solid #ccc;
+    background-color: #f5f5f5;
+    cursor: pointer;
+    border-radius: 1px 1px 0 0;
+}
+
+.cfs-tab.active {
+    background-color: #fff;
+    border-bottom: 1px solid #fff;
+}
+
+.cfs-tab-content {
+    display: none;
+}
+
+.cfs-tab-content.active {
+    display: block;
+}
+
+/*---------------------------------------------------------------------------------------------
+    Icons
+---------------------------------------------------------------------------------------------*/
+
+.cfs_input .cfs_loop_toggle,
+.cfs_input .cfs_toggle_field,
+.cfs_input .cfs_delete_field,
+.cfs_relationship .selected_posts div span.remove,
+.cfs_user .selected_posts div span.remove,
+.cfs_relationship .cfs_filter_help,
+.cfs_user .cfs_filter_help{
+    position: relative;
+}
+
+.cfs_input .cfs_loop_toggle:before,
+.cfs_input .cfs_toggle_field:before,
+.cfs_input .cfs_delete_field:before,
+.cfs_loop .cfs_loop_head:before,
+.cfs_relationship .selected_posts div span.remove:before,
+.cfs_user .selected_posts div span.remove:before,
+.cfs_user .selected_posts div span.remove:before,
+.cfs_relationship .cfs_filter_help:before,
+.cfs_user .cfs_filter_help:before,
+.cfs_relationship .post_list.available_posts > div:after,
+.cfs_user .post_list.available_posts > div:after {
+    display: block;
+    position: absolute;
+    color: #adadad;
+
+    /* dashicons */
+    font-size: 20px;
+    font-family: dashicons;
+    width: 20px;
+    height: 20px;
+    line-height: 1;
+    font-weight: 400;
+    text-decoration: inherit;
+    vertical-align: top;
+    text-align: center;
+    -webkit-font-smoothing: antialiased;
+    -mos-osx-font-smoothing: grayscale;
+}
+
+.cfs_input .cfs_delete_field:before,
+.cfs_relationship .selected_posts div span.remove:before,
+.cfs_user .selected_posts div span.remove:before {
+    content: '\f335';
+    font-size: 22px;
+    top: -2px;
+}

@@ -1,0 +1,558 @@
+# Copyright (C) 2012 
+# This file is distributed under the same license as the  package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Custom Field Suite\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-03-03 23:03-0500\n"
+"PO-Revision-Date: 2015-03-03 23:03-0500\n"
+"Last-Translator: FacetWP <hello@uproot.us>\n"
+"Language-Team: Digital Factory <info@digitalfactory.pl>\n"
+"Language: pl_PL\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-Basepath: .\n"
+"X-Generator: Poedit 1.6.9\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: ..\n"
+
+#: ../cfs.php:102 ../cfs.php:305
+msgid "Field Groups"
+msgstr "Grupy pól"
+
+#: ../cfs.php:103
+msgid "Field Group"
+msgstr "Grupa pól"
+
+#: ../cfs.php:104
+msgid "Add New"
+msgstr "Dodaj nową"
+
+#: ../cfs.php:105
+msgid "Add New Field Group"
+msgstr "Dodaj nową grupę pól"
+
+#: ../cfs.php:106
+msgid "Edit Field Group"
+msgstr "Edytuj grupę pól"
+
+#: ../cfs.php:107
+msgid "New Field Group"
+msgstr "Nowa grupa pól"
+
+#: ../cfs.php:108
+msgid "View Field Group"
+msgstr "Zobacz grupę pól"
+
+#: ../cfs.php:109
+msgid "Search Field Groups"
+msgstr "Szukaj grup pól"
+
+#: ../cfs.php:110
+msgid "No Field Groups found"
+msgstr "Nie znaleziono grup pól"
+
+#: ../cfs.php:111
+msgid "No Field Groups found in Trash"
+msgstr "Nie znaleziono grup pól w koszu"
+
+#: ../cfs.php:293
+msgid "Fields"
+msgstr "Pola"
+
+#: ../cfs.php:294
+msgid "Placement Rules"
+msgstr "Opcje wyświetlania"
+
+#: ../cfs.php:295
+msgid "Extras"
+msgstr "Dodatki"
+
+#: ../cfs.php:306 ../templates/page_addons.php:61
+msgid "Add-ons"
+msgstr ""
+
+#: ../cfs.php:307 ../templates/page_tools.php:73
+msgid "Tools"
+msgstr "Narzędzia"
+
+#: ../cfs.php:448
+msgid "Title"
+msgstr "Tutuł"
+
+#: ../cfs.php:449
+#, fuzzy
+msgid "Placement"
+msgstr "Opcje wyświetlania"
+
+#: ../cfs.php:465 ../includes/fields/relationship.php:91
+#: ../templates/meta_box_rules.php:135
+msgid "Post Types"
+msgstr "Typy wpisów"
+
+#: ../cfs.php:466 ../templates/meta_box_rules.php:201
+msgid "User Roles"
+msgstr "Role użytkowników"
+
+#: ../cfs.php:467
+#, fuzzy
+msgid "Post IDs"
+msgstr "Wpisy"
+
+#: ../cfs.php:468
+msgid "Term IDs"
+msgstr ""
+
+#: ../cfs.php:469 ../templates/meta_box_rules.php:289
+msgid "Page Templates"
+msgstr ""
+
+#: ../cfs.php:470 ../templates/meta_box_rules.php:168
+msgid "Post Formats"
+msgstr ""
+
+#: ../includes/field.php:16 ../includes/fields/text.php:8
+msgid "Text"
+msgstr "Tekst"
+
+#: ../includes/field.php:42 ../includes/fields/file.php:78
+#: ../includes/fields/select.php:133 ../includes/fields/text.php:30
+#: ../includes/fields/textarea.php:65 ../includes/fields/true_false.php:48
+#: ../includes/fields/wysiwyg.php:63
+msgid "Validation"
+msgstr ""
+
+#: ../includes/field.php:51 ../includes/fields/file.php:87
+#: ../includes/fields/select.php:142 ../includes/fields/text.php:39
+#: ../includes/fields/textarea.php:74 ../includes/fields/true_false.php:57
+#: ../includes/fields/wysiwyg.php:72
+#, fuzzy
+msgid "This is a required field"
+msgstr "To jest pole wieokrotnego wyboru"
+
+#: ../includes/field_group.php:69
+msgid "Imported"
+msgstr "Zaimportowane"
+
+#: ../includes/field_group.php:72
+msgid "Skipped"
+msgstr "Pominięto"
+
+#: ../includes/field_group.php:77
+msgid "Nothing to import"
+msgstr "Nic do zaimportowania"
+
+#: ../includes/fields/color/color.php:8
+msgid "Color"
+msgstr ""
+
+#: ../includes/fields/date/date.php:8
+msgid "Date"
+msgstr "Data"
+
+#: ../includes/fields/file.php:14
+msgid "File Upload"
+msgstr "Plik"
+
+#: ../includes/fields/file.php:43
+msgid "Add File"
+msgstr "Dodaj plik"
+
+#: ../includes/fields/file.php:44
+msgid "Remove"
+msgstr "Usuń"
+
+#: ../includes/fields/file.php:57
+msgid "Return Value"
+msgstr "Zwraca wartość"
+
+#: ../includes/fields/file.php:66
+msgid "File URL"
+msgstr "Adres URL pliku"
+
+#: ../includes/fields/file.php:67
+msgid "Attachment ID"
+msgstr "ID załącznika"
+
+#: ../includes/fields/file.php:127
+msgid "Use This File"
+msgstr "Użyj tego pliku"
+
+#: ../includes/fields/hyperlink.php:9
+msgid "Hyperlink"
+msgstr ""
+
+#: ../includes/fields/hyperlink.php:48
+msgid "Output format"
+msgstr ""
+
+#: ../includes/fields/hyperlink.php:57
+msgid "HTML"
+msgstr ""
+
+#: ../includes/fields/hyperlink.php:58
+msgid "PHP Array"
+msgstr ""
+
+#: ../includes/fields/loop.php:9
+msgid "Loop"
+msgstr "Pętla"
+
+#: ../includes/fields/loop.php:41
+msgid "Row Display"
+msgstr "Wyświetlanie rzędu"
+
+#: ../includes/fields/loop.php:50
+msgid "Show the values by default"
+msgstr "Pokaż wartości domyślnie"
+
+#: ../includes/fields/loop.php:57
+#, fuzzy
+msgid "Row Label"
+msgstr "Etykieta"
+
+#: ../includes/fields/loop.php:64 ../includes/fields/loop.php:108
+#: ../includes/fields/loop.php:223
+msgid "Loop Row"
+msgstr "Kolejny rząd"
+
+#: ../includes/fields/loop.php:71
+msgid "Button Label"
+msgstr "Etykieta przycisku"
+
+#: ../includes/fields/loop.php:78 ../includes/fields/loop.php:135
+#: ../includes/fields/loop.php:224
+msgid "Add Row"
+msgstr "Dodaj rząd"
+
+#: ../includes/fields/loop.php:86 ../includes/fields/relationship.php:107
+#: ../includes/fields/user.php:56
+msgid "Limits"
+msgstr ""
+
+#: ../includes/fields/relationship.php:8
+msgid "Relationship"
+msgstr "Relacja"
+
+#: ../includes/fields/relationship.php:92
+msgid "Limit posts to the following types"
+msgstr "Ogranicz wpisy do następujących typów"
+
+#: ../includes/fields/select.php:9
+msgid "Select"
+msgstr "Wybierz"
+
+#: ../includes/fields/select.php:102
+msgid "Choices"
+msgstr "Opcje wyboru"
+
+#: ../includes/fields/select.php:103
+msgid "Enter one choice per line"
+msgstr "Każdą opcję wpisz w oddzielnym rzędzie"
+
+#: ../includes/fields/select.php:117
+msgid "Multi-select?"
+msgstr ""
+
+#: ../includes/fields/select.php:126
+#, fuzzy
+msgid "This is a multi-select field"
+msgstr "To jest pole wieokrotnego wyboru"
+
+#: ../includes/fields/tab.php:8
+msgid "Tab"
+msgstr ""
+
+#: ../includes/fields/text.php:16 ../includes/fields/textarea.php:30
+msgid "Default Value"
+msgstr "Wartość domyśłna"
+
+#: ../includes/fields/textarea.php:9
+msgid "Textarea"
+msgstr "Obszar tekstowy"
+
+#: ../includes/fields/textarea.php:44 ../includes/fields/wysiwyg.php:42
+msgid "Formatting"
+msgstr "Formatowanie"
+
+#: ../includes/fields/textarea.php:53
+msgid "None"
+msgstr "Brak"
+
+#: ../includes/fields/textarea.php:54
+#, fuzzy
+msgid "Convert newlines to <br />"
+msgstr "Konwertuj nowe linie na"
+
+#: ../includes/fields/true_false.php:9
+msgid "True / False"
+msgstr "Prawda / Fałsz"
+
+#: ../includes/fields/true_false.php:33
+msgid "Message"
+msgstr "Treść"
+
+#: ../includes/fields/true_false.php:34
+msgid "The text beside the checkbox"
+msgstr "Tekst przy polu wyboru"
+
+#: ../includes/fields/user.php:8
+msgid "User"
+msgstr "Użytkownik"
+
+#: ../includes/fields/wysiwyg.php:11
+msgid "Wysiwyg Editor"
+msgstr "Edytor WYSIWYG"
+
+#: ../includes/fields/wysiwyg.php:51
+msgid "Default"
+msgstr "Domyślne"
+
+#: ../includes/fields/wysiwyg.php:52
+msgid "None (bypass filters)"
+msgstr "Brak (przechwyć filtry)"
+
+#: ../includes/form.php:194
+msgid "Submit"
+msgstr ""
+
+#: ../includes/revision.php:26
+#, fuzzy
+msgid "Post Meta"
+msgstr "Typy wpisów"
+
+#: ../templates/admin_head.php:24
+#, fuzzy
+msgid "New Field"
+msgstr "Dodaj nowe pole"
+
+#: ../templates/field_html.php:30
+msgid "Label"
+msgstr "Etykieta"
+
+#: ../templates/field_html.php:32
+#, fuzzy
+msgid "The field label that editors will see."
+msgstr "Nazwa pola, którą zobaczy użytkownik"
+
+#: ../templates/field_html.php:39
+msgid "Name"
+msgstr "Nazwa"
+
+#: ../templates/field_html.php:42
+msgid ""
+"The field name is passed into get() to retrieve values. Use only lowercase "
+"letters, numbers, and underscores."
+msgstr ""
+
+#: ../templates/field_html.php:49
+msgid "Field Type"
+msgstr "Rodzaj pola"
+
+#: ../templates/field_html.php:67
+msgid "Notes"
+msgstr "Instrukcje"
+
+#: ../templates/field_html.php:69
+#, fuzzy
+msgid "Notes for editors during data entry"
+msgstr "Instrukcje dla użytkowników przy wprowadzaniu danych"
+
+#: ../templates/field_html.php:82
+msgid "Close"
+msgstr "Zamknij"
+
+#: ../templates/field_html.php:83
+msgid "or"
+msgstr "lub"
+
+#: ../templates/field_html.php:83
+msgid "delete"
+msgstr "usuń"
+
+#: ../templates/meta_box_extras.php:42
+msgid "Order"
+msgstr ""
+
+#: ../templates/meta_box_extras.php:44
+msgid "The field group with the lowest order will appear first."
+msgstr ""
+
+#: ../templates/meta_box_extras.php:54
+msgid "Position"
+msgstr ""
+
+#: ../templates/meta_box_extras.php:57
+msgid "Normal"
+msgstr ""
+
+#: ../templates/meta_box_extras.php:58
+msgid "Side"
+msgstr ""
+
+#: ../templates/meta_box_extras.php:63
+msgid "Display Settings"
+msgstr ""
+
+#: ../templates/meta_box_extras.php:73
+msgid "Hide the content editor"
+msgstr "Ukryj edytor treści"
+
+#: ../templates/meta_box_extras.php:84
+#, fuzzy
+msgid "Gravity Forms"
+msgstr "Integracja z Gravity Forms"
+
+#: ../templates/meta_box_extras.php:102
+msgid "Your Gravity Form and CFS field labels must match exactly"
+msgstr ""
+
+#: ../templates/meta_box_fields.php:66
+msgid "Add New Field"
+msgstr "Dodaj nowe pole"
+
+#: ../templates/meta_box_rules.php:5
+msgid "equals"
+msgstr "jest równe"
+
+#: ../templates/meta_box_rules.php:6
+msgid "is not"
+msgstr "nie jest równe"
+
+#: ../templates/meta_box_rules.php:97 ../templates/meta_box_rules.php:102
+msgid "Leave blank to skip this rule"
+msgstr ""
+
+#: ../templates/meta_box_rules.php:233
+msgid "Posts"
+msgstr "Wpisy"
+
+#: ../templates/meta_box_rules.php:257
+msgid "Taxonomy Terms"
+msgstr "Terminy"
+
+#: ../templates/page_addons.php:77
+msgid "Learn more"
+msgstr ""
+
+#: ../templates/page_tools.php:76 ../templates/page_tools.php:97
+msgid "Export"
+msgstr ""
+
+#: ../templates/page_tools.php:77 ../templates/page_tools.php:115
+#, fuzzy
+msgid "Import"
+msgstr "Zaimportowane"
+
+#: ../templates/page_tools.php:78
+msgid "Reset"
+msgstr ""
+
+#: ../templates/page_tools.php:122
+msgid "Reset and deactivate."
+msgstr ""
+
+#: ../templates/page_tools.php:123
+msgid "This will delete all CFS data and deactivate the plugin."
+msgstr ""
+
+#: ../templates/page_tools.php:124
+msgid "Delete everything"
+msgstr ""
+
+#~ msgid "No field groups selected"
+#~ msgstr "Nie wybrano grup pól"
+
+#~ msgid "Custom Field Suite"
+#~ msgstr "Własne pola"
+
+#~ msgid "Changelog"
+#~ msgstr "Dziennik zmian"
+
+#~ msgid "User Guide"
+#~ msgstr "Podręcznik użytkownika"
+
+#~ msgid "Website"
+#~ msgstr "Strona www"
+
+#~ msgid "Only lowercase letters and underscores"
+#~ msgstr "Dozwolone są tylko małe litery"
+
+#~ msgid "Content Editor"
+#~ msgstr "Edytor treści"
+
+#~ msgid "Select some options"
+#~ msgstr "Wybierz opcje"
+
+#~ msgid "Custom Field Import"
+#~ msgstr "Import własnych pól"
+
+#~ msgid "Import Successful"
+#~ msgstr "Importowanie zakończone powodzeniem"
+
+#~ msgid ""
+#~ "This tool will scan your existing custom fields, mapping values into "
+#~ "Custom Field Suite."
+#~ msgstr ""
+#~ "To narzędzie przeskanuje istenijące własne pola i przypisze wartości do "
+#~ "wtyczki Własne pola."
+
+#~ msgid "Select the field groups to populate:"
+#~ msgstr "Wybierz grupy pól:"
+
+#~ msgid "Import Field Data"
+#~ msgstr "Importuj dane z pól"
+
+#~ msgid "Custom Field Sync"
+#~ msgstr "Synchronizacja własnych pól"
+
+#~ msgid "Sync Successful"
+#~ msgstr "Synchronizacja zakończona"
+
+#~ msgid ""
+#~ "This tool will scan your existing custom fields, mapping any applicable "
+#~ "values into Custom Field Suite."
+#~ msgstr ""
+#~ "To narzędzie przeskanuje istenijące włąsne pola i przypisze wartości do "
+#~ "wtyczki Własne pola."
+
+#~ msgid "Synchronize"
+#~ msgstr "Synchronizacja"
+
+#~ msgid "Closed"
+#~ msgstr "Zamknięte"
+
+#~ msgid "Open"
+#~ msgstr "Otwórz"
+
+#~ msgid "Default: Add Row"
+#~ msgstr "Domyśłnie: Dodaj rząd"
+
+#~ msgid "click to toggle, drag to re-order"
+#~ msgstr "kliknij aby otworzyć/zamknąć, przeciągnij aby zmienić kolejność"
+
+#~ msgid "Select multiple values?"
+#~ msgstr "Możłiwość wybrania wielu opcji?"
+
+#~ msgid "Read the user guide"
+#~ msgstr "Czytaj instrukcję"
+
+#~ msgid "View plugin page"
+#~ msgstr "Odwiedź stronę wtyczki"
+
+#~ msgid "See updates for"
+#~ msgstr "Zobacz aktualizacje"
+
+#~ msgid "Getting started?"
+#~ msgstr "Dopiero zaczynasz?"
+
+#~ msgid "Rate the plugin"
+#~ msgstr "Oceń tę wtyczkę"
+
+#~ msgid "Donate"
+#~ msgstr "Wspomóż"
+
+#~ msgid "Attach File"
+#~ msgstr "Załącz plik"

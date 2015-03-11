@@ -1,0 +1,25 @@
+span.qppr_meta_help{display:none;}
+.qppr_meta_help_icon {
+    padding: 0;
+    background: #9ED5FA;
+    display: inline-block;
+    height: 1.15em;
+    width: 1.15em;
+    text-align: center;
+    font-weight: bold;
+    font-size: .95em;
+    line-height: 1.15em;
+    margin: 0 2px;
+    border: 1px solid #4D8ED6;
+}
+.qppr_meta_help_icon:hover {
+    color: aliceblue;
+    background: #1489D4;
+}
+.qppr_meta_help_wrap {
+    padding: 0;
+    font-size: 11px;
+    /*text-transform: uppercase;*/
+    background: #FFF8C8;
+    line-height: 1.15em;
+}
