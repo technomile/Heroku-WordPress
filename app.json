@@ -1,5 +1,6 @@
 {
     "name": "TechnoMile",
     "description": "WordPress Application",
-	"addons": ["heroku addons:add cleardb"]
+	"addons": ["cleardb:Ignite"],
+	"addons": ["newrelic:stark"]
 }
