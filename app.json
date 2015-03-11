@@ -1,5 +1,5 @@
 {
     "name": "TechnoMile",
     "description": "WordPress Application",
-    "addons": ["heroku-postgresql:hobby-dev"]
+	"addons": ["cleardb:Ignite"]
 }
