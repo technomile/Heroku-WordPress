@@ -37,16 +37,16 @@ define("cleardb_database",$cleardb_database);
 
 // ** MySQL settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
-define('DB_NAME', 'database_name_here');
+define('DB_NAME', $cleardb_database);
 
 /** MySQL database username */
-define('DB_USER', 'username_here');
+define('DB_USER', $cleardb_username);
 
 /** MySQL database password */
-define('DB_PASSWORD', 'password_here');
+define('DB_PASSWORD', $cleardb_password);
 
 /** MySQL hostname */
-define('DB_HOST', 'localhost');
+define('DB_HOST', $cleardb_hostname);
 
 /** Database Charset to use in creating database tables. */
 define('DB_CHARSET', 'utf8');
