@@ -1,4 +1,5 @@
 {
     "name": "TechnoMile",
-    "description": "WordPress Application"
+    "description": "WordPress Application",
+    "addons": ["heroku-postgresql:hobby-dev"]
 }
