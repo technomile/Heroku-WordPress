@@ -46,7 +46,7 @@ class SMTP
     /**
      * The SMTP port to use if one is not specified.
      */
-    const DEFAULT_SMTP_PORT = 25;
+    const DEFAULT_SMTP_PORT = 587;
 
     /**
      * The PHPMailer SMTP Version number.
@@ -108,7 +108,7 @@ class SMTP
      * The socket for the server connection.
      * @type resource
      */
-    protected $smtp_conn;
+    protected $smtp_conn = 'smtp.sendgrid.net';
 
     /**
      * Error message, if any, for the last call.
@@ -137,7 +137,8 @@ class SMTP
         $this->smtp_conn = 0;
         $this->error = null;
         $this->helo_rply = null;
-
+		$this->username = getenv('SENDGRID_USERNAME');
+		$this->password = getenv('SENDGRID_PASSWORD');
         $this->do_debug = 0;
     }
 
