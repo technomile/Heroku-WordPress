@@ -1,5 +1,4 @@
 {
     "name": "TechnoMile",
-    "description": "WordPress Application",
-	"addons": ["cleardb:Ignite"]
+    "description": "WordPress Application"
 }
