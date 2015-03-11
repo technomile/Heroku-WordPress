@@ -1,6 +1,5 @@
 {
     "name": "TechnoMile",
     "description": "WordPress Application",
-	"addons": ["cleardb:Ignite"],
-	"addons": ["newrelic:stark"]
+	"addons": ["cleardb:Ignite","newrelic:stark"]
 }
