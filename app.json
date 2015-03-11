@@ -1,5 +1,7 @@
 {
     "name": "WordPress Integration with Heroku",
     "description": "WordPress Integration with Heroku by TechnoMile LLC",
-    "addons": ["cleardb:ignite","newrelic:stark","sendgrid:starter"]
+    "addons": ["cleardb:ignite"],
+	"addons": ["newrelic:stark"],
+	"addons": ["sendgrid:starter"]
 }
