@@ -100,5 +100,7 @@ if ( !defined('ABSPATH') )
 /** Sets up WordPress vars and included files. */
 require_once(ABSPATH . 'wp-settings.php');
 }else{
-	echo 'Please install ClearDB';	
+	echo 'Please install ClearDB and after installing refresh the page to proceed';?><a target="_blank" href="https://addons.heroku.com/cleardb?utm_campaign=category&utm_medium=dashboard&utm_source=addons#ignite">Install CelarDB</a>
+	<?php	
 }
+
