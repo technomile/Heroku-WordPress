@@ -7,8 +7,8 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "Inderjeet Sohal",
-            "email": "inderjeets@technomile.com"
+            "name": "David Zuelke",
+            "email": "dz@heroku.com"
         }
     ],
     "bin": [
