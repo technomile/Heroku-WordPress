@@ -1,6 +1,6 @@
 # WordPress
 
-[![WordPress](https://s.w.org/about/images/logos/wordpress-logo-stacked-rgb.png)](http://www.cakephp.org)
+[![WordPress](https://s.w.org/about/images/logos/wordpress-logo-stacked-rgb.png)](https://wordpress.org)
 
 WordPress is web software we can use to create a beautiful website or blog.
 
