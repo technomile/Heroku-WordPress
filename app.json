@@ -1,4 +1,5 @@
 {
     "name": "TechnoMile LLC",
-    "description": "Deploying WordPress"
+    "description": "Deploying WordPress",
+    "addons": ["cleardb:ignite","newrelic:stark","sendgrid:starter"]
 }
