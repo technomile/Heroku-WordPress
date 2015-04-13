@@ -10,4 +10,4 @@ You can deploy your own version of WordPress on Heroku in seconds using the Hero
 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/technomile/Heroku-WordPress)
 
-Check out the [documentation](technomile-buildpack.herokuapp.com/WordPress/) to learn more about WordPress and to set up your own instance.
+Check out the [documentation](http://technomile-buildpack.herokuapp.com/WordPress/) to learn more about WordPress and to set up your own instance.
