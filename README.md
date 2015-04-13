@@ -8,7 +8,7 @@ You can deploy your own version of WordPress on Heroku in seconds using the Hero
 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/technomile/Heroku-WordPress)
 
-You can see a live demo at [![Heroku WordPress MySQL]()](http://heroku-wordpress-mysql.herokuapp.com/)
+You can see a live demo at [!Heroku WordPress MySQL](http://heroku-wordpress-mysql.herokuapp.com/)
 
 Heroku is a cloud-based development platform as a service (PaaS) provider – a new way of building and deploying web apps. Our service lets app developers spend their time on their application code, not managing servers, deployment, ongoing operations, or scaling. Heroku provides the tools and services you need to build and deploy customer-facing applications without having to worry about infrastructure.
 
