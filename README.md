@@ -1,8 +1,6 @@
 # Heroku Buildpack for WordPress
 
-[![WordPress](http://www.technomile.com/wp-content/uploads/2015/04/heroku_wordpress2.jpg)](http://www.technomile.com/capabilities/application-development/heroku/wordpress)
-
-![GitHub Cards Medium Theme](https://cloud.githubusercontent.com/assets/290496/5024776/7267e9c8-6b4a-11e4-9513-472b60b955b1.png)
+![WordPress](http://www.technomile.com/wp-content/uploads/2015/04/heroku_wordpress2.jpg)(http://www.technomile.com/capabilities/application-development/heroku/wordpress)
 
 [TechnoMile](http://www.technomile.com) created a sample website that demonstrates how to build customer blog with [WordPress](http://www.wordpress.org) using its plugins [WP Google Analytics](https://wordpress.org/plugins/wp-google-analytics/), [All in One SEO Pack](https://wordpress.org/plugins/all-in-one-seo-pack/), [Amazon S3 and Cloudfront](https://wordpress.org/plugins/amazon-s3-and-cloudfront/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), [WooCommerce](https://wordpress.org/plugins/woocommerce/).
 
