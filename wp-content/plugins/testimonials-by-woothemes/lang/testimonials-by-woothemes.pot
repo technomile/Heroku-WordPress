@@ -1,0 +1,315 @@
+# Copyright (C) 2014 
+# This file is distributed under the same license as the  package.
+msgid ""
+msgstr ""
+"Project-Id-Version:  \n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tag/testimonials-by-woothemes\n"
+"POT-Creation-Date: 2014-07-02 12:07:09+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2014-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: classes/class-woothemes-testimonials-taxonomy.php:71
+msgid "Category"
+msgstr ""
+
+#: classes/class-woothemes-testimonials-taxonomy.php:72
+msgid "Categories"
+msgstr ""
+
+#: classes/class-woothemes-testimonials-taxonomy.php:105
+msgctxt "taxonomy general name"
+msgid "%s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials-taxonomy.php:106
+msgctxt "taxonomy singular name"
+msgid "%s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials-taxonomy.php:107
+msgid "Search %s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials-taxonomy.php:108
+#: classes/class-woothemes-testimonials.php:82
+msgid "All %s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials-taxonomy.php:109
+msgid "Parent %s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials-taxonomy.php:110
+msgid "Parent %s:"
+msgstr ""
+
+#: classes/class-woothemes-testimonials-taxonomy.php:111
+#: classes/class-woothemes-testimonials.php:80
+msgid "Edit %s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials-taxonomy.php:112
+msgid "Update %s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials-taxonomy.php:113
+#: classes/class-woothemes-testimonials.php:79
+msgid "Add New %s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials-taxonomy.php:114
+msgid "New %s Name"
+msgstr ""
+
+#: classes/class-woothemes-testimonials-taxonomy.php:115
+msgid "%s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:76
+msgctxt "post type general name"
+msgid "Testimonials"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:77
+msgctxt "post type singular name"
+msgid "Testimonial"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:78
+msgctxt "testimonial"
+msgid "Add New"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:79
+#: classes/class-woothemes-testimonials.php:80
+#: classes/class-woothemes-testimonials.php:81
+#: classes/class-woothemes-testimonials.php:83
+msgid "Testimonial"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:81
+msgid "New %s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:82
+#: classes/class-woothemes-testimonials.php:84
+#: classes/class-woothemes-testimonials.php:85
+#: classes/class-woothemes-testimonials.php:86
+#: classes/class-woothemes-testimonials.php:88
+#: classes/class-woothemes-widget-testimonials.php:44
+msgid "Testimonials"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:83
+msgid "View %s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:84
+msgid "Search %a"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:85
+msgid "No %s Found"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:86
+msgid "No %s Found In Trash"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:92
+msgctxt "single post url slug"
+msgid "testimonial"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:93
+msgctxt "post archive url slug"
+msgid "testimonials"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:163
+msgid "Image"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:197
+msgid "Testimonial updated. %sView testimonial%s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:198
+msgid "Custom field updated."
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:199
+msgid "Custom field deleted."
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:200
+msgid "Testimonial updated."
+msgstr ""
+
+#. translators: %s: date and time of the revision
+
+#: classes/class-woothemes-testimonials.php:202
+msgid "Testimonial restored to revision from %s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:203
+msgid "Testimonial published. %sView testimonial%s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:204
+msgid "Testimonial saved."
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:205
+msgid "Testimonial submitted. %sPreview testimonial%s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:206
+msgid "Testimonial scheduled for: %1$s. %2$sPreview testimonial%3$s"
+msgstr ""
+
+#. translators: Publish box date format, see http:php.net/date
+
+#: classes/class-woothemes-testimonials.php:208
+msgid "M j, Y @ G:i"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:209
+msgid "Testimonial draft updated. %sPreview testimonial%s"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:223
+msgid "Testimonial Details"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:322
+msgid "Enter the customer's name here"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:348
+msgid "Gravatar E-mail Address"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:349
+msgid "Enter in an e-mail address, to use a %sGravatar%s, instead of using the \"Featured Image\"."
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:356
+msgid "Byline"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:357
+msgid "Enter a byline for the customer giving this testimonial (for example: \"CEO of WooThemes\")."
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:364
+msgid "URL"
+msgstr ""
+
+#: classes/class-woothemes-testimonials.php:365
+msgid "Enter a URL that applies to this customer (for example: http://woothemes.com/)."
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:42
+msgid "Recent testimonials on your site."
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:172
+msgid "Title (optional):"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:177
+msgid "Limit:"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:182
+msgid "Testimonials Per Row:"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:187
+msgid "Image Size (in pixels):"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:192
+msgid "Order By:"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:201
+msgid "Order Direction:"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:211
+msgid "Display Author"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:216
+msgid "Display Avatar"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:221
+msgid "Display URL"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:225
+msgid "Category:"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:227
+msgid "All"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:233
+msgid "Specific ID (optional):"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:236
+msgid "Display a specific testimonial, rather than a list."
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:247
+msgid "No Order"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:248
+msgid "Entry ID"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:249
+msgid "Title"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:250
+msgid "Date Added"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:251
+msgid "Specified Order Setting"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:252
+msgid "Random Order"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:263
+msgid "Ascending"
+msgstr ""
+
+#: classes/class-woothemes-widget-testimonials.php:264
+msgid "Descending"
+msgstr ""
+
+#: woothemes-testimonials-template.php:149
+msgid "Read full testimonial..."
+msgstr ""
+
+#: woothemes-testimonials-template.php:167
+msgid "Previous"
+msgstr ""
+
+#: woothemes-testimonials-template.php:168
+msgid "Next"
+msgstr ""

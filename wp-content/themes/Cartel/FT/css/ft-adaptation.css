@@ -1,0 +1,305 @@
+.unfloat
+{
+  clear: both;
+  content: ".";
+  display: block;
+  height: 0;
+  visibility: hidden;
+}
+
+#ft-adaptation
+{
+	display: none;
+
+	position: fixed;
+	top: 150px;
+	left: -306px;
+	z-index: 9999;
+
+	width: 336px;
+	height: 450px;
+}
+#ft-adaptation .show-button
+{
+	z-index: 2;
+	position: relative;
+
+	top: 50px;
+	float: right;
+	width: 36px;
+	/*height: 275px;*/
+	height: 200px;
+
+	overflow: hidden;
+	padding: 0;
+
+	background: #d83e5d;
+	background: -moz-linear-gradient(left,  #d83e5d 0%, #db546f 100%);
+	background: -webkit-gradient(linear, left top, right top, color-stop(0%,#d83e5d), color-stop(100%,#db546f));
+	background: -webkit-linear-gradient(left,  #d83e5d 0%,#db546f 100%);
+	background: -o-linear-gradient(left,  #d83e5d 0%,#db546f 100%);
+	background: -ms-linear-gradient(left,  #d83e5d 0%,#db546f 100%);
+	background: linear-gradient(to right,  #d83e5d 0%,#db546f 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d83e5d', endColorstr='#db546f',GradientType=1 );
+
+	border-radius: 0 10px 10px 0;
+	box-shadow:  5px 0px 6px 0px rgba(50, 50, 50, 0.54);
+}
+
+#ft-adaptation .show-button:hover
+{
+	background: #ce2748;
+	background: -moz-linear-gradient(left,  #ce2748 0%, #cc4761 100%);
+	background: -webkit-gradient(linear, left top, right top, color-stop(0%,#ce2748), color-stop(100%,#cc4761));
+	background: -webkit-linear-gradient(left,  #ce2748 0%,#cc4761 100%);
+	background: -o-linear-gradient(left,  #ce2748 0%,#cc4761 100%);
+	background: -ms-linear-gradient(left,  #ce2748 0%,#cc4761 100%);
+	background: linear-gradient(to right,  #ce2748 0%,#cc4761 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ce2748', endColorstr='#cc4761',GradientType=1 );
+
+	cursor: pointer;
+	box-shadow:  5px 0px 6px 0px rgba(50, 50, 50, 0.24);
+}
+#ft-adaptation .show-button .butt
+{
+	position: relative;
+	color: rgba(255, 255, 255, 0.9);
+	text-transform:uppercase;
+
+	font-size: 15px;
+	letter-spacing: 2px;
+	font-weight: bold;
+
+	top: 90px;
+	margin: 0;
+	padding-left: 6px;
+	left: -84px;
+	width: 200px;
+	/*overflow: hidden;*/
+	text-align: center;
+
+	/*transform: rotate(90deg);*/
+	/*transform-origin: left top 0;*/
+
+	/* No selection */
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+
+	-webkit-transform: rotate(-90deg);
+	-moz-transform: rotate(-90deg);
+	-ms-transform: rotate(-90deg);
+	-o-transform: rotate(-90deg);
+	transform: rotate(-90deg);
+
+	/* also accepts left, right, top, bottom coordinates; not required, but a good idea for styling */
+	-webkit-transform-origin: 50% 50%;
+	-moz-transform-origin: 50% 50%;
+	-ms-transform-origin: 50% 50%;
+	-o-transform-origin: 50% 50%;
+	transform-origin: 50% 50%;
+
+	/* Should be unset in IE9+ I think. */
+	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+}
+
+/* menu */
+#ft-adaptation .menu
+{
+	z-index: 1;
+	position: relative;
+
+	float: left;
+	padding: 15px 19px 15px 35px;
+	width: 246px;
+	height: 100%;
+
+	color: #222;
+	font-size: 100%;
+
+	background: white;
+	border-radius: 0 10px 10px 0;
+	box-shadow: 5px 0px 6px 0px rgba(50, 50, 50, 0.64);
+}
+#ft-adaptation .menu .small
+{
+	display: block;
+	font-style: italic;
+	font-size: 80%;
+	color: #444;
+}
+#ft-adaptation .menu input
+{
+	display: block;
+	width: 215px;
+	padding: 5px;
+}
+#ft-adaptation .menu .applyButt
+{
+	position: absolute;
+	bottom: 15px;
+	right: 20px;
+	
+	color: white;
+	border-radius: 5px;
+
+	background: #17b327;
+	background: -moz-linear-gradient(top,  #17b327 0%, #10870a 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#17b327), color-stop(100%,#10870a));
+	background: -webkit-linear-gradient(top,  #17b327 0%,#10870a 100%);
+	background: -o-linear-gradient(top,  #17b327 0%,#10870a 100%);
+	background: -ms-linear-gradient(top,  #17b327 0%,#10870a 100%);
+	background: linear-gradient(to bottom,  #17b327 0%,#10870a 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#17b327', endColorstr='#10870a',GradientType=0 );
+
+	border: 0;
+	box-shadow: none !important;
+
+	font-size: 100%;
+	cursor: pointer;
+
+	padding: 5px 20px 7px 20px;
+}
+#ft-adaptation .menu .applyButt:hover
+{
+	background: #299335;
+	background: -moz-linear-gradient(top,  #299335 0%, #25721c 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#299335), color-stop(100%,#25721c));
+	background: -webkit-linear-gradient(top,  #299335 0%,#25721c 100%);
+	background: -o-linear-gradient(top,  #299335 0%,#25721c 100%);
+	background: -ms-linear-gradient(top,  #299335 0%,#25721c 100%);
+	background: linear-gradient(to bottom,  #299335 0%,#25721c 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#299335', endColorstr='#25721c',GradientType=0 );
+}
+#ft-adaptation .menu input.spinner
+{
+	background: url('/order/images/loader.gif') no-repeat;
+	background-position: 98%, center;
+	padding-right: 30px;
+}
+
+/* Color sets */
+#ft-adaptation .menu .colorSet
+{
+	float: left;
+	height: 20px;
+	width: 110px;
+	margin-right: 11px;
+	margin-top: 10px;
+	cursor: pointer;
+	box-shadow: 2px 0px 3px 0px rgba(50, 50, 50, 0.4);
+	border: 1px solid #888;
+	overflow: hidden;
+	border-radius: 2px;
+}
+#ft-adaptation .menu .colorSet:hover
+{
+	border-color: #555;
+	box-shadow: 1px 0px 3px 0px rgba(50, 50, 50, 0.2);
+}
+#ft-adaptation .menu .colorSet > .color
+{
+	float: left;
+	width: 22px;
+	height: 20px;
+}
+#ft-adaptation #presetContainer .color
+{
+	/* No selection */
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+#yourPreset
+{
+	margin-top: 25px;
+}
+#yourPreset .block
+{
+	margin-top: 2px;
+}
+#yourPreset .minicolors
+{
+	z-index: 1;
+	position: relative;
+	width: 46px;
+	height: 43px;
+	float: left;
+}
+#yourPreset .minicolors-swatch
+{
+	overflow: hidden;
+}
+#yourPreset .minicolors:first-of-type .minicolors-swatch
+{
+	border-radius: 4px 0 0 4px;
+}
+#yourPreset .minicolors:last-of-type .minicolors-swatch
+{
+	border-radius: 0 4px 4px 0;
+}
+#yourPreset .minicolors:hover .minicolors-swatch
+{
+	box-shadow: 0px 0px 3px 0px rgba(30, 30, 30, 0.7);
+}
+#yourPreset .minicolors:hover
+{
+	z-index: 2;
+}
+#yourPreset .minicolors-swatch {
+	cursor: pointer;
+	position: relative;
+	height: 100% !important;
+	width: 100% !important;
+	top: 0;
+	left: 0;
+	display: block;
+	border: none;
+}
+
+/* Custom select - autocompllete */
+/* Ниспадающий список */
+.ui-autocomplete
+{
+	z-index: 10000 !important;
+}
+ .custom-combobox
+ {
+	position: relative;
+	display: inline-block;
+}
+/* Кнопочка "Вниз" */
+.custom-combobox-toggle
+{
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	margin-left: -1px;
+	padding: 0;
+	/* support: IE7 */
+	*height: 1.7em;
+	*top: 0.1em;
+	background: white !important;
+	z-index: 10000 !important;
+}
+.custom-combobox-input
+{
+	margin: 0;
+	padding: 5px;
+	display: inline-block !important;
+	background: white !important;
+	width: 180px !important;
+	z-index: 10000 !important;
+}
+
+/* Правки */
+ul.ui-autocomplete
+{
+	position: fixed !important;
+}
