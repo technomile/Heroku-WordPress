@@ -1,6 +1,6 @@
 # WordPress
 
-[![WordPress](https://s.w.org/about/images/logos/wordpress-logo-stacked-rgb.png)](https://wordpress.org)
+[![WordPress](http://www.technomile.com/wp-content/uploads/2015/04/heroku_wordpress2.jpg)](https://wordpress.org)
 
 WordPress is web software you can use to create a beautiful website or blog. This is a free and open-source blogging tool and a content management system (CMS) based on PHP and MySQL.
 
