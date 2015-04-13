@@ -2,7 +2,7 @@
 
 [![WordPress](http://www.technomile.com/wp-content/uploads/2015/04/heroku_wordpress2.jpg)](http://www.technomile.com/capabilities/application-development/heroku/wordpress)
 
-TechnoMile created a sample website that demonstrates how to build customer blog with WordPress using its plugins WP Google Analytics, All in One SEO Pack, Amazon S3 and Cloudfront, Contact Form 7 and WooCommerce.
+[TechnoMile](http://www.technomile.com) created a sample website that demonstrates how to build customer blog with WordPress using its plugins WP Google Analytics, All in One SEO Pack, Amazon S3 and Cloudfront, Contact Form 7 and WooCommerce.
 
 You can deploy your own version of WordPress on Heroku in seconds using the Heroku button below:
 
