@@ -1,5 +1,5 @@
 {
     "name": "TechnoMile LLC",
     "description": "Deploying WordPress to Heroku using the Heroku Button",
-    "addons": ["cleardb:ignite","newrelic:stark","sendgrid:starter"]
+    "addons": ["cleardb:ignite","newrelic:wayne","sendgrid:starter"]
 }
