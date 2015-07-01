@@ -16,4 +16,4 @@ You can see a live demo at [Heroku WordPress MySQL](http://heroku-wordpress-mysq
 
 [![Add-ons](http://www.technomile.com/wp-content/uploads/2015/03/feature.jpg)](http://www.technomile.com/capabilities/application-development/heroku/wordpress)
 
-Check out the [documentation](http://technomile.github.io/WordPress/) to learn more about Heroku & WordPress and to set up your own instance.
+Check out the [documentation](http://technomile.github.io/wordpress/) to learn more about Heroku & WordPress and to set up your own instance.
