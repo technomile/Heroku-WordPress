@@ -10,12 +10,6 @@ You can deploy your own version of WordPress with MySQL on Heroku in seconds usi
 
 You can see a live demo at [Heroku WordPress MySQL](http://heroku-wordpress-mysql.herokuapp.com/)
 
-You can deploy your own version of WordPress with PostgreSQL on Heroku in seconds using the Heroku button below:
-
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/technomile/Heroku-WordPress-PostgreSQL)
-
-You can see a live demo at [Heroku WordPress PostgreSQL](http://heroku-wordpress-postgresql.herokuapp.com/)
-
 [Heroku](http://www.heroku.com) provides the tools and services you need to build and deploy customer-facing applications without having to worry about infrastructure.
 
 [WordPress](http://www.wordpress.org) is web software you can use to create a beautiful website or blog. This is a free and open-source blogging tool and a content management system (CMS) based on PHP and MySQL.
