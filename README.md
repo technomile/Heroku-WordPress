@@ -1,4 +1,4 @@
-[![WordPress](http://technomile.github.io/img/cms_buildpack_github.gif)](http://www.technomile.com)
+[![WordPress](http://technomile.github.io/img/cms_buildpack_github.png)](http://www.technomile.com)
 # Heroku Buildpack for WordPress
 
 [![WordPress](http://technomile.github.io/img/heroku_wordpress.jpg)](http://www.technomile.com/capabilities/application-development/heroku/wordpress)
