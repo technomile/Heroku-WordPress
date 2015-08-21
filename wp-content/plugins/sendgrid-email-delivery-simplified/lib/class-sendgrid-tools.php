@@ -12,7 +12,7 @@ class Sendgrid_Tools
   public static function check_username_password( $username, $password )
   {
     $url = 'https://sendgrid.com/api/profile.get.json?';
-    $url .= "api_user=$username&api_key=$password";
+    $url .= "api_user=" . urlencode($username) . "&api_key=" . urlencode($password);
 
     $response = wp_remote_get( $url );
     
@@ -40,6 +40,8 @@ class Sendgrid_Tools
    */
   public static function curl_request( $api = 'api/stats.get.json', $parameters = array() )
   {
+    $parameters['api_user'] = urlencode($parameters['api_user']);
+    $parameters['api_key'] = urlencode($parameters['api_key']);
     $data = urldecode( http_build_query( $parameters ) );
     $url = "https://sendgrid.com/$api?$data";
 

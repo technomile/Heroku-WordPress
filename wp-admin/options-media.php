@@ -31,7 +31,7 @@ get_current_screen()->add_help_tab( array(
 
 get_current_screen()->set_help_sidebar(
 	'<p><strong>' . __('For more information:') . '</strong></p>' .
-	'<p>' . __('<a href="http://codex.wordpress.org/Settings_Media_Screen" target="_blank">Documentation on Media Settings</a>') . '</p>' .
+	'<p>' . __('<a href="https://codex.wordpress.org/Settings_Media_Screen" target="_blank">Documentation on Media Settings</a>') . '</p>' .
 	'<p>' . __('<a href="https://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
 );
 
@@ -40,7 +40,7 @@ include( ABSPATH . 'wp-admin/admin-header.php' );
 ?>
 
 <div class="wrap">
-<h2><?php echo esc_html( $title ); ?></h2>
+<h1><?php echo esc_html( $title ); ?></h1>
 
 <form action="options.php" method="post">
 <?php settings_fields('media'); ?>
@@ -84,7 +84,11 @@ include( ABSPATH . 'wp-admin/admin-header.php' );
 <?php do_settings_fields('media', 'default'); ?>
 </table>
 
-<?php if ( isset( $GLOBALS['wp_settings']['media']['embeds'] ) ) : ?>
+<?php
+/**
+ * @global array $wp_settings
+ */
+if ( isset( $GLOBALS['wp_settings']['media']['embeds'] ) ) : ?>
 <h3 class="title"><?php _e('Embeds') ?></h3>
 <table class="form-table">
 <?php do_settings_fields( 'media', 'embeds' ); ?>

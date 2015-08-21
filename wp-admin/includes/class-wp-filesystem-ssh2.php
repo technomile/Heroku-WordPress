@@ -36,23 +36,28 @@
 class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 
 	public $link = false;
-	public $sftp_link = false;
+	/**
+	 * @var resource
+	 */
+	public $sftp_link;
 	public $keys = false;
-	public $errors = array();
-	public $options = array();
 
-	public function __construct($opt='') {
+	/**
+	 *
+	 * @param array $opt
+	 */
+	public function __construct( $opt = '' ) {
 		$this->method = 'ssh2';
 		$this->errors = new WP_Error();
 
 		//Check if possible to use ssh2 functions.
 		if ( ! extension_loaded('ssh2') ) {
 			$this->errors->add('no_ssh2_ext', __('The ssh2 PHP extension is not available'));
-			return false;
+			return;
 		}
 		if ( !function_exists('stream_get_contents') ) {
 			$this->errors->add('ssh2_php_requirement', __('The ssh2 PHP extension is available, however, we require the PHP5 function <code>stream_get_contents()</code>'));
-			return false;
+			return;
 		}
 
 		// Set defaults:
@@ -65,9 +70,6 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 			$this->errors->add('empty_hostname', __('SSH2 hostname is required'));
 		else
 			$this->options['hostname'] = $opt['hostname'];
-
-		if ( ! empty($opt['base']) )
-			$this->wp_base = $opt['base'];
 
 		// Check if the options provided are OK.
 		if ( !empty ($opt['public_key']) && !empty ($opt['private_key']) ) {
@@ -91,9 +93,12 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 		} else {
 			$this->options['password'] = $opt['password'];
 		}
-
 	}
 
+	/**
+	 *
+	 * @return bool
+	 */
 	public function connect() {
 		if ( ! $this->keys ) {
 			$this->link = @ssh2_connect($this->options['hostname'], $this->options['port']);
@@ -126,9 +131,9 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 	/**
 	 * @param string $command
 	 * @param bool $returnbool
+	 * @return bool|string
 	 */
-	public function run_command( $command, $returnbool = false) {
-
+	public function run_command( $command, $returnbool = false ) {
 		if ( ! $this->link )
 			return false;
 
@@ -167,8 +172,8 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 	}
 
 	/**
-	 * @param string $file
-	 * @param string $contents
+	 * @param string   $file
+	 * @param string   $contents
 	 * @param bool|int $mode
 	 * @return bool
 	 */
@@ -183,16 +188,21 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 		return true;
 	}
 
+	/**
+	 *
+	 * @return bool
+	 */
 	public function cwd() {
-		$cwd = $this->run_command('pwd');
-		if ( $cwd )
-			$cwd = trailingslashit($cwd);
+		$cwd = ssh2_sftp_realpath( $this->sftp_link, '.' );
+		if ( $cwd ) {
+			$cwd = trailingslashit( trim( $cwd ) );
+		}
 		return $cwd;
 	}
 
 	/**
 	 * @param string $dir
-	 * @return bool
+	 * @return bool|string
 	 */
 	public function chdir($dir) {
 		return $this->run_command('cd ' . $dir, true);
@@ -201,7 +211,9 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 	/**
 	 * @param string $file
 	 * @param string $group
-	 * @param bool $recursive
+	 * @param bool   $recursive
+	 *
+	 * @return bool
 	 */
 	public function chgrp($file, $group, $recursive = false ) {
 		if ( ! $this->exists($file) )
@@ -213,9 +225,9 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 
 	/**
 	 * @param string $file
-	 * @param int $mode
-	 * @param bool $recursive
-	 * @return bool
+	 * @param int    $mode
+	 * @param bool   $recursive
+	 * @return bool|string
 	 */
 	public function chmod($file, $mode = false, $recursive = false) {
 		if ( ! $this->exists($file) )
@@ -289,9 +301,9 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 	}
 
 	/**
-	 * @param string $source
-	 * @param string $destination
-	 * @param bool $overwrite
+	 * @param string   $source
+	 * @param string   $destination
+	 * @param bool     $overwrite
 	 * @param int|bool $mode
 	 * @return bool
 	 */
@@ -307,7 +319,7 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 	/**
 	 * @param string $source
 	 * @param string $destination
-	 * @param bool $overwrite
+	 * @param bool   $overwrite
 	 * @return bool
 	 */
 	public function move($source, $destination, $overwrite = false) {
@@ -315,8 +327,8 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 	}
 
 	/**
-	 * @param string $file
-	 * @param bool $recursive
+	 * @param string      $file
+	 * @param bool        $recursive
 	 * @param string|bool $type
 	 * @return bool
 	 */
@@ -403,8 +415,8 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 
 	/**
 	 * @param string $file
-	 * @param int $time
-	 * @param int $atime
+	 * @param int    $time
+	 * @param int    $atime
 	 */
 	public function touch($file, $time = 0, $atime = 0) {
 		//Not implemented.
@@ -412,9 +424,9 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 
 	/**
 	 * @param string $path
-	 * @param mixed $chmod
-	 * @param mixed $chown
-	 * @param mixed $chgrp
+	 * @param mixed  $chmod
+	 * @param mixed  $chown
+	 * @param mixed  $chgrp
 	 * @return bool
 	 */
 	public function mkdir($path, $chmod = false, $chown = false, $chgrp = false) {
@@ -435,7 +447,7 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 
 	/**
 	 * @param string $path
-	 * @param bool $recursive
+	 * @param bool   $recursive
 	 * @return bool
 	 */
 	public function rmdir($path, $recursive = false) {
@@ -444,8 +456,8 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 
 	/**
 	 * @param string $path
-	 * @param bool $include_hidden
-	 * @param bool $recursive
+	 * @param bool   $include_hidden
+	 * @param bool   $recursive
 	 * @return bool|array
 	 */
 	public function dirlist($path, $include_hidden = true, $recursive = false) {

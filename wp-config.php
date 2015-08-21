@@ -1,23 +1,4 @@
 <?php
-$my_env_var = getenv('CLEARDB_DATABASE_URL');
-
-$cleardb_explode = explode("mysql://",$my_env_var);
-$cleardb_username_explode = explode(":",$cleardb_explode[1]);
-$cleardb_password_explode = explode("@",$cleardb_username_explode[1]);
-$cleardb_hostname_explode = explode("/",$cleardb_password_explode[1]);
-$cleardb_database_explode = explode("?",$cleardb_hostname_explode[1]);
-
-$cleardb_username = $cleardb_username_explode[0];
-$cleardb_password = $cleardb_password_explode[0];
-$cleardb_hostname = $cleardb_hostname_explode[0];
-$cleardb_database = $cleardb_database_explode[0];
-
-define("cleardb_hostname",$cleardb_hostname);
-define("cleardb_username",$cleardb_username);
-define("cleardb_password",$cleardb_password);
-define("cleardb_database",$cleardb_database);
-?>
-<?php
 /**
  * The base configurations of the WordPress.
  *
@@ -32,19 +13,22 @@ define("cleardb_database",$cleardb_database);
  *
  * @package WordPress
  */
+ 
+// ** Heroku Postgres settings - from Heroku Environment ** //
+$db = parse_url($_ENV["CLEARDB_DATABASE_URL"]); 
 
 // ** MySQL settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
-define('DB_NAME', $cleardb_database);
+define('DB_NAME', trim($db["path"],"/"));
 
 /** MySQL database username */
-define('DB_USER', $cleardb_username);
+define('DB_USER', $db["user"]);
 
 /** MySQL database password */
-define('DB_PASSWORD', $cleardb_password);
+define('DB_PASSWORD', $db["pass"]);
 
 /** MySQL hostname */
-define('DB_HOST', $cleardb_hostname);
+define('DB_HOST', $db["host"]);
 
 /** Database Charset to use in creating database tables. */
 define('DB_CHARSET', 'utf8');

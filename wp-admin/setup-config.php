@@ -63,9 +63,13 @@ $step = isset( $_GET['step'] ) ? (int) $_GET['step'] : -1;
  *
  * @ignore
  * @since 2.3.0
+ *
+ * @global string    $wp_local_package
+ * @global WP_Locale $wp_locale
+ *
+ * @param string|array $body_classes
  */
 function setup_config_display_header( $body_classes = array() ) {
-	global $wp_version;
 	$body_classes = (array) $body_classes;
 	$body_classes[] = 'wp-core-ui';
 	if ( is_rtl() ) {
@@ -136,7 +140,7 @@ switch($step) {
 <p>
 	<?php _e( 'We&#8217;re going to use this information to create a <code>wp-config.php</code> file.' ); ?>
 	<strong><?php _e( "If for any reason this automatic file creation doesn&#8217;t work, don&#8217;t worry. All this does is fill in the database information to a configuration file. You may also simply open <code>wp-config-sample.php</code> in a text editor, fill in your information, and save it as <code>wp-config.php</code>." ); ?></strong>
-	<?php _e( "Need more help? <a href='http://codex.wordpress.org/Editing_wp-config.php'>We got it</a>." ); ?>
+	<?php _e( "Need more help? <a href='https://codex.wordpress.org/Editing_wp-config.php'>We got it</a>." ); ?>
 </p>
 <p><?php _e( "In all likelihood, these items were supplied to you by your Web Host. If you do not have this information, then you will need to contact them before you can continue. If you&#8217;re all ready&hellip;" ); ?></p>
 
@@ -279,6 +283,11 @@ switch($step) {
 			case 'DB_PASSWORD' :
 			case 'DB_HOST'     :
 				$config_file[ $line_num ] = "define('" . $constant . "'," . $padding . "'" . addcslashes( constant( $constant ), "\\'" ) . "');\r\n";
+				break;
+			case 'DB_CHARSET'  :
+				if ( 'utf8mb4' === $wpdb->charset || ( ! $wpdb->charset && $wpdb->has_cap( 'utf8mb4' ) ) ) {
+					$config_file[ $line_num ] = "define('" . $constant . "'," . $padding . "'utf8mb4');\r\n";
+				}
 				break;
 			case 'AUTH_KEY'         :
 			case 'SECURE_AUTH_KEY'  :

@@ -8,6 +8,27 @@ if ( ! function_exists('wp_mail'))
   define( 'SENDGRID_PLUGIN_SETTINGS', 'settings_page_sendgrid-settings' );
   define( 'SENDGRID_PLUGIN_STATISTICS', 'dashboard_page_sendgrid-statistics' );
 
+  // overwrite SendGrid class constructor for sending emails without having curl extension enabled
+  class SendGridwp extends SendGrid
+  {
+    public function __construct( $apiUser, $apiKey, $options = array() )
+    {
+      $this->apiUser = $apiUser;
+      $this->apiKey = $apiKey;
+
+      $options['turn_off_ssl_verification'] = ( isset($options['turn_off_ssl_verification'] ) &&
+        $options['turn_off_ssl_verification'] == true );
+      $protocol = isset( $options['protocol'] ) ? $options['protocol'] : 'https';
+      $host = isset( $options['host'] ) ? $options['host'] : 'api.sendgrid.com';
+      $port = isset( $options['port'] ) ? $options['port'] : '';
+      $this->options  = $options;
+
+      $this->url = isset( $options['url'] ) ? 
+        $options['url'] : $protocol . '://' . $host . ( $port ? ':' . $port : '' );
+      $this->endpoint = isset( $options['endpoint'] ) ? $options['endpoint'] : '/api/mail.send.json';
+    }
+  }
+
   /**
    * Override Email send
    *
@@ -21,12 +42,45 @@ if ( ! function_exists('wp_mail'))
     $form['api_user'] = Sendgrid_Tools::get_username(); 
     $form['api_key']  = Sendgrid_Tools::get_password(); 
 
-    $form = array(
-      'body' => $form
-    );
+    $url = $sendgrid->url . $sendgrid->endpoint;
 
-    $response = wp_remote_post( $sendgrid->url, $form );
- 
+    $files = preg_grep( '/files/', array_keys( $form ) );
+
+    if ( count( $files) > 0 )
+    {
+      if ( in_array( 'curl', get_loaded_extensions() ) )
+      {
+        $response = $sendgrid->postRequest($sendgrid->endpoint, $form);
+
+        $response = array(
+          'body' => $response->raw_body
+        );
+      }
+      else
+      {
+        update_option( 'sendgrid_curl_option', 'disabled' );
+
+        foreach ( $files as $key => $value )
+        {
+          unset( $form[$value] );
+        }
+
+        $data = array(
+          'body' => $form 
+        );
+
+        $response = wp_remote_post( $url, $data );
+      }
+    }
+    else
+    {
+      $data = array(
+        'body' => $form
+      );
+
+      $response = wp_remote_post( $url, $data );
+    }
+
     return $response;
   }
 
@@ -65,7 +119,14 @@ if ( ! function_exists('wp_mail'))
    */
   function wp_mail( $to, $subject, $message, $headers = '', $attachments = array() )
   {
-    $sendgrid = new SendGrid( Sendgrid_Tools::get_username(), Sendgrid_Tools::get_password() );
+    if ( in_array( 'curl', get_loaded_extensions() ) )
+    {
+       $sendgrid = new SendGrid( Sendgrid_Tools::get_username(), Sendgrid_Tools::get_password() );
+    }
+    else
+    {
+       $sendgrid = new SendGridwp( Sendgrid_Tools::get_username(), Sendgrid_Tools::get_password() );
+    }
     $mail     = new SendGrid\Email();
 
     $method   = Sendgrid_Tools::get_send_method();

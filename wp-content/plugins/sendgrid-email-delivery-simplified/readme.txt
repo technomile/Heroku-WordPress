@@ -4,7 +4,7 @@ Donate link: http://sendgrid.com/
 Tags: email, email reliability, email templates, sendgrid, smtp, transactional email, wp_mail,email infrastructure, email marketing, marketing email, deliverability, email deliverability, email delivery, email server, mail server, email integration, cloud email
 Requires at least: 3.3
 Tested up to: 4.1.1
-Stable tag: 1.5.1
+Stable tag: 1.5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,8 +70,9 @@ remove_filter('wp_mail_content_type', 'set_html_content_type');`
 == Installation ==
 
 Requirements:
+
 1. PHP version >= 5.3.0
-2. You need to have PHP-curl extension enabled.
+2. You need to have PHP-curl extension enabled in order to send attachments.
 3. To send emails through SMTP you need to install also the 'Swift Mailer' plugin. After installing 'Swift Mailer' plugin, you must have PHP-short_open_tag setting enabled in your php.ini file.
 
 To upload the SendGrid Plugin .ZIP file:
@@ -120,6 +121,12 @@ Create a SendGrid account at <a href="http://sendgrid.com/partner/wordpress" tar
 
 == Changelog ==
 
+= 1.5.4 =
+* Updated the plugin to use the last version of Sendgrid library: https://github.com/sendgrid/sendgrid-php/releases/tag/v3.0.0
+= 1.5.3 =
+* Fix attachments issue
+= 1.5.2 =
+* Fix urlencoded username issue
 = 1.5.1 =
 * Fix wp_remote issue
 = 1.5.0 =
@@ -161,6 +168,12 @@ Create a SendGrid account at <a href="http://sendgrid.com/partner/wordpress" tar
 
 == Upgrade notice ==
 
+= 1.5.4 =
+* Updated the plugin to use the last version of Sendgrid library: https://github.com/sendgrid/sendgrid-php/releases/tag/v3.0.0
+= 1.5.3 =
+* Fix attachments issue
+= 1.5.2 =
+* Fix urlencoded username issue
 = 1.5.1 =
 * Fix wp_remote issue
 = 1.5.0 =

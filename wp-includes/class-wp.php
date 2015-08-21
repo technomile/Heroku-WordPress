@@ -115,6 +115,8 @@ class WP {
 	 *
 	 * @since 2.0.0
 	 *
+	 * @global WP_Rewrite $wp_rewrite
+	 *
 	 * @param array|string $extra_query_vars Set the extra query variables.
 	 */
 	public function parse_request($extra_query_vars = '') {
@@ -135,11 +137,11 @@ class WP {
 		$this->query_vars = array();
 		$post_type_query_vars = array();
 
-		if ( is_array($extra_query_vars) )
+		if ( is_array( $extra_query_vars ) ) {
 			$this->extra_query_vars = & $extra_query_vars;
-		else if (! empty($extra_query_vars))
-			parse_str($extra_query_vars, $this->extra_query_vars);
-
+		} elseif ( ! empty( $extra_query_vars ) ) {
+			parse_str( $extra_query_vars, $this->extra_query_vars );
+		}
 		// Process PATH_INFO, REQUEST_URI, and 404 for permalinks.
 
 		// Fetch the rewrite rules.
@@ -157,6 +159,7 @@ class WP {
 			list( $req_uri ) = explode( '?', $_SERVER['REQUEST_URI'] );
 			$self = $_SERVER['PHP_SELF'];
 			$home_path = trim( parse_url( home_url(), PHP_URL_PATH ), '/' );
+			$home_path_regex = sprintf( '|^%s|i', preg_quote( $home_path, '|' ) );
 
 			// Trim path info from the end and the leading home path from the
 			// front. For path info requests, this leaves us with the requesting
@@ -164,13 +167,13 @@ class WP {
 			// requested permalink.
 			$req_uri = str_replace($pathinfo, '', $req_uri);
 			$req_uri = trim($req_uri, '/');
-			$req_uri = preg_replace("|^$home_path|i", '', $req_uri);
+			$req_uri = preg_replace( $home_path_regex, '', $req_uri );
 			$req_uri = trim($req_uri, '/');
 			$pathinfo = trim($pathinfo, '/');
-			$pathinfo = preg_replace("|^$home_path|i", '', $pathinfo);
+			$pathinfo = preg_replace( $home_path_regex, '', $pathinfo );
 			$pathinfo = trim($pathinfo, '/');
 			$self = trim($self, '/');
-			$self = preg_replace("|^$home_path|i", '', $self);
+			$self = preg_replace( $home_path_regex, '', $self );
 			$self = trim($self, '/');
 
 			// The requested permalink is in $pathinfo for path info requests and
@@ -306,6 +309,9 @@ class WP {
 			}
 		}
 
+		// Resolve conflicts between posts with numeric slugs and date archive queries.
+		$this->query_vars = wp_resolve_numeric_slug_conflicts( $this->query_vars );
+
 		foreach ( (array) $this->private_query_vars as $var) {
 			if ( isset($this->extra_query_vars[$var]) )
 				$this->query_vars[$var] = $this->extra_query_vars[$var];
@@ -357,7 +363,7 @@ class WP {
 			} elseif ( in_array( $status, array( 403, 500, 502, 503 ) ) ) {
 				$exit_required = true;
 			}
-		} else if ( empty($this->query_vars['feed']) ) {
+		} elseif ( empty( $this->query_vars['feed'] ) ) {
 			$headers['Content-Type'] = get_option('html_type') . '; charset=' . get_option('blog_charset');
 		} else {
 			// We're showing a feed, so WP is indeed the only thing that last changed
@@ -488,13 +494,14 @@ class WP {
 	 * be taken when naming global variables that might interfere with the
 	 * WordPress environment.
 	 *
-	 * @global string $query_string Query string for the loop.
-	 * @global array $posts The found posts.
+	 * @global WP_Query     $wp_query
+	 * @global string       $query_string Query string for the loop.
+	 * @global array        $posts The found posts.
 	 * @global WP_Post|null $post The current post, if available.
-	 * @global string $request The SQL statement for the request.
-	 * @global int $more Only set, if single page or post.
-	 * @global int $single If single page or post. Only set, if single page or post.
-	 * @global WP_User $authordata Only set, if author archive.
+	 * @global string       $request The SQL statement for the request.
+	 * @global int          $more Only set, if single page or post.
+	 * @global int          $single If single page or post. Only set, if single page or post.
+	 * @global WP_User      $authordata Only set, if author archive.
 	 *
 	 * @since 2.0.0
 	 */
@@ -533,6 +540,8 @@ class WP {
 	 * Set up the Loop based on the query variables.
 	 *
 	 * @since 2.0.0
+	 *
+	 * @global WP_Query $wp_the_query
 	 */
 	public function query_posts() {
 		global $wp_the_query;
@@ -541,7 +550,7 @@ class WP {
  	}
 
  	/**
- 	 * Set the Headers for 404, if nothing is found for requested URL.
+	 * Set the Headers for 404, if nothing is found for requested URL.
 	 *
 	 * Issue a 404 if a request doesn't match any posts and doesn't match
 	 * any object (e.g. an existing-but-empty category, tag, author) and a 404 was not already
@@ -550,6 +559,8 @@ class WP {
 	 * Otherwise, issue a 200.
 	 *
 	 * @since 2.0.0
+	 *
+	 * @global WP_Query $wp_query
  	 */
 	public function handle_404() {
 		global $wp_query;
@@ -621,7 +632,6 @@ class WP {
 		 */
 		do_action_ref_array( 'wp', array( &$this ) );
 	}
-
 }
 
 /**
@@ -662,79 +672,12 @@ class WP_MatchesMapRegex {
 	public $_pattern = '(\$matches\[[1-9]+[0-9]*\])'; // magic number
 
 	/**
-	 * Make private properties readable for backwards compatibility.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param string $name Property to get.
-	 * @return mixed Property.
-	 */
-	public function __get( $name ) {
-		return $this->$name;
-	}
-
-	/**
-	 * Make private properties settable for backwards compatibility.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param string $name  Property to set.
-	 * @param mixed  $value Property value.
-	 * @return mixed Newly-set property.
-	 */
-	public function __set( $name, $value ) {
-		return $this->$name = $value;
-	}
-
-	/**
-	 * Make private properties checkable for backwards compatibility.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param string $name Property to check if set.
-	 * @return bool Whether the property is set.
-	 */
-	public function __isset( $name ) {
-		return isset( $this->$name );
-	}
-
-	/**
-	 * Make private properties un-settable for backwards compatibility.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param string $name Property to unset.
-	 */
-	public function __unset( $name ) {
-		unset( $this->$name );
-	}
-
-	/**
-	 * Make private/protected methods readable for backwards compatibility.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param callable $name      Method to call.
-	 * @param array    $arguments Arguments to pass when calling.
-	 * @return mixed|bool Return value of the callback, false otherwise.
-	 */
-	public function __call( $name, $arguments ) {
-		return call_user_func_array( array( $this, $name ), $arguments );
-	}
-
-	/**
 	 * constructor
 	 *
 	 * @param string $subject subject if regex
 	 * @param array  $matches data to use in map
-	 * @return self
 	 */
-	public function WP_MatchesMapRegex($subject, $matches) {
+	public function __construct($subject, $matches) {
 		$this->_subject = $subject;
 		$this->_matches = $matches;
 		$this->output = $this->_map();
@@ -745,7 +688,9 @@ class WP_MatchesMapRegex {
 	 *
 	 * static helper function to ease use
 	 *
+	 * @static
 	 * @access public
+	 *
 	 * @param string $subject subject
 	 * @param array  $matches data used for substitution
 	 * @return string
@@ -777,5 +722,4 @@ class WP_MatchesMapRegex {
 		$index = intval(substr($matches[0], 9, -1));
 		return ( isset( $this->_matches[$index] ) ? urlencode($this->_matches[$index]) : '' );
 	}
-
 }

@@ -29,17 +29,17 @@ get_current_screen()->add_help_tab( array(
 
 get_current_screen()->set_help_sidebar(
 	'<p><strong>' . __('For more information:') . '</strong></p>' .
-	'<p>' . __('<a href="http://codex.wordpress.org/Network_Admin_Updates_Screen" target="_blank">Documentation on Upgrade Network</a>') . '</p>' .
+	'<p>' . __('<a href="https://codex.wordpress.org/Network_Admin_Updates_Screen" target="_blank">Documentation on Upgrade Network</a>') . '</p>' .
 	'<p>' . __('<a href="https://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
 );
 
 require_once( ABSPATH . 'wp-admin/admin-header.php' );
 
 if ( ! current_user_can( 'manage_network' ) )
-	wp_die( __( 'You do not have permission to access this page.' ) );
+	wp_die( __( 'You do not have permission to access this page.' ), 403 );
 
 echo '<div class="wrap">';
-echo '<h2>' . __( 'Upgrade Network' ) . '</h2>';
+echo '<h1>' . __( 'Upgrade Network' ) . '</h1>';
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'show';
 
@@ -48,6 +48,9 @@ switch ( $action ) {
 		$n = ( isset($_GET['n']) ) ? intval($_GET['n']) : 0;
 
 		if ( $n < 5 ) {
+			/**
+			 * @global string $wp_db_version
+			 */
 			global $wp_db_version;
 			update_site_option( 'wpmu_upgrade_site', $wp_db_version );
 		}
@@ -63,10 +66,19 @@ switch ( $action ) {
 			$siteurl = site_url();
 			$upgrade_url = admin_url( 'upgrade.php?step=upgrade_db' );
 			restore_current_blog();
+
 			echo "<li>$siteurl</li>";
+
 			$response = wp_remote_get( $upgrade_url, array( 'timeout' => 120, 'httpversion' => '1.1' ) );
-			if ( is_wp_error( $response ) )
-				wp_die( sprintf( __( 'Warning! Problem updating %1$s. Your server may not be able to connect to sites running on it. Error message: <em>%2$s</em>' ), $siteurl, $response->get_error_message() ) );
+			if ( is_wp_error( $response ) ) {
+				wp_die( sprintf(
+					/* translators: 1: site url, 2: server error message */
+					__( 'Warning! Problem updating %1$s. Your server may not be able to connect to sites running on it. Error message: %2$s' ),
+					$siteurl,
+					'<em>' . $response->get_error_message() . '</em>'
+				) );
+			}
+
 			/**
 			 * Fires after the Multisite DB upgrade for each site is complete.
 			 *

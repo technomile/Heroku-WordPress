@@ -54,7 +54,7 @@ function get_postdata($postid) {
  *
  * @since 1.0.1
  * @deprecated 1.5.0
- * @deprecated Use The Loop - {@link http://codex.wordpress.org/The_Loop Use new WordPress Loop}
+ * @deprecated Use The Loop - {@link https://codex.wordpress.org/The_Loop Use new WordPress Loop}
  */
 function start_wp() {
 	global $wp_query;
@@ -1310,7 +1310,7 @@ function get_category_children( $id, $before = '/', $after = '', $visited = arra
  * @since 2.0.0
  * @deprecated 4.0.0 Use get_terms() instead.
  * @see get_terms()
- * @link http://codex.wordpress.org/Function_Reference/get_all_category_ids
+ * @link https://codex.wordpress.org/Function_Reference/get_all_category_ids
  *
  * @return object List of all of the category IDs.
  */
@@ -1756,7 +1756,7 @@ function make_url_footnote( $content ) {
 	_deprecated_function( __FUNCTION__, '2.9', '' );
 	preg_match_all( '/<a(.+?)href=\"(.+?)\"(.*?)>(.+?)<\/a>/', $content, $matches );
 	$links_summary = "\n";
-	for ( $i=0; $i<count($matches[0]); $i++ ) {
+	for ( $i = 0, $c = count( $matches[0] ); $i < $c; $i++ ) {
 		$link_match = $matches[0][$i];
 		$link_number = '['.($i+1).']';
 		$link_url = $matches[2][$i];
@@ -2161,7 +2161,7 @@ function attribute_escape( $text ) {
  * @param string|int $name Widget ID.
  * @param callback $output_callback Run when widget is called.
  * @param string $classname Classname widget option.
- * @param mixed $params,... Widget parameters.
+ * @param mixed $params ,... Widget parameters.
  */
 function register_sidebar_widget($name, $output_callback, $classname = '') {
 	_deprecated_function( __FUNCTION__, '2.8', 'wp_register_sidebar_widget()' );
@@ -2396,7 +2396,7 @@ function update_usermeta( $user_id, $meta_key, $meta_value ) {
 
 	if ( !$cur )
 		$wpdb->insert($wpdb->usermeta, compact('user_id', 'meta_key', 'meta_value') );
-	else if ( $cur->meta_value != $meta_value )
+	elseif ( $cur->meta_value != $meta_value )
 		$wpdb->update($wpdb->usermeta, compact('meta_value'), compact('user_id', 'meta_key') );
 	else
 		return false;
@@ -2445,7 +2445,7 @@ function get_users_of_blog( $id = '' ) {
  * @deprecated 3.0.0
  * @deprecated Use add_theme_support( 'automatic-feed-links' )
  *
- * @param boolean $add Optional, default is true. Add or remove links. Defaults to true.
+ * @param bool $add Optional, default is true. Add or remove links. Defaults to true.
  */
 function automatic_feed_links( $add = true ) {
 	_deprecated_function( __FUNCTION__, '3.0', "add_theme_support( 'automatic-feed-links' )" );
@@ -2632,7 +2632,6 @@ function the_editor($content, $id = 'content', $prev_id = 'title', $media_button
 	_deprecated_function( __FUNCTION__, '3.3', 'wp_editor()' );
 
 	wp_editor( $content, $id, array( 'media_buttons' => $media_buttons ) );
-	return;
 }
 
 /**
@@ -2684,7 +2683,7 @@ function sanitize_user_object($user, $context = 'display') {
 	if ( is_object($user) ) {
 		if ( !isset($user->ID) )
 			$user->ID = 0;
-		if ( !is_a( $user, 'WP_User' ) ) {
+		if ( ! ( $user instanceof WP_User ) ) {
 			$vars = get_object_vars($user);
 			foreach ( array_keys($vars) as $field ) {
 				if ( is_string($user->$field) || is_numeric($user->$field) )
@@ -3492,3 +3491,148 @@ function url_is_accessable_via_ssl( $url ) {
 
 	return false;
 }
+
+/**
+ * Start preview theme output buffer.
+ *
+ * Will only perform task if the user has permissions and template and preview
+ * query variables exist.
+ *
+ * @since 2.6.0
+ * @deprecated 4.3.0
+ */
+function preview_theme() {
+	_deprecated_function( __FUNCTION__, '4.3' );
+}
+
+/**
+ * Private function to modify the current template when previewing a theme
+ *
+ * @since 2.9.0
+ * @deprecated 4.3.0
+ * @access private
+ *
+ * @return string
+ */
+function _preview_theme_template_filter() {
+	_deprecated_function( __FUNCTION__, '4.3' );
+	return '';
+}
+
+/**
+ * Private function to modify the current stylesheet when previewing a theme
+ *
+ * @since 2.9.0
+ * @deprecated 4.3.0
+ * @access private
+ *
+ * @return string
+ */
+function _preview_theme_stylesheet_filter() {
+	_deprecated_function( __FUNCTION__, '4.3' );
+	return '';
+}
+
+/**
+ * Callback function for ob_start() to capture all links in the theme.
+ *
+ * @since 2.6.0
+ * @deprecated 4.3.0
+ * @access private
+ *
+ * @param string $content
+ * @return string
+ */
+function preview_theme_ob_filter( $content ) {
+	_deprecated_function( __FUNCTION__, '4.3' );
+	return $content;
+}
+
+/**
+ * Manipulates preview theme links in order to control and maintain location.
+ *
+ * Callback function for preg_replace_callback() to accept and filter matches.
+ *
+ * @since 2.6.0
+ * @deprecated 4.3.0
+ * @access private
+ *
+ * @param array $matches
+ * @return string
+ */
+function preview_theme_ob_filter_callback( $matches ) {
+	_deprecated_function( __FUNCTION__, '4.3' );
+	return '';
+}
+
+/**
+ * Formats text for the rich text editor.
+ *
+ * The filter 'richedit_pre' is applied here. If $text is empty the filter will
+ * be applied to an empty string.
+ *
+ * @since 2.0.0
+ * @deprecated 4.3.0
+ *
+ * @param string $text The text to be formatted.
+ * @return string The formatted text after filter is applied.
+ */
+function wp_richedit_pre($text) {
+	_deprecated_function( __FUNCTION__, '4.3', 'format_for_editor()' );
+
+	if ( empty( $text ) ) {
+		/**
+		 * Filter text returned for the rich text editor.
+		 *
+		 * This filter is first evaluated, and the value returned, if an empty string
+		 * is passed to wp_richedit_pre(). If an empty string is passed, it results
+		 * in a break tag and line feed.
+		 *
+		 * If a non-empty string is passed, the filter is evaluated on the wp_richedit_pre()
+		 * return after being formatted.
+		 *
+		 * @since 2.0.0
+		 * @deprecated 4.3.0
+		 *
+		 * @param string $output Text for the rich text editor.
+		 */
+		return apply_filters( 'richedit_pre', '' );
+	}
+
+	$output = convert_chars($text);
+	$output = wpautop($output);
+	$output = htmlspecialchars($output, ENT_NOQUOTES, get_option( 'blog_charset' ) );
+
+	/** This filter is documented in wp-includes/deprecated.php */
+	return apply_filters( 'richedit_pre', $output );
+}
+
+/**
+ * Formats text for the HTML editor.
+ *
+ * Unless $output is empty it will pass through htmlspecialchars before the
+ * 'htmledit_pre' filter is applied.
+ *
+ * @since 2.5.0
+ * @deprecated 4.3.0
+ *
+ * @param string $output The text to be formatted.
+ * @return string Formatted text after filter applied.
+ */
+function wp_htmledit_pre($output) {
+	_deprecated_function( __FUNCTION__, '4.3', 'format_for_editor()' );
+
+	if ( !empty($output) )
+		$output = htmlspecialchars($output, ENT_NOQUOTES, get_option( 'blog_charset' ) ); // convert only < > &
+
+	/**
+	 * Filter the text before it is formatted for the HTML editor.
+	 *
+	 * @since 2.5.0
+	 * @deprecated 4.3.0
+	 *
+	 * @param string $output The HTML-formatted text.
+	 */
+	return apply_filters( 'htmledit_pre', $output );
+}
+

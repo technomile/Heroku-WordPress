@@ -36,6 +36,8 @@ class WP_Http {
 	 * @access public
 	 * @since 2.7.0
 	 *
+	 * @global string $wp_version
+	 *
 	 * @param string       $url  The request URL.
 	 * @param string|array $args {
 	 *     Optional. Array or string of HTTP request arguments.
@@ -182,7 +184,9 @@ class WP_Http {
 		if ( function_exists( 'wp_kses_bad_protocol' ) ) {
 			if ( $r['reject_unsafe_urls'] )
 				$url = wp_http_validate_url( $url );
-			$url = wp_kses_bad_protocol( $url, array( 'http', 'https', 'ssl' ) );
+			if ( $url ) {
+				$url = wp_kses_bad_protocol( $url, array( 'http', 'https', 'ssl' ) );
+			}
 		}
 
 		$arrURL = @parse_url( $url );
@@ -209,7 +213,7 @@ class WP_Http {
 		 * and pick its name using the basename of the $url.
 		 */
 		if ( $r['stream']  && empty( $r['filename'] ) ) {
-			$r['filename'] = wp_unique_filename( get_temp_dir(), basename( $url ) );
+			$r['filename'] = get_temp_dir() . wp_unique_filename( get_temp_dir(), basename( $url ) );
 		}
 
 		/*
@@ -226,7 +230,7 @@ class WP_Http {
 			$r['headers'] = array();
 
 		if ( ! is_array( $r['headers'] ) ) {
-			$processedHeaders = WP_Http::processHeaders( $r['headers'], $url );
+			$processedHeaders = self::processHeaders( $r['headers'], $url );
 			$r['headers'] = $processedHeaders['headers'];
 		}
 
@@ -245,7 +249,7 @@ class WP_Http {
 		}
 
 		// Construct Cookie: header if any cookies are set.
-		WP_Http::buildCookieHeader( $r );
+		self::buildCookieHeader( $r );
 
 		// Avoid issues where mbstring.func_overload is enabled.
 		mbstring_binary_safe_encoding();
@@ -337,6 +341,8 @@ class WP_Http {
 	 * The order for requests is cURL, and then PHP Streams.
 	 *
 	 * @since 3.2.0
+	 *
+	 * @static
 	 * @access private
 	 *
 	 * @param string $url URL to Request
@@ -622,6 +628,9 @@ class WP_Http {
 	 * @link https://core.trac.wordpress.org/ticket/8927 Allow preventing external requests.
 	 * @link https://core.trac.wordpress.org/ticket/14636 Allow wildcard domains in WP_ACCESSIBLE_HOSTS
 	 *
+	 * @staticvar array|null $accessible_hosts
+	 * @staticvar array      $wildcard_regex
+	 *
 	 * @param string $uri URI of url.
 	 * @return bool True to block, false to allow.
 	 */
@@ -652,9 +661,9 @@ class WP_Http {
 		if ( !defined('WP_ACCESSIBLE_HOSTS') )
 			return true;
 
-		static $accessible_hosts;
-		static $wildcard_regex = false;
-		if ( null == $accessible_hosts ) {
+		static $accessible_hosts = null;
+		static $wildcard_regex = array();
+		if ( null === $accessible_hosts ) {
 			$accessible_hosts = preg_split('|,\s*|', WP_ACCESSIBLE_HOSTS);
 
 			if ( false !== strpos(WP_ACCESSIBLE_HOSTS, '*') ) {
@@ -683,6 +692,8 @@ class WP_Http {
 	 * when URL parsing failed.
 	 *
 	 * @since 4.1.0
+	 *
+	 * @static
 	 * @access protected
 	 *
 	 * @param string $url The URL to parse.
@@ -721,7 +732,9 @@ class WP_Http {
 	 *
 	 * @since 3.4.0
 	 *
+	 * @static
 	 * @access public
+	 *
 	 * @param string $maybe_relative_path The URL which might be relative
 	 * @param string $url                 The URL which $maybe_relative_path is relative to
 	 * @return string An Absolute URL, in a failure condition where the URL cannot be parsed, the relative URL will be returned.
@@ -791,6 +804,8 @@ class WP_Http {
 	 * Handles HTTP Redirects and follows them if appropriate.
 	 *
 	 * @since 3.7.0
+	 *
+	 * @static
 	 *
 	 * @param string $url The URL which was requested.
 	 * @param array $args The Arguments which were used to make the request.
@@ -893,12 +908,12 @@ class WP_Http_Streams {
 
 		$r = wp_parse_args( $args, $defaults );
 
-		if ( isset($r['headers']['User-Agent']) ) {
+		if ( isset( $r['headers']['User-Agent'] ) ) {
 			$r['user-agent'] = $r['headers']['User-Agent'];
-			unset($r['headers']['User-Agent']);
-		} else if ( isset($r['headers']['user-agent']) ) {
+			unset( $r['headers']['User-Agent'] );
+		} elseif ( isset( $r['headers']['user-agent'] ) ) {
 			$r['user-agent'] = $r['headers']['user-agent'];
-			unset($r['headers']['user-agent']);
+			unset( $r['headers']['user-agent'] );
 		}
 
 		// Construct Cookie: header if any cookies are set.
@@ -1240,7 +1255,7 @@ class WP_Http_Streams {
 	 * @since 2.7.0
 	 * @since 3.7.0 Combined with the fsockopen transport and switched to stream_socket_client().
 	 *
-	 * @return boolean False means this class can not be used, true means it can.
+	 * @return bool False means this class can not be used, true means it can.
 	 */
 	public static function test( $args = array() ) {
 		if ( ! function_exists( 'stream_socket_client' ) )
@@ -1358,12 +1373,12 @@ class WP_Http_Curl {
 
 		$r = wp_parse_args( $args, $defaults );
 
-		if ( isset($r['headers']['User-Agent']) ) {
+		if ( isset( $r['headers']['User-Agent'] ) ) {
 			$r['user-agent'] = $r['headers']['User-Agent'];
-			unset($r['headers']['User-Agent']);
-		} else if ( isset($r['headers']['user-agent']) ) {
+			unset( $r['headers']['User-Agent'] );
+		} elseif ( isset( $r['headers']['user-agent'] ) ) {
 			$r['user-agent'] = $r['headers']['user-agent'];
-			unset($r['headers']['user-agent']);
+			unset( $r['headers']['user-agent'] );
 		}
 
 		// Construct Cookie: header if any cookies are set.
@@ -1520,10 +1535,16 @@ class WP_Http_Curl {
 
 		// If an error occurred, or, no response.
 		if ( $curl_error || ( 0 == strlen( $theBody ) && empty( $theHeaders['headers'] ) ) ) {
-			if ( CURLE_WRITE_ERROR /* 23 */ == $curl_error && $r['stream'] ) {
+			if ( CURLE_WRITE_ERROR /* 23 */ == $curl_error ) {
 				if ( ! $this->max_body_length || $this->max_body_length != $bytes_written_total ) {
-					fclose( $this->stream_handle );
-					return new WP_Error( 'http_request_failed', __( 'Failed to write request to temporary file.' ) );
+					if ( $r['stream'] ) {
+						curl_close( $handle );
+						fclose( $this->stream_handle );
+						return new WP_Error( 'http_request_failed', __( 'Failed to write request to temporary file.' ) );
+					} else {
+						curl_close( $handle );
+						return new WP_Error( 'http_request_failed', curl_error( $handle ) );
+					}
 				}
 			} else {
 				if ( $curl_error = curl_error( $handle ) ) {
@@ -1613,7 +1634,7 @@ class WP_Http_Curl {
 	 * @static
 	 * @since 2.7.0
 	 *
-	 * @return boolean False means this class can not be used, true means it can.
+	 * @return bool False means this class can not be used, true means it can.
 	 */
 	public static function test( $args = array() ) {
 		if ( ! function_exists( 'curl_init' ) || ! function_exists( 'curl_exec' ) )
@@ -1788,6 +1809,9 @@ class WP_HTTP_Proxy {
 	 *
 	 * @since 2.8.0
 	 *
+	 * @staticvar array|null $bypass_hosts
+	 * @staticvar array      $wildcard_regex
+	 *
 	 * @param string $uri URI to check.
 	 * @return bool True, to send through the proxy and false if, the proxy should not be used.
 	 */
@@ -1827,9 +1851,9 @@ class WP_HTTP_Proxy {
 		if ( !defined('WP_PROXY_BYPASS_HOSTS') )
 			return true;
 
-		static $bypass_hosts;
-		static $wildcard_regex = false;
-		if ( null == $bypass_hosts ) {
+		static $bypass_hosts = null;
+		static $wildcard_regex = array();
+		if ( null === $bypass_hosts ) {
 			$bypass_hosts = preg_split('|,\s*|', WP_PROXY_BYPASS_HOSTS);
 
 			if ( false !== strpos(WP_PROXY_BYPASS_HOSTS, '*') ) {
@@ -1961,7 +1985,7 @@ class WP_Http_Cookie {
 			}
 		} else {
 			if ( !isset( $data['name'] ) )
-				return false;
+				return;
 
 			// Set properties based directly on parameters.
 			foreach ( array( 'name', 'value', 'path', 'domain', 'port' ) as $field ) {
@@ -1985,7 +2009,7 @@ class WP_Http_Cookie {
 	 * @since 2.8.0
 	 *
 	 * @param string $url URL you intend to send this cookie to
-	 * @return boolean true if allowed, false otherwise.
+	 * @return bool true if allowed, false otherwise.
 	 */
 	public function test( $url ) {
 		if ( is_null( $this->name ) )
@@ -2077,6 +2101,8 @@ class WP_Http_Encoding {
 	 *
 	 * @since 2.8.0
 	 *
+	 * @static
+	 *
 	 * @param string $raw String to compress.
 	 * @param int $level Optional, default is 9. Compression level, 9 is highest.
 	 * @param string $supports Optional, not used. When implemented it will choose the right compression based on what the server supports.
@@ -2096,6 +2122,8 @@ class WP_Http_Encoding {
 	 *
 	 * @since 2.8.0
 	 *
+	 * @static
+	 *
 	 * @param string $compressed String to decompress.
 	 * @param int $length The optional length of the compressed data.
 	 * @return string|bool False on failure.
@@ -2108,7 +2136,7 @@ class WP_Http_Encoding {
 		if ( false !== ( $decompressed = @gzinflate( $compressed ) ) )
 			return $decompressed;
 
-		if ( false !== ( $decompressed = WP_Http_Encoding::compatible_gzinflate( $compressed ) ) )
+		if ( false !== ( $decompressed = self::compatible_gzinflate( $compressed ) ) )
 			return $decompressed;
 
 		if ( false !== ( $decompressed = @gzuncompress( $compressed ) ) )
@@ -2140,6 +2168,8 @@ class WP_Http_Encoding {
 	 * @link https://core.trac.wordpress.org/ticket/18273
 	 * @link http://au2.php.net/manual/en/function.gzinflate.php#70875
 	 * @link http://au2.php.net/manual/en/function.gzinflate.php#77336
+	 *
+	 * @static
 	 *
 	 * @param string $gzData String to decompress.
 	 * @return string|bool False on failure.
@@ -2180,13 +2210,15 @@ class WP_Http_Encoding {
 	 *
 	 * @since 2.8.0
 	 *
+	 * @static
+	 *
 	 * @param string $url
 	 * @param array  $args
 	 * @return string Types of encoding to accept.
 	 */
 	public static function accept_encoding( $url, $args ) {
 		$type = array();
-		$compression_enabled = WP_Http_Encoding::is_available();
+		$compression_enabled = self::is_available();
 
 		if ( ! $args['decompress'] ) // Decompression specifically disabled.
 			$compression_enabled = false;
@@ -2226,6 +2258,8 @@ class WP_Http_Encoding {
 	 *
 	 * @since 2.8.0
 	 *
+	 * @static
+	 *
 	 * @return string Content-Encoding string to send in the header.
 	 */
 	public static function content_encoding() {
@@ -2237,6 +2271,8 @@ class WP_Http_Encoding {
 	 *
 	 * @since 2.8.0
 	 *
+	 * @static
+	 *
 	 * @param array|string $headers All of the available headers.
 	 * @return bool
 	 */
@@ -2244,7 +2280,7 @@ class WP_Http_Encoding {
 		if ( is_array( $headers ) ) {
 			if ( array_key_exists('content-encoding', $headers) && ! empty( $headers['content-encoding'] ) )
 				return true;
-		} else if ( is_string( $headers ) ) {
+		} elseif ( is_string( $headers ) ) {
 			return ( stripos($headers, 'content-encoding:') !== false );
 		}
 
@@ -2259,6 +2295,8 @@ class WP_Http_Encoding {
 	 * disabled.
 	 *
 	 * @since 2.8.0
+	 *
+	 * @static
 	 *
 	 * @return bool
 	 */

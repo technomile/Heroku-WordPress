@@ -25,19 +25,17 @@ class Walker {
 	 * DB fields to use.
 	 *
 	 * @since 2.1.0
-	 * @access protected
 	 * @var array
 	 */
-	protected $db_fields;
+	public $db_fields;
 
 	/**
 	 * Max number of pages walked by the paged walker
 	 *
 	 * @since 2.7.0
-	 * @access protected
 	 * @var int
 	 */
-	protected $max_pages = 1;
+	public $max_pages = 1;
 
 	/**
 	 * Whether the current element has children or not.
@@ -45,62 +43,9 @@ class Walker {
 	 * To be used in start_el().
 	 *
 	 * @since 4.0.0
-	 * @access protected
 	 * @var bool
 	 */
-	protected $has_children;
-
-	/**
-	 * Make private properties readable for backwards compatibility.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param string $name Property to get.
-	 * @return mixed Property.
-	 */
-	public function __get( $name ) {
-		return $this->$name;
-	}
-
-	/**
-	 * Make private properties settable for backwards compatibility.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param string $name  Property to set.
-	 * @param mixed  $value Property value.
-	 * @return mixed Newly-set property.
-	 */
-	public function __set( $name, $value ) {
-		return $this->$name = $value;
-	}
-
-	/**
-	 * Make private properties checkable for backwards compatibility.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param string $name Property to check if set.
-	 * @return bool Whether the property is set.
-	 */
-	public function __isset( $name ) {
-		return isset( $this->$name );
-	}
-
-	/**
-	 * Make private properties un-settable for backwards compatibility.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param string $name Property to unset.
-	 */
-	public function __unset( $name ) {
-		unset( $this->$name );
-	}
+	public $has_children;
 
 	/**
 	 * Starts the list before the elements are added.
@@ -182,12 +127,11 @@ class Walker {
 	 * @param int    $depth             Depth of current element.
 	 * @param array  $args              An array of arguments.
 	 * @param string $output            Passed by reference. Used to append additional content.
-	 * @return null Null on failure with no changes to parameters.
 	 */
 	public function display_element( $element, &$children_elements, $max_depth, $depth, $args, &$output ) {
-
-		if ( !$element )
+		if ( ! $element ) {
 			return;
+		}
 
 		$id_field = $this->db_fields['id'];
 		$id       = $element->$id_field;
@@ -243,16 +187,14 @@ class Walker {
 	 * @param int   $max_depth The maximum hierarchical depth.
 	 * @return string The hierarchical item output.
 	 */
-	public function walk( $elements, $max_depth) {
-
+	public function walk( $elements, $max_depth ) {
 		$args = array_slice(func_get_args(), 2);
 		$output = '';
 
-		if ($max_depth < -1) //invalid parameter
+		//invalid parameter or nothing to walk
+		if ( $max_depth < -1 || empty( $elements ) ) {
 			return $output;
-
-		if (empty($elements)) //nothing to walk
-			return $output;
+		}
 
 		$parent_field = $this->db_fields['parent'];
 
@@ -327,15 +269,16 @@ class Walker {
 	 *
  	 * @since 2.7.0
 	 *
- 	 * @param int $max_depth The maximum hierarchical depth.
- 	 * @param int $page_num  The specific page number, beginning with 1.
- 	 * @return string XHTML of the specified page of elements
- 	 */
+	 * @param array $elements
+	 * @param int   $max_depth The maximum hierarchical depth.
+	 * @param int   $page_num The specific page number, beginning with 1.
+	 * @param int   $per_page
+	 * @return string XHTML of the specified page of elements
+	 */
 	public function paged_walk( $elements, $max_depth, $page_num, $per_page ) {
-
-		/* sanity check */
-		if ( empty($elements) || $max_depth < -1 )
+		if ( empty( $elements ) || $max_depth < -1 ) {
 			return '';
+		}
 
 		$args = array_slice( func_get_args(), 4 );
 		$output = '';
@@ -438,8 +381,12 @@ class Walker {
 		return $output;
 	}
 
+	/**
+	 *
+	 * @param array $elements
+	 * @return int
+	 */
 	public function get_number_of_root_elements( $elements ){
-
 		$num = 0;
 		$parent_field = $this->db_fields['parent'];
 
@@ -450,11 +397,16 @@ class Walker {
 		return $num;
 	}
 
-	// Unset all the children for a given top level element.
+	/**
+	 * Unset all the children for a given top level element.
+	 *
+	 * @param object $e
+	 * @param array $children_elements
+	 */
 	public function unset_children( $e, &$children_elements ){
-
-		if ( !$e || !$children_elements )
+		if ( ! $e || ! $children_elements ) {
 			return;
+		}
 
 		$id_field = $this->db_fields['id'];
 		$id = $e->$id_field;
@@ -463,9 +415,7 @@ class Walker {
 			foreach ( (array) $children_elements[$id] as $child )
 				$this->unset_children( $child, $children_elements );
 
-		if ( isset($children_elements[$id]) )
-			unset( $children_elements[$id] );
-
+		unset( $children_elements[ $id ] );
 	}
 
 } // Walker
