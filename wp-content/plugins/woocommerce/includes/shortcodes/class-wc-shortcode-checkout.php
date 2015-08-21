@@ -14,7 +14,6 @@ class WC_Shortcode_Checkout {
 	/**
 	 * Get the shortcode content.
 	 *
-	 * @access public
 	 * @param array $atts
 	 * @return string
 	 */
@@ -25,9 +24,7 @@ class WC_Shortcode_Checkout {
 	/**
 	 * Output the shortcode.
 	 *
-	 * @access public
 	 * @param array $atts
-	 * @return void
 	 */
 	public static function output( $atts ) {
 		global $wp;
@@ -42,10 +39,10 @@ class WC_Shortcode_Checkout {
 			_deprecated_argument( __CLASS__ . '->' . __FUNCTION__, '2.1', '"order" is no longer used to pass an order ID. Use the order-pay or order-received endpoint instead.' );
 
 			// Get the order to work out what we are showing
-			$order_id             = absint( $_GET['order'] );
-			$order                = wc_get_order( $order_id );
+			$order_id = absint( $_GET['order'] );
+			$order    = wc_get_order( $order_id );
 
-			if ( $order->has_status( 'pending' ) ) {
+			if ( $order && $order->has_status( 'pending' ) ) {
 				$wp->query_vars['order-pay'] = absint( $_GET['order'] );
 			} else {
 				$wp->query_vars['order-received'] = absint( $_GET['order'] );
@@ -70,6 +67,8 @@ class WC_Shortcode_Checkout {
 
 	/**
 	 * Show the pay page
+	 *
+	 * @param int $order_id
 	 */
 	private static function order_pay( $order_id ) {
 
@@ -173,6 +172,8 @@ class WC_Shortcode_Checkout {
 
 	/**
 	 * Show the thanks page
+	 *
+	 * @param int $order_id
 	 */
 	private static function order_received( $order_id = 0 ) {
 
@@ -205,7 +206,7 @@ class WC_Shortcode_Checkout {
 		wc_print_notices();
 
 		// Check cart has contents
-		if ( sizeof( WC()->cart->get_cart() ) == 0 ) {
+		if ( WC()->cart->is_empty() ) {
 			return;
 		}
 

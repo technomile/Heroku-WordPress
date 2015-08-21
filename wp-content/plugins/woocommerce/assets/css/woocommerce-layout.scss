@@ -115,26 +115,6 @@
 	/**
 	 * Product loops
 	 */
-	.related,
-	.upsells.products {
-		@include clearfix();
-		clear: both;
-
-		ul.products,
-		ul {
-			float: none;
-
-			li.product {
-				width: 48%;
-
-				img {
-					width: 100%;
-					height: auto;
-				}
-			}
-		}
-	}
-
 	ul.products {
 		clear: both;
 		@include clearfix();
@@ -309,7 +289,7 @@
 			}
 
 			.input-text {
-				@include box-sizing(border-box);
+				box-sizing: border-box;
 				width: 100%;
 			}
 		}

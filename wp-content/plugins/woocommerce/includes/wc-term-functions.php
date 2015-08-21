@@ -88,7 +88,7 @@ function wc_get_product_terms( $product_id, $taxonomy, $args = array() ) {
 		$terms = wp_get_post_terms( $product_id, $taxonomy, $args );
 	}
 
-	return $terms;
+	return apply_filters( 'woocommerce_get_product_terms' , $terms, $product_id, $taxonomy, $args );
 }
 
 
@@ -198,8 +198,6 @@ function wc_walk_category_dropdown_tree() {
 
 /**
  * WooCommerce Term/Order item Meta API - set table name
- *
- * @return void
  */
 function wc_taxonomy_metadata_wpdbfix() {
 	global $wpdb;
@@ -214,6 +212,36 @@ function wc_taxonomy_metadata_wpdbfix() {
 }
 add_action( 'init', 'wc_taxonomy_metadata_wpdbfix', 0 );
 add_action( 'switch_blog', 'wc_taxonomy_metadata_wpdbfix', 0 );
+
+/**
+ * When a term is split, ensure meta data maintained.
+ * @param  int $old_term_id
+ * @param  int $new_term_id
+ * @param  string $term_taxonomy_id
+ * @param  string $taxonomy
+ */
+function wc_taxonomy_metadata_update_content_for_split_terms( $old_term_id, $new_term_id, $term_taxonomy_id, $taxonomy ) {
+	global $wpdb;
+
+	if ( 'product_cat' === $taxonomy || taxonomy_is_product_attribute( $taxonomy ) ) {
+		$old_meta_data = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}woocommerce_termmeta WHERE woocommerce_term_id = %d;", $old_term_id ) );
+
+		// Copy across to split term
+		if ( $old_meta_data ) {
+			foreach ( $old_meta_data as $meta_data ) {
+				$wpdb->insert(
+					"{$wpdb->prefix}woocommerce_termmeta",
+					array(
+						'woocommerce_term_id' => $new_term_id,
+						'meta_key'            => $meta_data->meta_key,
+						'meta_value'          => $meta_data->meta_value
+					)
+				);
+			}
+		}
+	}
+}
+add_action( 'split_shared_term', 'wc_taxonomy_metadata_update_content_for_split_terms', 10, 4 );
 
 /**
  * WooCommerce Term Meta API - Update term meta
@@ -428,11 +456,11 @@ add_filter( 'terms_clauses', 'wc_terms_clauses', 10, 3 );
 
 /**
  * Function for recounting product terms, ignoring hidden products.
+ *
  * @param  array  $terms
  * @param  string  $taxonomy
  * @param  boolean $callback
  * @param  boolean $terms_are_term_taxonomy_ids
- * @return void
  */
 function _wc_term_recount( $terms, $taxonomy, $callback = true, $terms_are_term_taxonomy_ids = true ) {
 	global $wpdb;
@@ -524,8 +552,8 @@ function _wc_term_recount( $terms, $taxonomy, $callback = true, $terms_are_term_
 
 /**
  * Recount terms after the stock amount changes
- * @param  int $product_id
- * @return void
+ *
+ * @param int $product_id
  */
 function wc_recount_after_stock_change( $product_id ) {
 	if ( get_option( 'woocommerce_hide_out_of_stock_items' ) != 'yes' )
@@ -589,7 +617,7 @@ function wc_change_term_counts( $terms, $taxonomies ) {
 
 	// Update transient
 	if ( $term_counts != $o_term_counts ) {
-		set_transient( 'wc_term_counts', $term_counts, YEAR_IN_SECONDS );
+		set_transient( 'wc_term_counts', $term_counts, DAY_IN_SECONDS * 30 );
 	}
 
 	return $terms;

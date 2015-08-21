@@ -10,17 +10,23 @@ require_once WPCF7_PLUGIN_DIR . '/includes/contact-form.php';
 require_once WPCF7_PLUGIN_DIR . '/includes/mail.php';
 require_once WPCF7_PLUGIN_DIR . '/includes/submission.php';
 require_once WPCF7_PLUGIN_DIR . '/includes/upgrade.php';
+require_once WPCF7_PLUGIN_DIR . '/includes/integration.php';
 
-if ( is_admin() )
+if ( is_admin() ) {
 	require_once WPCF7_PLUGIN_DIR . '/admin/admin.php';
-else
+} else {
 	require_once WPCF7_PLUGIN_DIR . '/includes/controller.php';
+}
 
 add_action( 'plugins_loaded', 'wpcf7' );
 
 function wpcf7() {
 	wpcf7_load_textdomain();
 	wpcf7_load_modules();
+
+	/* Shortcodes */
+	add_shortcode( 'contact-form-7', 'wpcf7_contact_form_tag_func' );
+	add_shortcode( 'contact-form', 'wpcf7_contact_form_tag_func' );
 }
 
 add_action( 'init', 'wpcf7_init' );
@@ -73,5 +79,3 @@ function wpcf7_install() {
 
 	$contact_form->save();
 }
-
-?>

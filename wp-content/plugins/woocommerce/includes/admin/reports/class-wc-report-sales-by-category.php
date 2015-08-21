@@ -176,7 +176,7 @@ class WC_Report_Sales_By_Category extends WC_Admin_Report {
 		?>
 		<form method="GET">
 			<div>
-				<select multiple="multiple" data-placeholder="<?php _e( 'Select categories&hellip;', 'woocommerce' ); ?>" class="wc-enhanced-select" id="show_categories" name="show_categories[]" style="width: 205px;">
+				<select multiple="multiple" data-placeholder="<?php esc_attr_e( 'Select categories&hellip;', 'woocommerce' ); ?>" class="wc-enhanced-select" id="show_categories" name="show_categories[]" style="width: 205px;">
 					<?php
 						$r = array();
 						$r['pad_counts'] 	= 1;
@@ -192,7 +192,7 @@ class WC_Report_Sales_By_Category extends WC_Admin_Report {
 				</select>
 				<a href="#" class="select_none"><?php _e( 'None', 'woocommerce' ); ?></a>
 				<a href="#" class="select_all"><?php _e( 'All', 'woocommerce' ); ?></a>
-				<input type="submit" class="submit button" value="<?php _e( 'Show', 'woocommerce' ); ?>" />
+				<input type="submit" class="submit button" value="<?php esc_attr_e( 'Show', 'woocommerce' ); ?>" />
 				<input type="hidden" name="range" value="<?php if ( ! empty( $_GET['range'] ) ) echo esc_attr( $_GET['range'] ) ?>" />
 				<input type="hidden" name="start_date" value="<?php if ( ! empty( $_GET['start_date'] ) ) echo esc_attr( $_GET['start_date'] ) ?>" />
 				<input type="hidden" name="end_date" value="<?php if ( ! empty( $_GET['end_date'] ) ) echo esc_attr( $_GET['end_date'] ) ?>" />
@@ -232,7 +232,7 @@ class WC_Report_Sales_By_Category extends WC_Admin_Report {
 			download="report-<?php echo esc_attr( $current_range ); ?>-<?php echo date_i18n( 'Y-m-d', current_time('timestamp') ); ?>.csv"
 			class="export_csv"
 			data-export="chart"
-			data-xaxes="<?php _e( 'Date', 'woocommerce' ); ?>"
+			data-xaxes="<?php esc_attr_e( 'Date', 'woocommerce' ); ?>"
 			data-groupby="<?php echo $this->chart_groupby; ?>"
 		>
 			<?php _e( 'Export CSV', 'woocommerce' ); ?>
@@ -262,7 +262,6 @@ class WC_Report_Sales_By_Category extends WC_Admin_Report {
 
 				$category            = get_term( $category, 'product_cat' );
 				$product_ids         = $this->get_products_in_category( $category->term_id );
-				$category_total      = 0;
 				$category_chart_data = array();
 
 				for ( $i = 0; $i <= $this->chart_interval; $i ++ ) {
@@ -283,15 +282,11 @@ class WC_Report_Sales_By_Category extends WC_Admin_Report {
 
 						if ( isset( $this->item_sales_and_times[ $time ][ $id ] ) ) {
 							$interval_total += $this->item_sales_and_times[ $time ][ $id ];
-							$category_total += $this->item_sales_and_times[ $time ][ $id ];
 						}
 					}
 
-					$category_chart_data[] = array( $time, $interval_total );
+					$category_chart_data[] = array( $time, (float) wc_format_decimal( $interval_total, wc_get_price_decimals() ) );
 				}
-
-				//if ( ! $category_total )
-				//	continue;
 
 				$chart_data[ $category->term_id ]['category'] = $category->name;
 				$chart_data[ $category->term_id ]['data'] = $category_chart_data;
@@ -315,8 +310,9 @@ class WC_Report_Sales_By_Category extends WC_Admin_Report {
 									$width  = $this->barwidth / sizeof( $chart_data );
 									$offset = ( $width * $index );
 									$series = $data['data'];
-									foreach ( $series as $key => $series_data )
+									foreach ( $series as $key => $series_data ) {
 										$series[ $key ][0] = $series_data[0] + $offset;
+									}
 									echo '{
 										label: "' . esc_js( $data['category'] ) . '",
 										data: jQuery.parseJSON( "' . json_encode( $series ) . '" ),

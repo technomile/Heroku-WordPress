@@ -29,9 +29,8 @@ if (!isset($extras['context'])) {
 
 $is_gf_active = is_plugin_active('gravityforms/gravityforms.php');
 
-if ($is_gf_active)
-{
-    $gf_forms = $wpdb->get_results("SELECT id, title FROM {$wpdb->prefix}rg_form WHERE is_active = 1 ORDER BY title");
+if ( $is_gf_active ) {
+    $gf_forms = $wpdb->get_results( "SELECT id, title FROM {$wpdb->prefix}rg_form WHERE is_active = 1 ORDER BY title" );
 }
 ?>
 

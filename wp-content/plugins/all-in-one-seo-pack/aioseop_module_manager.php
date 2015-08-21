@@ -13,7 +13,7 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Module_Manager' ) ) {
 		protected $settings_reset_all = false;
 		protected $module_settings_update = false;
 		// initialize module list
-		function All_in_One_SEO_Pack_Module_Manager( $mod ) {
+		function __construct( $mod ) {
 			$this->modules['feature_manager'] = null;
 			foreach ( $mod as $m ) $this->modules[$m] = null;
 			$reset = false;

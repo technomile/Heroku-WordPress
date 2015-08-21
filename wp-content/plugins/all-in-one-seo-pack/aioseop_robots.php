@@ -8,7 +8,7 @@
 if ( !class_exists( 'All_in_One_SEO_Pack_Robots' ) ) {
 	class All_in_One_SEO_Pack_Robots extends All_in_One_SEO_Pack_Module {
 
-		function All_in_One_SEO_Pack_Robots( ) {
+		function __construct( ) {
 			$this->name = __('Robots.txt', 'all_in_one_seo_pack');	// Human-readable name of the plugin
 			$this->prefix = 'aiosp_robots_';						// option prefix
 			$this->file = __FILE__;									// the current file

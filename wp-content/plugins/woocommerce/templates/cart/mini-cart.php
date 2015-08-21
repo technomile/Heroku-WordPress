@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <ul class="cart_list product_list_widget <?php echo $args['list_class']; ?>">
 
-	<?php if ( sizeof( WC()->cart->get_cart() ) > 0 ) : ?>
+	<?php if ( ! WC()->cart->is_empty() ) : ?>
 
 		<?php
 			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
@@ -32,13 +32,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 					$thumbnail     = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image(), $cart_item, $cart_item_key );
 					$product_price = apply_filters( 'woocommerce_cart_item_price', WC()->cart->get_product_price( $_product ), $cart_item, $cart_item_key );
 					?>
-					<li>
-						<?php echo apply_filters( 'woocommerce_cart_item_remove_link', sprintf( '<a href="%s" class="remove" title="%s">&times;</a>', esc_url( WC()->cart->get_remove_url( $cart_item_key ) ), __( 'Remove this item', 'woocommerce' ) ), $cart_item_key ); ?>
+					<li class="<?php echo esc_attr( apply_filters( 'woocommerce_mini_cart_item_class', 'mini_cart_item', $cart_item, $cart_item_key ) ); ?>">
+						<?php
+						echo apply_filters( 'woocommerce_cart_item_remove_link', sprintf(
+							'<a href="%s" class="remove" title="%s" data-product_id="%s" data-product_sku="%s">&times;</a>',
+							esc_url( WC()->cart->get_remove_url( $cart_item_key ) ),
+							__( 'Remove this item', 'woocommerce' ),
+							esc_attr( $product_id ),
+							esc_attr( $_product->get_sku() )
+						), $cart_item_key );
+						?>
 						<?php if ( ! $_product->is_visible() ) : ?>
-							<?php echo str_replace( array( 'http:', 'https:' ), '', $thumbnail ) . $product_name; ?>
+							<?php echo str_replace( array( 'http:', 'https:' ), '', $thumbnail ) . $product_name . '&nbsp;'; ?>
 						<?php else : ?>
 							<a href="<?php echo esc_url( $_product->get_permalink( $cart_item ) ); ?>">
-								<?php echo str_replace( array( 'http:', 'https:' ), '', $thumbnail ) . $product_name; ?>
+								<?php echo str_replace( array( 'http:', 'https:' ), '', $thumbnail ) . $product_name . '&nbsp;'; ?>
 							</a>
 						<?php endif; ?>
 						<?php echo WC()->cart->get_item_data( $cart_item ); ?>
@@ -58,7 +66,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 </ul><!-- end product list -->
 
-<?php if ( sizeof( WC()->cart->get_cart() ) > 0 ) : ?>
+<?php if ( ! WC()->cart->is_empty() ) : ?>
 
 	<p class="total"><strong><?php _e( 'Subtotal', 'woocommerce' ); ?>:</strong> <?php echo WC()->cart->get_cart_subtotal(); ?></p>
 

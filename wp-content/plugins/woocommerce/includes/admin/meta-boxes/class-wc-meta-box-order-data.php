@@ -153,17 +153,18 @@ class WC_Meta_Box_Order_Data {
 
 		$payment_method = ! empty( $order->payment_method ) ? $order->payment_method : '';
 
+		$order_type_object = get_post_type_object( $post->post_type );
 		wp_nonce_field( 'woocommerce_save_data', 'woocommerce_meta_nonce' );
 		?>
 		<style type="text/css">
-			#post-body-content, #titlediv, #major-publishing-actions, #minor-publishing-actions, #visibility, #submitdiv { display:none }
+			#post-body-content, #titlediv { display:none }
 		</style>
 		<div class="panel-wrap woocommerce">
-			<input name="post_title" type="hidden" value="<?php echo empty( $post->post_title ) ? 'Order' : esc_attr( $post->post_title ); ?>" />
-			<input name="post_status" type="hidden" value="<?php echo esc_attr( $order->get_status() ); ?>" />
+			<input name="post_title" type="hidden" value="<?php echo empty( $post->post_title ) ? __( 'Order', 'woocommerce' ) : esc_attr( $post->post_title ); ?>" />
+			<input name="post_status" type="hidden" value="<?php echo esc_attr( $post->post_status ); ?>" />
 			<div id="order_data" class="panel">
 
-				<h2><?php printf( __( 'Order #%s Details', 'woocommerce' ), esc_html( $order->get_order_number() ) ); ?></h2>
+				<h2><?php echo esc_html( sprintf( __( '%s %s details', 'woocommerce' ), $order_type_object->labels->singular_name, $order->get_order_number() ) ); ?></h2>
 				<p class="order_number"><?php
 
 					if ( $payment_method ) {
@@ -189,7 +190,7 @@ class WC_Meta_Box_Order_Data {
 						<h4><?php _e( 'General Details', 'woocommerce' ); ?></h4>
 
 						<p class="form-field form-field-wide"><label for="order_date"><?php _e( 'Order date:', 'woocommerce' ) ?></label>
-							<input type="text" class="date-picker" name="order_date" id="order_date" maxlength="10" value="<?php echo date_i18n( 'Y-m-d', strtotime( $post->post_date ) ); ?>" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" />@<input type="text" class="hour" placeholder="<?php _e( 'h', 'woocommerce' ) ?>" name="order_date_hour" id="order_date_hour" maxlength="2" size="2" value="<?php echo date_i18n( 'H', strtotime( $post->post_date ) ); ?>" pattern="\-?\d+(\.\d{0,})?" />:<input type="text" class="minute" placeholder="<?php _e( 'm', 'woocommerce' ) ?>" name="order_date_minute" id="order_date_minute" maxlength="2" size="2" value="<?php echo date_i18n( 'i', strtotime( $post->post_date ) ); ?>" pattern="\-?\d+(\.\d{0,})?" />
+							<input type="text" class="date-picker" name="order_date" id="order_date" maxlength="10" value="<?php echo date_i18n( 'Y-m-d', strtotime( $post->post_date ) ); ?>" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" />@<input type="text" class="hour" placeholder="<?php esc_attr_e( 'h', 'woocommerce' ) ?>" name="order_date_hour" id="order_date_hour" maxlength="2" size="2" value="<?php echo date_i18n( 'H', strtotime( $post->post_date ) ); ?>" pattern="\-?\d+(\.\d{0,})?" />:<input type="text" class="minute" placeholder="<?php esc_attr_e( 'm', 'woocommerce' ) ?>" name="order_date_minute" id="order_date_minute" maxlength="2" size="2" value="<?php echo date_i18n( 'i', strtotime( $post->post_date ) ); ?>" pattern="\-?\d+(\.\d{0,})?" />
 						</p>
 
 						<p class="form-field form-field-wide"><label for="order_status"><?php _e( 'Order status:', 'woocommerce' ) ?></label>
@@ -224,12 +225,16 @@ class WC_Meta_Box_Order_Data {
 								$user_string = esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email );
 							}
 							?>
-							<input type="hidden" class="wc-customer-search" id="customer_user" name="customer_user" data-placeholder="<?php _e( 'Guest', 'woocommerce' ); ?>" data-selected="<?php echo esc_attr( $user_string ); ?>" value="<?php echo $user_id; ?>" data-allow_clear="true" />
+							<input type="hidden" class="wc-customer-search" id="customer_user" name="customer_user" data-placeholder="<?php esc_attr_e( 'Guest', 'woocommerce' ); ?>" data-selected="<?php echo htmlspecialchars( $user_string ); ?>" value="<?php echo $user_id; ?>" data-allow_clear="true" />
 						</p>
 						<?php do_action( 'woocommerce_admin_order_data_after_order_details', $order ); ?>
 					</div>
 					<div class="order_data_column">
-						<h4><?php _e( 'Billing Details', 'woocommerce' ); ?> <a class="edit_address" href="#"><img src="<?php echo WC()->plugin_url(); ?>/assets/images/icons/edit.png" alt="<?php _e( 'Edit', 'woocommerce' ); ?>" width="14" /></a></h4>
+						<h4>
+							<?php _e( 'Billing Details', 'woocommerce' ); ?>
+							<a href="#" class="edit_address"><?php _e( 'Edit', 'woocommerce' ); ?></a>
+							<a href="#" class="tips load_customer_billing" data-tip="<?php esc_attr_e( 'Load billing address', 'woocommerce' ); ?>" style="display:none;"><?php _e( 'Load billing address', 'woocommerce' ); ?></a>
+						</h4>
 						<?php
 							// Display values
 							echo '<div class="address">';
@@ -255,7 +260,7 @@ class WC_Meta_Box_Order_Data {
 							echo '</div>';
 
 							// Display form
-							echo '<div class="edit_address"><p><button class="button load_customer_billing">' . __( 'Load billing address', 'woocommerce' ) . '</button></p>';
+							echo '<div class="edit_address">';
 
 							foreach ( self::$billing_fields as $key => $field ) {
 								if ( ! isset( $field['type'] ) ) {
@@ -309,7 +314,12 @@ class WC_Meta_Box_Order_Data {
 					</div>
 					<div class="order_data_column">
 
-						<h4><?php _e( 'Shipping Details', 'woocommerce' ); ?> <a class="edit_address" href="#"><img src="<?php echo WC()->plugin_url(); ?>/assets/images/icons/edit.png" alt="<?php _e( 'Edit', 'woocommerce' ); ?>" width="14" /></a></h4>
+						<h4>
+							<?php _e( 'Shipping Details', 'woocommerce' ); ?>
+							<a href="#" class="edit_address"><?php _e( 'Edit', 'woocommerce' ); ?></a>
+							<a href="#" class="tips billing-same-as-shipping" data-tip="<?php esc_attr_e( 'Copy from billing', 'woocommerce' ); ?>" style="display:none;"><?php _e( 'Copy from billing', 'woocommerce' ); ?></a>
+							<a href="#" class="tips load_customer_shipping" data-tip="<?php esc_attr_e( 'Load shipping address', 'woocommerce' ); ?>" style="display:none;"><?php _e( 'Load shipping address', 'woocommerce' ); ?></a>
+						</h4>
 						<?php
 							// Display values
 							echo '<div class="address">';
@@ -320,7 +330,7 @@ class WC_Meta_Box_Order_Data {
 									echo '<p class="none_set"><strong>' . __( 'Address', 'woocommerce' ) . ':</strong> ' . __( 'No shipping address set.', 'woocommerce' ) . '</p>';
 								}
 
-								if ( self::$shipping_fields ) {
+								if ( ! empty( self::$shipping_fields ) ) {
 									foreach ( self::$shipping_fields as $key => $field ) {
 										if ( isset( $field['show'] ) && false === $field['show'] ) {
 											continue;
@@ -335,15 +345,15 @@ class WC_Meta_Box_Order_Data {
 								}
 
 								if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) && $post->post_excerpt ) {
-									echo '<p><strong>' . __( 'Customer Note', 'woocommerce' ) . ':</strong> ' . nl2br( esc_html( $post->post_excerpt ) ) . '</p>';
+									echo '<p><strong>' . __( 'Customer Provided Note', 'woocommerce' ) . ':</strong> ' . nl2br( esc_html( $post->post_excerpt ) ) . '</p>';
 								}
 
 							echo '</div>';
 
 							// Display form
-							echo '<div class="edit_address"><p><button class="button load_customer_shipping">' . __( 'Load shipping address', 'woocommerce' ) . '</button> <button class="button billing-same-as-shipping">' . __( 'Copy from billing', 'woocommerce' ) . '</button></p>';
+							echo '<div class="edit_address">';
 
-							if ( self::$shipping_fields ) {
+							if ( ! empty( self::$shipping_fields ) ) {
 								foreach ( self::$shipping_fields as $key => $field ) {
 									if ( ! isset( $field['type'] ) ) {
 										$field['type'] = 'text';
@@ -365,8 +375,8 @@ class WC_Meta_Box_Order_Data {
 
 							if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) ) {
 								?>
-								<p class="form-field form-field-wide"><label for="excerpt"><?php _e( 'Customer Note:', 'woocommerce' ) ?></label>
-								<textarea rows="1" cols="40" name="excerpt" tabindex="6" id="excerpt" placeholder="<?php _e( 'Customer\'s notes about the order', 'woocommerce' ); ?>"><?php echo wp_kses_post( $post->post_excerpt ); ?></textarea></p>
+								<p class="form-field form-field-wide"><label for="excerpt"><?php _e( 'Customer Provided Note', 'woocommerce' ) ?>:</label>
+								<textarea rows="1" cols="40" name="excerpt" tabindex="6" id="excerpt" placeholder="<?php esc_attr_e( 'Customer\'s notes about the order', 'woocommerce' ); ?>"><?php echo wp_kses_post( $post->post_excerpt ); ?></textarea></p>
 								<?php
 							}
 
@@ -396,7 +406,7 @@ class WC_Meta_Box_Order_Data {
 		// Update meta
 		update_post_meta( $post_id, '_customer_user', absint( $_POST['customer_user'] ) );
 
-		if ( self::$billing_fields ) {
+		if ( ! empty( self::$billing_fields ) ) {
 			foreach ( self::$billing_fields as $key => $field ) {
 				if ( ! isset( $field['id'] ) ){
 					$field['id'] = '_billing_' . $key;
@@ -405,7 +415,7 @@ class WC_Meta_Box_Order_Data {
 			}
 		}
 
-		if ( self::$shipping_fields ) {
+		if ( ! empty( self::$shipping_fields ) ) {
 			foreach ( self::$shipping_fields as $key => $field ) {
 				if ( ! isset( $field['id'] ) ){
 					$field['id'] = '_shipping_' . $key;
@@ -440,15 +450,16 @@ class WC_Meta_Box_Order_Data {
 			$date = strtotime( $_POST['order_date'] . ' ' . (int) $_POST['order_date_hour'] . ':' . (int) $_POST['order_date_minute'] . ':00' );
 		}
 
-		$date = date_i18n( 'Y-m-d H:i:s', $date );
-
-		$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", $date, get_gmt_from_date( $date ), $post_id ) );
-
 		// Order data saved, now get it so we can manipulate status
 		$order = wc_get_order( $post_id );
 
 		// Order status
-		$order->update_status( $_POST['order_status'] );
+		$order->update_status( $_POST['order_status'], '', true );
+
+		// Finally, set the date
+		$date = date_i18n( 'Y-m-d H:i:s', $date );
+
+		$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", $date, get_gmt_from_date( $date ), $post_id ) );
 
 		wc_delete_shop_order_transients( $post_id );
 	}

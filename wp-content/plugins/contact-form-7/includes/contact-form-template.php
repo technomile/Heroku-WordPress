@@ -84,7 +84,7 @@ class WPCF7_ContactFormTemplate {
 		$admin_email = get_option( 'admin_email' );
 		$sitename = strtolower( $_SERVER['SERVER_NAME'] );
 
-		if ( 'localhost' == $sitename ) {
+		if ( wpcf7_is_localhost() ) {
 			return $admin_email;
 		}
 
@@ -171,5 +171,3 @@ function wpcf7_messages() {
 
 	return apply_filters( 'wpcf7_messages', $messages );
 }
-
-?>

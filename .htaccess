@@ -1,0 +1,12 @@
+
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /CMS/WordPress/Heroku-Wordpress-MySQL%20-%20Copy/
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /CMS/WordPress/Heroku-Wordpress-MySQL%20-%20Copy/index.php [L]
+</IfModule>
+
+# END WordPress

@@ -57,13 +57,6 @@ class WC_Product {
 	public $product_type = null;
 
 	/**
-	 * String of dimensions (imploded with X)
-	 *
-	 * @var string
-	 */
-	protected $dimensions = '';
-
-	/**
 	 * Prouduct shipping class
 	 *
 	 * @var string
@@ -199,14 +192,15 @@ class WC_Product {
 	/**
 	 * Check if the stock status needs changing
 	 */
-	protected function check_stock_status() {
-
-		// Update stock status
+	public function check_stock_status() {
 		if ( ! $this->backorders_allowed() && $this->get_total_stock() <= get_option( 'woocommerce_notify_no_stock_amount' ) ) {
-			$this->set_stock_status( 'outofstock' );
-
+			if ( $this->stock_status !== 'outofstock' ) {
+				$this->set_stock_status( 'outofstock' );
+			}
 		} elseif ( $this->backorders_allowed() || $this->get_total_stock() > get_option( 'woocommerce_notify_no_stock_amount' ) ) {
-			$this->set_stock_status( 'instock' );
+			if ( $this->stock_status !== 'instock' ) {
+				$this->set_stock_status( 'instock' );
+			}
 		}
 	}
 
@@ -243,6 +237,8 @@ class WC_Product {
 
 			// Clear caches
 			wp_cache_delete( $this->id, 'post_meta' );
+			delete_transient( 'wc_low_stock_count' );
+			delete_transient( 'wc_outofstock_count' );
 			unset( $this->stock );
 
 			// Stock status
@@ -279,7 +275,6 @@ class WC_Product {
 	 * set_stock_status function.
 	 *
 	 * @param string $status
-	 * @return void
 	 */
 	public function set_stock_status( $status ) {
 
@@ -296,6 +291,15 @@ class WC_Product {
 			$this->stock_status = $status;
 			do_action( 'woocommerce_product_set_stock_status', $this->id, $status );
 		}
+	}
+
+	/**
+	 * Return the product type.
+	 *
+	 * @return string
+	 */
+	public function get_type() {
+		return is_null( $this->product_type ) ? '' : $this->product_type;
 	}
 
 	/**
@@ -342,7 +346,7 @@ class WC_Product {
 
 		$downloadable_files = array_filter( isset( $this->downloadable_files ) ? (array) maybe_unserialize( $this->downloadable_files ) : array() );
 
-		if ( $downloadable_files ) {
+		if ( ! empty( $downloadable_files ) ) {
 
 			foreach ( $downloadable_files as $key => $file ) {
 
@@ -484,7 +488,7 @@ class WC_Product {
 	 * @return bool
 	 */
 	public function is_taxable() {
-		$taxable = $this->tax_status == 'taxable' && wc_tax_enabled() ? true : false;
+		$taxable = $this->get_tax_status() === 'taxable' && wc_tax_enabled() ? true : false;
 		return apply_filters( 'woocommerce_product_is_taxable', $taxable, $this );
 	}
 
@@ -494,7 +498,7 @@ class WC_Product {
 	 * @return bool
 	 */
 	public function is_shipping_taxable() {
-		return $this->tax_status=='taxable' || $this->tax_status=='shipping' ? true : false;
+		return $this->get_tax_status() === 'taxable' || $this->get_tax_status() === 'shipping' ? true : false;
 	}
 
 	/**
@@ -557,7 +561,6 @@ class WC_Product {
 	 * @return bool
 	 */
 	public function is_in_stock() {
-
 		if ( $this->managing_stock() && $this->backorders_allowed() ) {
 			return true;
 		} elseif ( $this->managing_stock() && $this->get_total_stock() <= get_option( 'woocommerce_notify_no_stock_amount' ) ) {
@@ -602,7 +605,7 @@ class WC_Product {
 	 * @return bool
 	 */
 	public function has_enough_stock( $quantity ) {
-		return ! $this->managing_stock() || $this->backorders_allowed() || $this->stock >= $quantity ? true : false;
+		return ! $this->managing_stock() || $this->backorders_allowed() || $this->get_stock_quantity() >= $quantity ? true : false;
 	}
 
 	/**
@@ -723,15 +726,6 @@ class WC_Product {
 	}
 
 	/**
-	 * Returns the product's weight.
-	 * @todo   refactor filters in this class to naming woocommerce_product_METHOD
-	 * @return string
-	 */
-	public function get_weight() {
-		return apply_filters( 'woocommerce_product_get_weight', $this->weight ? $this->weight : '' );
-	}
-
-	/**
 	 * Returns false if the product cannot be bought.
 	 *
 	 * @return bool
@@ -760,7 +754,6 @@ class WC_Product {
 	 * Set a products price dynamically.
 	 *
 	 * @param float $price Price to set.
-	 * @return void
 	 */
 	public function set_price( $price ) {
 		$this->price = $price;
@@ -770,7 +763,6 @@ class WC_Product {
 	 * Adjust a products price dynamically.
 	 *
 	 * @param mixed $price
-	 * @return void
 	 */
 	public function adjust_price( $price ) {
 		$this->price = $this->price + $price;
@@ -902,9 +894,15 @@ class WC_Product {
 	/**
 	 * Get the suffix to display after prices > 0
 	 *
+	 * @param  string  $price to calculate, left blank to just use get_price()
+	 * @param  integer $qty   passed on to get_price_including_tax() or get_price_excluding_tax()
 	 * @return string
 	 */
-	public function get_price_suffix() {
+	public function get_price_suffix( $price = '', $qty = 1 ) {
+
+		if ( $price === '' ) {
+			$price = $this->get_price();
+		}
 
 		$price_display_suffix  = get_option( 'woocommerce_price_display_suffix' );
 
@@ -918,8 +916,8 @@ class WC_Product {
 			);
 
 			$replace = array(
-				wc_price( $this->get_price_including_tax() ),
-				wc_price( $this->get_price_excluding_tax() )
+				wc_price( $this->get_price_including_tax( $qty, $price ) ),
+				wc_price( $this->get_price_excluding_tax( $qty, $price ) )
 			);
 
 			$price_display_suffix = str_replace( $find, $replace, $price_display_suffix );
@@ -1050,7 +1048,7 @@ class WC_Product {
 				$average_rating = number_format( $ratings / $count, 2 );
 			}
 
-			set_transient( $transient_name, $average_rating, YEAR_IN_SECONDS );
+			set_transient( $transient_name, $average_rating, DAY_IN_SECONDS * 30 );
 		}
 
 		return $average_rating;
@@ -1064,28 +1062,33 @@ class WC_Product {
 	 * @return int
 	 */
 	public function get_rating_count( $value = null ) {
-		$value          = intval( $value );
-		$value_suffix   = $value ? '_' . $value : '';
-		$transient_name = 'wc_rating_count_' . $this->id . $value_suffix . WC_Cache_Helper::get_transient_version( 'product' );
+		$transient_name = 'wc_rating_count_' . $this->id . WC_Cache_Helper::get_transient_version( 'product' );
 
-		if ( false === ( $count = get_transient( $transient_name ) ) ) {
-
+		if ( ! is_array( $counts = get_transient( $transient_name ) ) ) {
 			global $wpdb;
-
-			$where_meta_value = $value ? $wpdb->prepare( " AND meta_value = %d", $value ) : " AND meta_value > 0";
-
-			$count = $wpdb->get_var( $wpdb->prepare("
-				SELECT COUNT(meta_value) FROM $wpdb->commentmeta
+			$counts     = array();
+			$raw_counts = $wpdb->get_results( $wpdb->prepare("
+				SELECT meta_value, COUNT( * ) as meta_value_count FROM $wpdb->commentmeta
 				LEFT JOIN $wpdb->comments ON $wpdb->commentmeta.comment_id = $wpdb->comments.comment_ID
 				WHERE meta_key = 'rating'
 				AND comment_post_ID = %d
 				AND comment_approved = '1'
-			", $this->id ) . $where_meta_value );
+				AND meta_value > 0
+				GROUP BY meta_value
+			", $this->id ) );
 
-			set_transient( $transient_name, $count, YEAR_IN_SECONDS );
+			foreach ( $raw_counts as $count ) {
+				$counts[ $count->meta_value ] = $count->meta_value_count;
+			}
+
+			set_transient( $transient_name, $counts, DAY_IN_SECONDS * 30 );
 		}
 
-		return $count;
+		if ( is_null( $value ) ) {
+			return array_sum( $counts );
+		} else {
+			return isset( $counts[ $value ] ) ? $counts[ $value ] : 0;
+		}
 	}
 
 	/**
@@ -1136,7 +1139,7 @@ class WC_Product {
 				AND comment_approved = '1'
 			", $this->id ) );
 
-			set_transient( $transient_name, $count, YEAR_IN_SECONDS );
+			set_transient( $transient_name, $count, DAY_IN_SECONDS * 30 );
 		}
 
 		return apply_filters( 'woocommerce_product_review_count', $count, $this );
@@ -1149,7 +1152,7 @@ class WC_Product {
 	 * @return array
 	 */
 	public function get_upsells() {
-		return (array) maybe_unserialize( $this->upsell_ids );
+		return apply_filters( 'woocommerce_product_upsell_ids', (array) maybe_unserialize( $this->upsell_ids ), $this );
 	}
 
 	/**
@@ -1158,7 +1161,7 @@ class WC_Product {
 	 * @return array
 	 */
 	public function get_cross_sells() {
-		return (array) maybe_unserialize( $this->crosssell_ids );
+		return apply_filters( 'woocommerce_product_crosssell_ids', (array) maybe_unserialize( $this->crosssell_ids ), $this );
 	}
 
 	/**
@@ -1235,89 +1238,33 @@ class WC_Product {
 	 * @return array Array of post IDs
 	 */
 	public function get_related( $limit = 5 ) {
-		global $wpdb;
+		$transient_name = 'wc_related_' . $limit . '_' . $this->id . WC_Cache_Helper::get_transient_version( 'product' );
 
-		$limit = absint( $limit );
+		if ( false === ( $related_posts = get_transient( $transient_name ) ) ) {
+			global $wpdb;
 
-		// Related products are found from category and tag
-		$tags_array = array(0);
-		$cats_array = array(0);
+			// Related products are found from category and tag
+			$tags_array = $this->get_related_terms( 'product_tag' );
+			$cats_array = $this->get_related_terms( 'product_cat' );
 
-		// Get tags
-		$terms = wp_get_post_terms( $this->id, 'product_tag' );
-		foreach ( $terms as $term ) {
-			$tags_array[] = $term->term_id;
+			// Don't bother if none are set
+			if ( sizeof( $cats_array ) == 1 && sizeof( $tags_array ) == 1 ) {
+				$related_posts = array();
+			} else {
+				// Sanitize
+				$exclude_ids = array_map( 'absint', array_merge( array( 0, $this->id ), $this->get_upsells() ) );
+
+				// Generate query
+				$query = $this->build_related_query( $cats_array, $tags_array, $exclude_ids, $limit );
+
+				// Get the posts
+				$related_posts = $wpdb->get_col( implode( ' ', $query ) );
+			}
+
+			set_transient( $transient_name, $related_posts, DAY_IN_SECONDS * 30 );
 		}
 
-		// Get categories
-		$terms = wp_get_post_terms( $this->id, 'product_cat' );
-		foreach ( $terms as $term ) {
-			$cats_array[] = $term->term_id;
-		}
-
-		// Don't bother if none are set
-		if ( sizeof( $cats_array ) == 1 && sizeof( $tags_array ) == 1 ) {
-			return array();
-		}
-
-		// Sanitize
-		$cats_array  = array_map( 'absint', $cats_array );
-		$tags_array  = array_map( 'absint', $tags_array );
-		$exclude_ids = array_map( 'absint', array_merge( array( 0, $this->id ), $this->get_upsells() ) );
-
-		// Generate query
-		$query           = array();
-		$query['fields'] = "SELECT DISTINCT ID FROM {$wpdb->posts} p";
-		$query['join']   = " INNER JOIN {$wpdb->postmeta} pm ON ( pm.post_id = p.ID AND pm.meta_key='_visibility' )";
-		$query['join']  .= " INNER JOIN {$wpdb->term_relationships} tr ON (p.ID = tr.object_id)";
-		$query['join']  .= " INNER JOIN {$wpdb->term_taxonomy} tt ON (tr.term_taxonomy_id = tt.term_taxonomy_id)";
-		$query['join']  .= " INNER JOIN {$wpdb->terms} t ON (t.term_id = tt.term_id)";
-
-		if ( get_option( 'woocommerce_hide_out_of_stock_items' ) === 'yes' ) {
-			$query['join'] .= " INNER JOIN {$wpdb->postmeta} pm2 ON ( pm2.post_id = p.ID AND pm2.meta_key='_stock_status' )";
-		}
-
-		$query['where']  = " WHERE 1=1";
-		$query['where'] .= " AND p.post_status = 'publish'";
-		$query['where'] .= " AND p.post_type = 'product'";
-		$query['where'] .= " AND p.ID NOT IN ( " . implode( ',', $exclude_ids ) . " )";
-		$query['where'] .= " AND pm.meta_value IN ( 'visible', 'catalog' )";
-
-		if ( get_option( 'woocommerce_hide_out_of_stock_items' ) === 'yes' ) {
-			$query['where'] .= " AND pm2.meta_value = 'instock'";
-		}
-
-		if ( apply_filters( 'woocommerce_product_related_posts_relate_by_category', true, $this->id ) ) {
-			$query['where'] .= " AND ( tt.taxonomy = 'product_cat' AND t.term_id IN ( " . implode( ',', $cats_array ) . " ) )";
-			$andor = 'OR';
-		} else {
-			$andor = 'AND';
-		}
-
-		// when query is OR - need to check against excluded ids again
-		if ( apply_filters( 'woocommerce_product_related_posts_relate_by_tag', true, $this->id ) ) {
-			$query['where'] .= " {$andor} ( ( tt.taxonomy = 'product_tag' AND t.term_id IN ( " . implode( ',', $tags_array ) . " ) )";
-			$query['where'] .= " AND p.ID NOT IN ( " . implode( ',', $exclude_ids ) . " ) )";
-		}
-
-		$query = apply_filters( 'woocommerce_product_related_posts_query', $query, $this->id );
-
-		// How many rows total?
-		$max_related_posts_transient_name = 'wc_max_related_' . $this->id . WC_Cache_Helper::get_transient_version( 'product' );
-
-		if ( false === ( $max_related_posts = get_transient( $max_related_posts_transient_name ) ) ) {
-			$max_related_posts_query           = $query;
-			$max_related_posts_query['fields'] = "SELECT COUNT(DISTINCT ID) FROM {$wpdb->posts} p";
-			$max_related_posts                 = absint( $wpdb->get_var( implode( ' ', apply_filters( 'woocommerce_product_max_related_posts_query', $max_related_posts_query, $this->id ) ) ) );
-			set_transient( $max_related_posts_transient_name, $max_related_posts, YEAR_IN_SECONDS );
-		}
-
-		// Generate limit
-		$offset          = $max_related_posts < $limit ? 0 : absint( rand( 0, $max_related_posts - $limit ) );
-		$query['limits'] = " LIMIT {$offset}, {$limit} ";
-
-		// Get the posts
-		$related_posts = $wpdb->get_col( implode( ' ', $query ) );
+		shuffle( $related_posts );
 
 		return $related_posts;
 	}
@@ -1400,6 +1347,39 @@ class WC_Product {
 	}
 
 	/**
+	 * Returns the product length.
+	 * @return string
+	 */
+	public function get_length() {
+		return apply_filters( 'woocommerce_product_length', $this->length ? $this->length : '', $this );
+	}
+
+	/**
+	 * Returns the product width.
+	 * @return string
+	 */
+	public function get_width() {
+		return apply_filters( 'woocommerce_product_width', $this->width ? $this->width : '', $this );
+	}
+
+	/**
+	 * Returns the product height.
+	 * @return string
+	 */
+	public function get_height() {
+		return apply_filters( 'woocommerce_product_height', $this->height ? $this->height : '', $this );
+	}
+
+	/**
+	 * Returns the product's weight.
+	 * @todo   refactor filters in this class to naming woocommerce_product_METHOD
+	 * @return string
+	 */
+	public function get_weight() {
+		return apply_filters( 'woocommerce_product_weight', apply_filters( 'woocommerce_product_get_weight', $this->weight ? $this->weight : '' ), $this );
+	}
+
+	/**
 	 * Returns whether or not the product has weight set.
 	 *
 	 * @return bool
@@ -1409,36 +1389,21 @@ class WC_Product {
 	}
 
 	/**
-	 * Returns dimensions.
-	 *
+	 * Returns formatted dimensions.
 	 * @return string
 	 */
 	public function get_dimensions() {
+		$dimensions = implode( ' x ', array_filter( array(
+			$this->get_length(),
+			$this->get_width(),
+			$this->get_height(),
+		) ) );
 
-		if ( ! $this->dimensions ) {
-			$dimensions = array();
-
-			if ( $this->length ) {
-				$dimensions[] = $this->length;
-			}
-
-			if ( $this->width ) {
-				$dimensions[] = $this->width;
-			}
-
-			if ( $this->height ){
-				$dimensions[] = $this->height;
-			}
-
-			$this->dimensions = implode( ' x ', $dimensions );
-
-			if ( ! empty( $this->dimensions ) ) {
-				$this->dimensions .= ' ' . get_option( 'woocommerce_dimension_unit' );
-			}
-
+		if ( ! empty( $dimensions ) ) {
+			$dimensions .= ' ' . get_option( 'woocommerce_dimension_unit' );
 		}
 
-		return $this->dimensions;
+		return  apply_filters( 'woocommerce_product_dimensions', $dimensions, $this );
 	}
 
 	/**
@@ -1500,5 +1465,76 @@ class WC_Product {
 		}
 
 		return sprintf( __( '%s &ndash; %s', 'woocommerce' ), $identifier, $this->get_title() );
+	}
+
+	/**
+	 * Retrieves related product terms
+	 *
+	 * @param string $term
+	 * @return array
+	 */
+	protected function get_related_terms( $term ) {
+		$terms_array = array(0);
+
+		$terms = apply_filters( 'woocommerce_get_related_' . $term . '_terms', wp_get_post_terms( $this->id, $term ), $this->id );
+		foreach ( $terms as $term ) {
+			$terms_array[] = $term->term_id;
+		}
+
+		return array_map( 'absint', $terms_array );
+	}
+
+	/**
+	 * Builds the related posts query
+	 *
+	 * @param array $cats_array
+	 * @param array $tags_array
+	 * @param array $exclude_ids
+	 * @param int   $limit
+	 * @return string
+	 */
+	protected function build_related_query( $cats_array, $tags_array, $exclude_ids, $limit ) {
+		global $wpdb;
+
+		$limit = absint( $limit );
+
+		$query           = array();
+		$query['fields'] = "SELECT DISTINCT ID FROM {$wpdb->posts} p";
+		$query['join']   = " INNER JOIN {$wpdb->postmeta} pm ON ( pm.post_id = p.ID AND pm.meta_key='_visibility' )";
+		$query['join']  .= " INNER JOIN {$wpdb->term_relationships} tr ON (p.ID = tr.object_id)";
+		$query['join']  .= " INNER JOIN {$wpdb->term_taxonomy} tt ON (tr.term_taxonomy_id = tt.term_taxonomy_id)";
+		$query['join']  .= " INNER JOIN {$wpdb->terms} t ON (t.term_id = tt.term_id)";
+
+		if ( get_option( 'woocommerce_hide_out_of_stock_items' ) === 'yes' ) {
+			$query['join'] .= " INNER JOIN {$wpdb->postmeta} pm2 ON ( pm2.post_id = p.ID AND pm2.meta_key='_stock_status' )";
+		}
+
+		$query['where']  = " WHERE 1=1";
+		$query['where'] .= " AND p.post_status = 'publish'";
+		$query['where'] .= " AND p.post_type = 'product'";
+		$query['where'] .= " AND p.ID NOT IN ( " . implode( ',', $exclude_ids ) . " )";
+		$query['where'] .= " AND pm.meta_value IN ( 'visible', 'catalog' )";
+
+		if ( get_option( 'woocommerce_hide_out_of_stock_items' ) === 'yes' ) {
+			$query['where'] .= " AND pm2.meta_value = 'instock'";
+		}
+
+		if ( apply_filters( 'woocommerce_product_related_posts_relate_by_category', true, $this->id ) ) {
+			$query['where'] .= " AND ( tt.taxonomy = 'product_cat' AND t.term_id IN ( " . implode( ',', $cats_array ) . " ) )";
+			$andor = 'OR';
+		} else {
+			$andor = 'AND';
+		}
+
+		// when query is OR - need to check against excluded ids again
+		if ( apply_filters( 'woocommerce_product_related_posts_relate_by_tag', true, $this->id ) ) {
+			$query['where'] .= " {$andor} ( ( tt.taxonomy = 'product_tag' AND t.term_id IN ( " . implode( ',', $tags_array ) . " ) )";
+			$query['where'] .= " AND p.ID NOT IN ( " . implode( ',', $exclude_ids ) . " ) )";
+		}
+
+		$query['limits'] = " LIMIT {$limit} ";
+		$query           = apply_filters( 'woocommerce_product_related_posts_query', $query, $this->id );
+
+		return $query;
 	}
 }

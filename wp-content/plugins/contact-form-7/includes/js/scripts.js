@@ -148,7 +148,8 @@
 
 	$.fn.wpcf7ExclusiveCheckbox = function() {
 		return this.find('input:checkbox').click(function() {
-			$(this).closest('.wpcf7-checkbox').find('input:checkbox').not(this).removeAttr('checked');
+			var name = $(this).attr('name');
+			$(this).closest('form').find('input:checkbox[name="' + name + '"]').not(this).prop('checked', false);
 		});
 	};
 
@@ -274,7 +275,7 @@
 		return this.each(function() {
 			var val = $.trim($(this).val());
 
-			if (! val.match(/^[a-z][a-z0-9.+-]*:/i)) { // check the scheme part
+			if (val && ! val.match(/^[a-z][a-z0-9.+-]*:/i)) { // check the scheme part
 				val = val.replace(/^\/+/, '');
 				val = 'http://' + val;
 			}

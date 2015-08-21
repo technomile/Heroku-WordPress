@@ -89,6 +89,7 @@ p.demo_store {
 		list-style: none outside !important;
 		@include clearfix();
 		width: auto;
+		word-wrap: break-word;
 
 		&:before {
 			font-family: "WooCommerce";
@@ -187,7 +188,6 @@ p.demo_store {
 
 			del {
 				opacity: 0.5;
-				display: block;
 			}
 		}
 
@@ -203,7 +203,7 @@ p.demo_store {
 			color: red;
 		}
 
-		.woocommerce-product-rating{
+		.woocommerce-product-rating {
 			margin-bottom: 1.618em;
 		}
 
@@ -402,6 +402,20 @@ p.demo_store {
 				td {
 					vertical-align: top;
 				}
+			}
+
+			.woocommerce-variation-description {
+				p {
+					margin-bottom: 1em;
+				}
+			}
+
+			.reset_variations {
+				visibility: hidden;
+			}
+
+			.wc-no-matching-variations {
+				display: none;
 			}
 
 			.button {
@@ -889,7 +903,7 @@ p.demo_store {
 			}
 
 			textarea {
-				@include box-sizing(border-box);
+				box-sizing: border-box;
 				width: 100%;
 			}
 		}
@@ -1277,7 +1291,7 @@ p.demo_store {
 
 			input.input-text,
 			textarea {
-				@include box-sizing(border-box);
+				box-sizing: border-box;
 				width: 100%;
 				margin: 0;
 				outline: 0;
@@ -1375,6 +1389,8 @@ p.demo_store {
 			line-height: 1;
 			border-right: 1px dashed darken( $secondary, 10% );
 			padding-right: 2em;
+			margin-left: 0;
+			padding-left: 0;
 
 			strong {
 				display: block;
@@ -1407,7 +1423,6 @@ p.demo_store {
 				a,
 				span {
 					padding: 1px 0;
-					text-decoration: none;
 				}
 			}
 
@@ -1473,6 +1488,8 @@ p.demo_store {
 		.ui-slider {
 			position: relative;
 			text-align: left;
+			margin-left: .5em;
+			margin-right: .5em;
 		}
 
 		.ui-slider .ui-slider-handle {
@@ -1486,9 +1503,9 @@ p.demo_store {
 			outline: none;
 			top: -.3em;
 
-			&:last-child {
-				margin-left: -.8em;
-			}
+			//&:last-child {
+				margin-left: -.5em;
+			//}
 		}
 
 		.ui-slider .ui-slider-range {
@@ -1649,8 +1666,6 @@ p.demo_store {
 
 		.cart_totals {
 			p {
-				margin: 0;
-
 				small {
 					color: $subtext;
 					font-size: 0.83em;
@@ -1685,6 +1700,7 @@ p.demo_store {
 					border-left: 0;
 					border-right: 0;
 					padding: 6px 0;
+					line-height: 2em;
 				}
 
 				small {

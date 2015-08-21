@@ -2,10 +2,11 @@
 /**
  * WooCommerce API Authentication Class
  *
- * @author      WooThemes
- * @category    API
- * @package     WooCommerce/API
- * @since       2.1
+ * @author   WooThemes
+ * @category API
+ * @package  WooCommerce/API
+ * @since    2.1.0
+ * @version  2.4.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -22,7 +23,7 @@ class WC_API_Authentication {
 	 */
 	public function __construct() {
 
-		// to disable authentication, hook into this filter at a later priority and return a valid WP_User
+		// To disable authentication, hook into this filter at a later priority and return a valid WP_User
 		add_filter( 'woocommerce_api_check_authentication', array( $this, 'authenticate' ), 0 );
 	}
 
@@ -35,24 +36,26 @@ class WC_API_Authentication {
 	 */
 	public function authenticate( $user ) {
 
-		// allow access to the index by default
+		// Allow access to the index by default
 		if ( '/' === WC()->api->server->path ) {
 			return new WP_User( 0 );
 		}
 
 		try {
-
 			if ( is_ssl() ) {
-				$user = $this->perform_ssl_authentication();
+				$keys = $this->perform_ssl_authentication();
 			} else {
-				$user = $this->perform_oauth_authentication();
+				$keys = $this->perform_oauth_authentication();
 			}
 
-			// check API key-specific permission
-			$this->check_api_key_permissions( $user );
+			// Check API key-specific permission
+			$this->check_api_key_permissions( $keys['permissions'] );
+
+			$user = $this->get_user_by_id( $keys['user_id'] );
+
+			$this->update_api_key_last_access( $keys['key_id'] );
 
 		} catch ( Exception $e ) {
-
 			$user = new WP_Error( 'woocommerce_api_authentication_error', $e->getMessage(), array( 'status' => $e->getCode() ) );
 		}
 
@@ -66,52 +69,50 @@ class WC_API_Authentication {
 	 * provided is valid
 	 *
 	 * @since 2.1
-	 * @return WP_User
+	 * @return array
 	 * @throws Exception
 	 */
 	private function perform_ssl_authentication() {
-
 		$params = WC()->api->server->params['GET'];
 
-		// get consumer key
-		if ( ! empty( $_SERVER['PHP_AUTH_USER'] ) ) {
+		// if the $_GET parameters are present, use those first
+		if ( ! empty( $params['consumer_key'] ) && ! empty( $params['consumer_secret'] ) ) {
+			$keys = $this->get_keys_by_consumer_key( $params['consumer_key'] );
 
-			// should be in HTTP Auth header by default
-			$consumer_key = $_SERVER['PHP_AUTH_USER'];
+			if ( ! $this->is_consumer_secret_valid( $keys['consumer_secret'], $params['consumer_secret'] ) ) {
+				throw new Exception( __( 'Consumer Secret is invalid', 'woocommerce' ), 401 );
+			}
 
-		} elseif ( ! empty( $params['consumer_key'] ) ) {
-
-			// allow a query string parameter as a fallback
-			$consumer_key = $params['consumer_key'];
-
-		} else {
-
-			throw new Exception( __( 'Consumer Key is missing', 'woocommerce' ), 404 );
+			return $keys;
 		}
 
-		// get consumer secret
-		if ( ! empty( $_SERVER['PHP_AUTH_PW'] ) ) {
+		// if the above is not present, we will do full basic auth
 
-			// should be in HTTP Auth header by default
-			$consumer_secret = $_SERVER['PHP_AUTH_PW'];
-
-		} elseif ( ! empty( $params['consumer_secret'] ) ) {
-
-			// allow a query string parameter as a fallback
-			$consumer_secret = $params['consumer_secret'];
-
-		} else {
-
-			throw new Exception( __( 'Consumer Secret is missing', 'woocommerce' ), 404 );
+		if ( empty( $_SERVER['PHP_AUTH_USER'] ) || empty( $_SERVER['PHP_AUTH_PW'] ) ) {
+			$this->exit_with_unauthorized_headers();
 		}
 
-		$user = $this->get_user_by_consumer_key( $consumer_key );
+		$keys = $this->get_keys_by_consumer_key( $_SERVER['PHP_AUTH_USER'] );
 
-		if ( ! $this->is_consumer_secret_valid( $user, $consumer_secret ) ) {
-			throw new Exception( __( 'Consumer Secret is invalid', 'woocommerce' ), 401 );
+		if ( ! $this->is_consumer_secret_valid( $keys['consumer_secret'], $_SERVER['PHP_AUTH_PW'] ) ) {
+			$this->exit_with_unauthorized_headers();
 		}
 
-		return $user;
+		return $keys;
+	}
+
+	/**
+	 * If the consumer_key and consumer_secret $_GET parameters are NOT provided
+	 * and the Basic auth headers are either not present or the consumer secret does not match the consumer
+	 * key provided, then return the correct Basic headers and an error message.
+	 *
+	 * @since 2.4
+	 */
+	private function exit_with_unauthorized_headers() {
+		$auth_message = __( 'WooCommerce API. Use a consumer key in the username field and a consumer secret in the password field', 'woocommerce' );
+		header( 'WWW-Authenticate: Basic realm="' . $auth_message . '"' );
+		header( 'HTTP/1.0 401 Unauthorized' );
+		throw new Exception( __( 'Consumer Secret is invalid', 'woocommerce' ), 401 );
 	}
 
 	/**
@@ -128,7 +129,7 @@ class WC_API_Authentication {
 	 *
 	 * @link http://tools.ietf.org/html/rfc5849 for the full spec
 	 * @since 2.1
-	 * @return WP_User
+	 * @return array
 	 * @throws Exception
 	 */
 	private function perform_oauth_authentication() {
@@ -137,104 +138,122 @@ class WC_API_Authentication {
 
 		$param_names =  array( 'oauth_consumer_key', 'oauth_timestamp', 'oauth_nonce', 'oauth_signature', 'oauth_signature_method' );
 
-		// check for required OAuth parameters
+		// Check for required OAuth parameters
 		foreach ( $param_names as $param_name ) {
 
-			if ( empty( $params[ $param_name ] ) )
+			if ( empty( $params[ $param_name ] ) ) {
 				throw new Exception( sprintf( __( '%s parameter is missing', 'woocommerce' ), $param_name ), 404 );
+			}
 		}
 
-		// fetch WP user by consumer key
-		$user = $this->get_user_by_consumer_key( $params['oauth_consumer_key'] );
+		// Fetch WP user by consumer key
+		$keys = $this->get_keys_by_consumer_key( $params['oauth_consumer_key'] );
 
-		// perform OAuth validation
-		$this->check_oauth_signature( $user, $params );
-		$this->check_oauth_timestamp_and_nonce( $user, $params['oauth_timestamp'], $params['oauth_nonce'] );
+		// Perform OAuth validation
+		$this->check_oauth_signature( $keys, $params );
+		$this->check_oauth_timestamp_and_nonce( $keys, $params['oauth_timestamp'], $params['oauth_nonce'] );
 
-		// authentication successful, return user
-		return $user;
+		// Authentication successful, return user
+		return $keys;
 	}
 
 	/**
-	 * Return the user for the given consumer key
+	 * Return the keys for the given consumer key
 	 *
-	 * @since 2.1
+	 * @since 2.4.0
 	 * @param string $consumer_key
-	 * @return WP_User
+	 * @return array
 	 * @throws Exception
 	 */
-	private function get_user_by_consumer_key( $consumer_key ) {
+	private function get_keys_by_consumer_key( $consumer_key ) {
+		global $wpdb;
 
-		$user_query = new WP_User_Query(
-			array(
-				'meta_key'   => 'woocommerce_api_consumer_key',
-				'meta_value' => $consumer_key,
-			)
-		);
+		$consumer_key = wc_api_hash( sanitize_text_field( $consumer_key ) );
 
-		$users = $user_query->get_results();
+		$keys = $wpdb->get_row( $wpdb->prepare( "
+			SELECT key_id, user_id, permissions, consumer_key, consumer_secret, nonces
+			FROM {$wpdb->prefix}woocommerce_api_keys
+			WHERE consumer_key = '%s'
+		", $consumer_key ), ARRAY_A );
 
-		if ( empty( $users[0] ) )
+		if ( empty( $keys ) ) {
 			throw new Exception( __( 'Consumer Key is invalid', 'woocommerce' ), 401 );
+		}
 
-		return $users[0];
+		return $keys;
+	}
+
+	/**
+	 * Get user by ID
+	 *
+	 * @since 2.4.0
+	 * @param int $user_id
+	 * @return WC_User
+	 */
+	private function get_user_by_id( $user_id ) {
+		$user = get_user_by( 'id', $user_id );
+
+		if ( ! $user ) {
+			throw new Exception( __( 'API user is invalid', 'woocommerce' ), 401 );
+		}
+
+		return $user;
 	}
 
 	/**
 	 * Check if the consumer secret provided for the given user is valid
 	 *
 	 * @since 2.1
-	 * @param WP_User $user
+	 * @param string $keys_consumer_secret
 	 * @param string $consumer_secret
 	 * @return bool
 	 */
-	private function is_consumer_secret_valid( WP_User $user, $consumer_secret ) {
-
-		return hash_equals( $user->woocommerce_api_consumer_secret, $consumer_secret );
+	private function is_consumer_secret_valid( $keys_consumer_secret, $consumer_secret ) {
+		return hash_equals( $keys_consumer_secret, $consumer_secret );
 	}
 
 	/**
 	 * Verify that the consumer-provided request signature matches our generated signature, this ensures the consumer
 	 * has a valid key/secret
 	 *
-	 * @param WP_User $user
+	 * @param array $keys
 	 * @param array $params the request parameters
 	 * @throws Exception
 	 */
-	private function check_oauth_signature( $user, $params ) {
-
+	private function check_oauth_signature( $keys, $params ) {
 		$http_method = strtoupper( WC()->api->server->method );
 
-		$base_request_uri = rawurlencode( untrailingslashit( get_woocommerce_api_url( '' ) ) . WC()->api->server->path );
+		$server_path = WC()->api->server->path;
 
-		// get the signature provided by the consumer and remove it from the parameters prior to checking the signature
+		// if the requested URL has a trailingslash, make sure our base URL does as well
+		if ( isset( $_SERVER['REDIRECT_URL'] ) && '/' === substr( $_SERVER['REDIRECT_URL'], -1 ) ) {
+			$server_path .= '/';
+		}
+
+		$base_request_uri = rawurlencode( untrailingslashit( get_woocommerce_api_url( '' ) ) . $server_path );
+
+		// Get the signature provided by the consumer and remove it from the parameters prior to checking the signature
 		$consumer_signature = rawurldecode( $params['oauth_signature'] );
 		unset( $params['oauth_signature'] );
 
-		// remove filters and convert them from array to strings to void normalize issues
-		if ( isset( $params['filter'] ) ) {
-			$filters = $params['filter'];
-			unset( $params['filter'] );
-			foreach ( $filters as $filter => $filter_value ) {
-				$params['filter[' . $filter . ']'] = $filter_value;
-			}
-		}
-
-		// normalize parameter key/values
-		$params = $this->normalize_parameters( $params );
-
-		// sort parameters
+		// Sort parameters
 		if ( ! uksort( $params, 'strcmp' ) ) {
 			throw new Exception( __( 'Invalid Signature - failed to sort parameters', 'woocommerce' ), 401 );
 		}
 
-		// form query string
-		$query_params = array();
+		// Normalize parameter key/values
+		$params = $this->normalize_parameters( $params );
+		$query_parameters = array();
 		foreach ( $params as $param_key => $param_value ) {
-
-			$query_params[] = $param_key . '%3D' . $param_value; // join with equals sign
+			if ( is_array( $param_value ) ) {
+				foreach ( $param_value as $param_key_inner => $param_value_inner ) {
+					$query_parameters[] = $param_key . '%255B' . $param_key_inner . '%255D%3D' . $param_value_inner;
+				}
+			} else {
+				$query_parameters[] = $param_key . '%3D' . $param_value; // join with equals sign
+			}
 		}
-		$query_string = implode( '%26', $query_params ); // join with ampersand
+		$query_string = implode( '%26', $query_parameters ); // join with ampersand
 
 		$string_to_sign = $http_method . '&' . $base_request_uri . '&' . $query_string;
 
@@ -244,7 +263,8 @@ class WC_API_Authentication {
 
 		$hash_algorithm = strtolower( str_replace( 'HMAC-', '', $params['oauth_signature_method'] ) );
 
-		$signature = base64_encode( hash_hmac( $hash_algorithm, $string_to_sign, $user->woocommerce_api_consumer_secret, true ) );
+		$secret = $keys['consumer_secret'] . '&';
+		$signature = base64_encode( hash_hmac( $hash_algorithm, $string_to_sign, $secret, true ) );
 
 		if ( ! hash_equals( $signature, $consumer_signature ) ) {
 			throw new Exception( __( 'Invalid Signature - provided signature does not match', 'woocommerce' ), 401 );
@@ -272,19 +292,26 @@ class WC_API_Authentication {
 	 * @return array normalized parameters
 	 */
 	private function normalize_parameters( $parameters ) {
+		$keys = WC_API_Authentication::urlencode_rfc3986( array_keys( $parameters ) );
+		$values = WC_API_Authentication::urlencode_rfc3986( array_values( $parameters ) );
+		$parameters = array_combine( $keys, $values );
+		return $parameters;
+	}
 
-		$normalized_parameters = array();
-
-		foreach ( $parameters as $key => $value ) {
-
-			// percent symbols (%) must be double-encoded
-			$key   = str_replace( '%', '%25', rawurlencode( rawurldecode( $key ) ) );
-			$value = str_replace( '%', '%25', rawurlencode( rawurldecode( $value ) ) );
-
-			$normalized_parameters[ $key ] = $value;
+	/**
+	 * Encodes a value according to RFC 3986. Supports multidimensional arrays.
+	 *
+	 * @since 2.4
+	 * @param  string|array $value The value to encode
+	 * @return string|array        Encoded values
+	 */
+	public static function urlencode_rfc3986( $value ) {
+		if ( is_array( $value ) ) {
+			return array_map( array( 'WC_API_Authentication', 'urlencode_rfc3986' ), $value );
+		} else {
+			// Percent symbols (%) must be double-encoded
+			return str_replace( '%', '%25', rawurlencode( rawurldecode( $value ) ) );
 		}
-
-		return $normalized_parameters;
 	}
 
 	/**
@@ -294,48 +321,57 @@ class WC_API_Authentication {
 	 * - A timestamp is valid if it is within 15 minutes of now
 	 * - A nonce is valid if it has not been used within the last 15 minutes
 	 *
-	 * @param WP_User $user
+	 * @param array $keys
 	 * @param int $timestamp the unix timestamp for when the request was made
 	 * @param string $nonce a unique (for the given user) 32 alphanumeric string, consumer-generated
 	 * @throws Exception
 	 */
-	private function check_oauth_timestamp_and_nonce( $user, $timestamp, $nonce ) {
+	private function check_oauth_timestamp_and_nonce( $keys, $timestamp, $nonce ) {
+		global $wpdb;
 
 		$valid_window = 15 * 60; // 15 minute window
 
-		if ( ( $timestamp < time() - $valid_window ) ||  ( $timestamp > time() + $valid_window ) )
+		if ( ( $timestamp < time() - $valid_window ) || ( $timestamp > time() + $valid_window ) ) {
 			throw new Exception( __( 'Invalid timestamp', 'woocommerce' ) );
+		}
 
-		$used_nonces = $user->woocommerce_api_nonces;
+		$used_nonces = maybe_unserialize( $keys['nonces'] );
 
-		if ( empty( $used_nonces ) )
+		if ( empty( $used_nonces ) ) {
 			$used_nonces = array();
+		}
 
-		if ( in_array( $nonce, $used_nonces ) )
+		if ( in_array( $nonce, $used_nonces ) ) {
 			throw new Exception( __( 'Invalid nonce - nonce has already been used', 'woocommerce' ), 401 );
+		}
 
 		$used_nonces[ $timestamp ] = $nonce;
 
-		// remove expired nonces
-		foreach( $used_nonces as $nonce_timestamp => $nonce ) {
-
-			if ( $nonce_timestamp < ( time() - $valid_window ) )
+		// Remove expired nonces
+		foreach ( $used_nonces as $nonce_timestamp => $nonce ) {
+			if ( $nonce_timestamp < ( time() - $valid_window ) ) {
 				unset( $used_nonces[ $nonce_timestamp ] );
+			}
 		}
 
-		update_user_meta( $user->ID, 'woocommerce_api_nonces', $used_nonces );
+		$used_nonces = maybe_serialize( $used_nonces );
+
+		$wpdb->update(
+			$wpdb->prefix . 'woocommerce_api_keys',
+			array( 'nonces' => $used_nonces ),
+			array( 'key_id' => $keys['key_id'] ),
+			array( '%s' ),
+			array( '%d' )
+		);
 	}
 
 	/**
 	 * Check that the API keys provided have the proper key-specific permissions to either read or write API resources
 	 *
-	 * @param WP_User $user
+	 * @param string $key_permissions
 	 * @throws Exception if the permission check fails
 	 */
-	public function check_api_key_permissions( $user ) {
-
-		$key_permissions = $user->woocommerce_api_key_permissions;
-
+	public function check_api_key_permissions( $key_permissions ) {
 		switch ( WC()->api->server->method ) {
 
 			case 'HEAD':
@@ -354,5 +390,24 @@ class WC_API_Authentication {
 				}
 				break;
 		}
+	}
+
+	/**
+	 * Updated API Key last access datetime
+	 *
+	 * @since 2.4.0
+	 *
+	 * @param int $key_id
+	 */
+	private function update_api_key_last_access( $key_id ) {
+		global $wpdb;
+
+		$wpdb->update(
+			$wpdb->prefix . 'woocommerce_api_keys',
+			array( 'last_access' => current_time( 'mysql' ) ),
+			array( 'key_id' => $key_id ),
+			array( '%s' ),
+			array( '%d' )
+		);
 	}
 }

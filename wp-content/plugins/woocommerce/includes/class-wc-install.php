@@ -2,10 +2,10 @@
 /**
  * Installation related functions and actions.
  *
- * @author 		WooThemes
- * @category 	Admin
- * @package 	WooCommerce/Classes
- * @version     2.3.0
+ * @author   WooThemes
+ * @category Admin
+ * @package  WooCommerce/Classes
+ * @version  2.4.1
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,6 +16,17 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WC_Install Class
  */
 class WC_Install {
+
+	/** @var array DB updates that need to be run */
+	private static $db_updates = array(
+		'2.0.0' => 'updates/woocommerce-update-2.0.php',
+		'2.0.9' => 'updates/woocommerce-update-2.0.9.php',
+		'2.1.0' => 'updates/woocommerce-update-2.1.php',
+		'2.2.0' => 'updates/woocommerce-update-2.2.php',
+		'2.3.0' => 'updates/woocommerce-update-2.3.php',
+		'2.4.0' => 'updates/woocommerce-update-2.4.php',
+		'2.4.1' => 'updates/woocommerce-update-2.4.1.php'
+	);
 
 	/**
 	 * Hook in tabs.
@@ -33,7 +44,7 @@ class WC_Install {
 	 * check_version function.
 	 */
 	public static function check_version() {
-		if ( ! defined( 'IFRAME_REQUEST' ) && ( get_option( 'woocommerce_version' ) != WC()->version || get_option( 'woocommerce_db_version' ) != WC()->version ) ) {
+		if ( ! defined( 'IFRAME_REQUEST' ) && ( get_option( 'woocommerce_version' ) != WC()->version ) ) {
 			self::install();
 			do_action( 'woocommerce_updated' );
 		}
@@ -43,35 +54,16 @@ class WC_Install {
 	 * Install actions such as installing pages when a button is clicked.
 	 */
 	public static function install_actions() {
-		// Install - Add pages button
-		if ( ! empty( $_GET['install_woocommerce_pages'] ) ) {
-
-			self::create_pages();
-
-			// We no longer need to install pages
-			WC_Admin_Notices::remove_notice( 'install' );
-
-			// What's new redirect
-			if ( ! WC_Admin_Notices::has_notice( 'update' ) ) {
-				delete_transient( '_wc_activation_redirect' );
-				wp_redirect( admin_url( 'index.php?page=wc-about&wc-updated=true' ) );
-				exit;
-			}
-
-		// Update button
-		} elseif ( ! empty( $_GET['do_update_woocommerce'] ) ) {
-
+		if ( ! empty( $_GET['do_update_woocommerce'] ) ) {
 			self::update();
 
 			// Update complete
 			WC_Admin_Notices::remove_notice( 'update' );
 
 			// What's new redirect
-			if ( ! WC_Admin_Notices::has_notice( 'install' ) ) {
-				delete_transient( '_wc_activation_redirect' );
-				wp_redirect( admin_url( 'index.php?page=wc-about&wc-updated=true' ) );
-				exit;
-			}
+			delete_transient( '_wc_activation_redirect' );
+			wp_redirect( admin_url( 'index.php?page=wc-about&wc-updated=true' ) );
+			exit;
 		}
 	}
 
@@ -79,6 +71,8 @@ class WC_Install {
 	 * Install WC
 	 */
 	public static function install() {
+		global $wpdb;
+
 		if ( ! defined( 'WC_INSTALLING' ) ) {
 			define( 'WC_INSTALLING', true );
 		}
@@ -97,39 +91,78 @@ class WC_Install {
 		// Also register endpoints - this needs to be done prior to rewrite rule flush
 		WC()->query->init_query_vars();
 		WC()->query->add_endpoints();
+		WC_API::add_endpoint();
+		WC_Auth::add_endpoint();
 
 		self::create_terms();
 		self::create_cron_jobs();
 		self::create_files();
 
-		// Queue upgrades
-		$current_db_version = get_option( 'woocommerce_db_version', null );
+		// Queue upgrades/setup wizard
+		$current_wc_version    = get_option( 'woocommerce_version', null );
+		$current_db_version    = get_option( 'woocommerce_db_version', null );
+		$major_wc_version      = substr( WC()->version, 0, strrpos( WC()->version, '.' ) );
 
-		if ( version_compare( $current_db_version, '2.3.0', '<' ) && null !== $current_db_version ) {
+		WC_Admin_Notices::remove_all_notices();
+
+		// No versions? This is a new install :)
+		if ( is_null( $current_wc_version ) && is_null( $current_db_version ) && apply_filters( 'woocommerce_enable_setup_wizard', true ) ) {
+			WC_Admin_Notices::add_notice( 'install' );
+			set_transient( '_wc_activation_redirect', 1, 30 );
+
+		// No page? Let user run wizard again..
+		} elseif ( ! get_option( 'woocommerce_cart_page_id' ) ) {
+			WC_Admin_Notices::add_notice( 'install' );
+
+		// Show welcome screen for major updates only
+		} elseif ( version_compare( $current_wc_version, $major_wc_version, '<' ) ) {
+			set_transient( '_wc_activation_redirect', 1, 30 );
+		}
+
+		if ( ! is_null( $current_db_version ) && version_compare( $current_db_version, max( array_keys( self::$db_updates ) ), '<' ) ) {
 			WC_Admin_Notices::add_notice( 'update' );
 		} else {
-			update_option( 'woocommerce_db_version', WC()->version );
+			self::update_db_version();
 		}
 
-		// Update version
-		update_option( 'woocommerce_version', WC()->version );
-
-		// Check if pages are needed
-		if ( wc_get_page_id( 'shop' ) < 1 ) {
-			WC_Admin_Notices::add_notice( 'install' );
-		}
+		self::update_wc_version();
 
 		// Flush rules after install
 		flush_rewrite_rules();
 		delete_transient( 'wc_attribute_taxonomies' );
 
-		// Redirect to welcome screen
-		if ( ! is_network_admin() && ! isset( $_GET['activate-multi'] ) ) {
-			set_transient( '_wc_activation_redirect', 1, 30 );
-		}
+		/*
+		 * Deletes all expired transients. The multi-table delete syntax is used
+		 * to delete the transient record from table a, and the corresponding
+		 * transient_timeout record from table b.
+		 *
+		 * Based on code inside core's upgrade_network() function.
+		 */
+		$sql = "DELETE a, b FROM $wpdb->options a, $wpdb->options b
+			WHERE a.option_name LIKE %s
+			AND a.option_name NOT LIKE %s
+			AND b.option_name = CONCAT( '_transient_timeout_', SUBSTRING( a.option_name, 12 ) )
+			AND b.option_value < %d";
+		$wpdb->query( $wpdb->prepare( $sql, $wpdb->esc_like( '_transient_' ) . '%', $wpdb->esc_like( '_transient_timeout_' ) . '%', time() ) );
 
 		// Trigger action
 		do_action( 'woocommerce_installed' );
+	}
+
+	/**
+	 * Update WC version to current
+	 */
+	private static function update_wc_version() {
+		delete_option( 'woocommerce_version' );
+		add_option( 'woocommerce_version', WC()->version );
+	}
+
+	/**
+	 * Update DB version to current
+	 */
+	private static function update_db_version( $version = null ) {
+		delete_option( 'woocommerce_db_version' );
+		add_option( 'woocommerce_db_version', is_null( $version ) ? WC()->version : $version );
 	}
 
 	/**
@@ -137,22 +170,15 @@ class WC_Install {
 	 */
 	private static function update() {
 		$current_db_version = get_option( 'woocommerce_db_version' );
-		$db_updates         = array(
-			'2.0.0' => 'updates/woocommerce-update-2.0.php',
-			'2.0.9' => 'updates/woocommerce-update-2.0.9.php',
-			'2.1.0' => 'updates/woocommerce-update-2.1.php',
-			'2.2.0' => 'updates/woocommerce-update-2.2.php',
-			'2.3.0' => 'updates/woocommerce-update-2.3.php'
-		);
 
-		foreach ( $db_updates as $version => $updater ) {
+		foreach ( self::$db_updates as $version => $updater ) {
 			if ( version_compare( $current_db_version, $version, '<' ) ) {
 				include( $updater );
-				update_option( 'woocommerce_db_version', $version );
+				self::update_db_version( $version );
 			}
 		}
 
-		update_option( 'woocommerce_db_version', WC()->version );
+		self::update_db_version();
 	}
 
 	/**
@@ -276,8 +302,6 @@ class WC_Install {
 	 *		woocommerce_order_itemmeta - Order line item meta is stored in a table for storing extra data.
 	 *		woocommerce_tax_rates - Tax Rates are stored inside 2 tables making tax queries simple and efficient.
 	 *		woocommerce_tax_rate_locations - Each rate can be applied to more than one postcode/city hence the second table.
-	 *
-	 * @return void
 	 */
 	private static function create_tables() {
 		global $wpdb;
@@ -292,6 +316,12 @@ class WC_Install {
 		if ( $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->prefix}woocommerce_downloadable_product_permissions';" ) ) {
 			if ( ! $wpdb->get_var( "SHOW COLUMNS FROM `{$wpdb->prefix}woocommerce_downloadable_product_permissions` LIKE 'permission_id';" ) ) {
 				$wpdb->query( "ALTER TABLE {$wpdb->prefix}woocommerce_downloadable_product_permissions DROP PRIMARY KEY, ADD `permission_id` bigint(20) NOT NULL PRIMARY KEY AUTO_INCREMENT;" );
+			}
+		}
+
+		if ( $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->prefix}woocommerce_tax_rate_locations';" ) ) {
+			if ( $wpdb->get_var( "SHOW INDEX FROM `{$wpdb->prefix}woocommerce_tax_rate_locations` WHERE Key_name LIKE 'location_type_code';" ) ) {
+				$wpdb->query( "DROP INDEX `location_type_code` ON {$wpdb->prefix}woocommerce_tax_rate_locations;" );
 			}
 		}
 
@@ -317,6 +347,20 @@ class WC_Install {
 		}
 
 		return "
+CREATE TABLE {$wpdb->prefix}woocommerce_api_keys (
+  key_id bigint(20) NOT NULL auto_increment,
+  user_id bigint(20) NOT NULL,
+  description longtext NULL,
+  permissions varchar(10) NOT NULL,
+  consumer_key char(64) NOT NULL,
+  consumer_secret char(43) NOT NULL,
+  nonces longtext NULL,
+  truncated_key char(7) NOT NULL,
+  last_access datetime NULL default null,
+  PRIMARY KEY  (key_id),
+  KEY consumer_key (consumer_key),
+  KEY consumer_secret (consumer_secret)
+) $collate;
 CREATE TABLE {$wpdb->prefix}woocommerce_attribute_taxonomies (
   attribute_id bigint(20) NOT NULL auto_increment,
   attribute_name varchar(200) NOT NULL,
@@ -394,7 +438,7 @@ CREATE TABLE {$wpdb->prefix}woocommerce_tax_rate_locations (
   PRIMARY KEY  (location_id),
   KEY tax_rate_id (tax_rate_id),
   KEY location_type (location_type),
-  KEY location_type_code (location_type,location_code)
+  KEY location_type_code (location_type(40),location_code(90))
 ) $collate;
 		";
 	}
@@ -592,7 +636,7 @@ CREATE TABLE {$wpdb->prefix}woocommerce_tax_rate_locations (
 		$transient_name = 'wc_upgrade_notice_' . $args['Version'];
 
 		if ( false === ( $upgrade_notice = get_transient( $transient_name ) ) ) {
-			$response = wp_remote_get( 'https://plugins.svn.wordpress.org/woocommerce/trunk/readme.txt' );
+			$response = wp_safe_remote_get( 'https://plugins.svn.wordpress.org/woocommerce/trunk/readme.txt' );
 
 			if ( ! is_wp_error( $response ) && ! empty( $response['body'] ) ) {
 				$upgrade_notice = self::parse_update_notice( $response['body'] );
@@ -676,13 +720,14 @@ CREATE TABLE {$wpdb->prefix}woocommerce_tax_rate_locations (
 	public static function wpmu_drop_tables( $tables ) {
 		global $wpdb;
 
-		$tables[] = $wpdb->prefix . "woocommerce_attribute_taxonomies";
-		$tables[] = $wpdb->prefix . "woocommerce_downloadable_product_permissions";
-		$tables[] = $wpdb->prefix . "woocommerce_termmeta";
-		$tables[] = $wpdb->prefix . "woocommerce_tax_rates";
-		$tables[] = $wpdb->prefix . "woocommerce_tax_rate_locations";
-		$tables[] = $wpdb->prefix . "woocommerce_order_items";
-		$tables[] = $wpdb->prefix . "woocommerce_order_itemmeta";
+		$tables[] = $wpdb->prefix . 'woocommerce_api_keys';
+		$tables[] = $wpdb->prefix . 'woocommerce_attribute_taxonomies';
+		$tables[] = $wpdb->prefix . 'woocommerce_downloadable_product_permissions';
+		$tables[] = $wpdb->prefix . 'woocommerce_termmeta';
+		$tables[] = $wpdb->prefix . 'woocommerce_tax_rates';
+		$tables[] = $wpdb->prefix . 'woocommerce_tax_rate_locations';
+		$tables[] = $wpdb->prefix . 'woocommerce_order_items';
+		$tables[] = $wpdb->prefix . 'woocommerce_order_itemmeta';
 
 		return $tables;
 	}

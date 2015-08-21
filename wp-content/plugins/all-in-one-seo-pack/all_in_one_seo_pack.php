@@ -3,7 +3,7 @@
 Plugin Name: All In One SEO Pack
 Plugin URI: http://semperfiwebdesign.com
 Description: Out-of-the-box SEO for your WordPress blog. <a href="admin.php?page=all-in-one-seo-pack/aioseop_class.php">Options configuration panel</a> | <a href="http://semperplugins.com/plugins/all-in-one-seo-pack-pro-version/?loc=plugins" target="_blank">Upgrade to Pro Version</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=mrtorbert%40gmail%2ecom&item_name=All%20In%20One%20SEO%20Pack&item_number=Support%20Open%20Source&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8">Donate</a> | <a href="http://semperplugins.com/support/" >Support</a> |  <a href="https://www.amazon.com/wishlist/1NFQ133FNCOOA/ref=wl_web" target="_blank" title="Amazon Wish List">Amazon Wishlist</a>
-Version: 2.2.5.1
+Version: 2.2.7.1
 Author: Michael Torbert
 Author URI: http://michaeltorbert.com
 */
@@ -30,8 +30,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * @package All-in-One-SEO-Pack
- * @version 2.2.5.1
+ * @version 2.2.7.1
  */
+
+if ( ! defined( 'ABSPATH' ) ) return;
 
 global $aioseop_plugin_name;
 $aioseop_plugin_name = 'All in One SEO Pack';
@@ -39,7 +41,7 @@ if ( ! defined( 'AIOSEOP_PLUGIN_NAME' ) )
     define( 'AIOSEOP_PLUGIN_NAME', $aioseop_plugin_name );
 
 if ( ! defined( 'AIOSEOP_VERSION' ) )
-    define( 'AIOSEOP_VERSION', '2.2.5.1' );
+    define( 'AIOSEOP_VERSION', '2.2.7.1' );
 
 if ( ! defined( 'AIOSEOP_PLUGIN_DIR' ) ) {
     define( 'AIOSEOP_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
@@ -124,7 +126,7 @@ if ( !empty( $aioseop_mem_limit ) ) {
 }
 
 $aiosp_activation = false;
-$aioseop_module_list = Array( 'sitemap', 'opengraph', 'robots', 'file_editor', 'importer_exporter', 'performance' ); // list all available modules here
+$aioseop_module_list = Array( 'sitemap', 'opengraph', 'robots', 'file_editor', 'importer_exporter', 'bad_robots', 'performance' ); // list all available modules here
 
 if ( class_exists( 'All_in_One_SEO_Pack' ) ) {
 	add_action( 'admin_notices', create_function( '', 'echo "<div class=\'error\'>The All In One SEO Pack class is already defined";'

@@ -85,6 +85,11 @@ class WC_API_Orders extends WC_API_Resource {
 			array( array( $this, 'delete_order_refund' ), WC_API_SERVER::DELETABLE ),
 		);
 
+		# POST|PUT /orders/bulk
+		$routes[ $this->base . '/bulk' ] = array(
+			array( array( $this, 'bulk' ), WC_API_Server::EDITABLE | WC_API_Server::ACCEPT_DATA ),
+		);
+
 		return $routes;
 	}
 
@@ -143,8 +148,9 @@ class WC_API_Orders extends WC_API_Resource {
 			return $id;
 		}
 
-		$order = wc_get_order( $id );
-
+		// Get the decimal precession
+		$dp         = ( isset( $filter['dp'] ) ? intval( $filter['dp'] ) : 2 );
+		$order      = wc_get_order( $id );
 		$order_post = get_post( $id );
 
 		$order_data = array(
@@ -155,14 +161,14 @@ class WC_API_Orders extends WC_API_Resource {
 			'completed_at'              => $this->server->format_datetime( $order->completed_date, true ),
 			'status'                    => $order->get_status(),
 			'currency'                  => $order->get_order_currency(),
-			'total'                     => wc_format_decimal( $order->get_total(), 2 ),
-			'subtotal'                  => wc_format_decimal( $order->get_subtotal(), 2 ),
+			'total'                     => wc_format_decimal( $order->get_total(), $dp ),
+			'subtotal'                  => wc_format_decimal( $order->get_subtotal(), $dp ),
 			'total_line_items_quantity' => $order->get_item_count(),
-			'total_tax'                 => wc_format_decimal( $order->get_total_tax(), 2 ),
-			'total_shipping'            => wc_format_decimal( $order->get_total_shipping(), 2 ),
-			'cart_tax'                  => wc_format_decimal( $order->get_cart_tax(), 2 ),
-			'shipping_tax'              => wc_format_decimal( $order->get_shipping_tax(), 2 ),
-			'total_discount'            => wc_format_decimal( $order->get_total_discount(), 2 ),
+			'total_tax'                 => wc_format_decimal( $order->get_total_tax(), $dp ),
+			'total_shipping'            => wc_format_decimal( $order->get_total_shipping(), $dp ),
+			'cart_tax'                  => wc_format_decimal( $order->get_cart_tax(), $dp ),
+			'shipping_tax'              => wc_format_decimal( $order->get_shipping_tax(), $dp ),
+			'total_discount'            => wc_format_decimal( $order->get_total_discount(), $dp ),
 			'shipping_methods'          => $order->get_shipping_method(),
 			'payment_details' => array(
 				'method_id'    => $order->payment_method,
@@ -218,7 +224,7 @@ class WC_API_Orders extends WC_API_Resource {
 				$product_sku = $product->get_sku();
 			}
 
-			$meta = new WC_Order_Item_Meta( $item['item_meta'], $product );
+			$meta = new WC_Order_Item_Meta( $item, $product );
 
 			$item_meta = array();
 
@@ -234,12 +240,12 @@ class WC_API_Orders extends WC_API_Resource {
 
 			$order_data['line_items'][] = array(
 				'id'           => $item_id,
-				'subtotal'     => wc_format_decimal( $order->get_line_subtotal( $item ), 2 ),
-				'subtotal_tax' => wc_format_decimal( $item['line_subtotal_tax'], 2 ),
-				'total'        => wc_format_decimal( $order->get_line_total( $item ), 2 ),
-				'total_tax'    => wc_format_decimal( $order->get_line_tax( $item ), 2 ),
-				'price'        => wc_format_decimal( $order->get_item_total( $item ), 2 ),
-				'quantity'     => (int) $item['qty'],
+				'subtotal'     => wc_format_decimal( $order->get_line_subtotal( $item, false, false ), $dp ),
+				'subtotal_tax' => wc_format_decimal( $item['line_subtotal_tax'], $dp ),
+				'total'        => wc_format_decimal( $order->get_line_total( $item, false, false ), $dp ),
+				'total_tax'    => wc_format_decimal( $item['line_tax'], $dp ),
+				'price'        => wc_format_decimal( $order->get_item_total( $item, false, false ), $dp ),
+				'quantity'     => wc_stock_amount( $item['qty'] ),
 				'tax_class'    => ( ! empty( $item['tax_class'] ) ) ? $item['tax_class'] : null,
 				'name'         => $item['name'],
 				'product_id'   => $product_id,
@@ -255,7 +261,7 @@ class WC_API_Orders extends WC_API_Resource {
 				'id'           => $shipping_item_id,
 				'method_id'    => $shipping_item['method_id'],
 				'method_title' => $shipping_item['name'],
-				'total'        => wc_format_decimal( $shipping_item['cost'], 2 ),
+				'total'        => wc_format_decimal( $shipping_item['cost'], $dp ),
 			);
 		}
 
@@ -267,7 +273,7 @@ class WC_API_Orders extends WC_API_Resource {
 				'rate_id'  => $tax->rate_id,
 				'code'     => $tax_code,
 				'title'    => $tax->label,
-				'total'    => wc_format_decimal( $tax->amount, 2 ),
+				'total'    => wc_format_decimal( $tax->amount, $dp ),
 				'compound' => (bool) $tax->is_compound,
 			);
 		}
@@ -279,8 +285,8 @@ class WC_API_Orders extends WC_API_Resource {
 				'id'        => $fee_item_id,
 				'title'     => $fee_item['name'],
 				'tax_class' => ( ! empty( $fee_item['tax_class'] ) ) ? $fee_item['tax_class'] : null,
-				'total'     => wc_format_decimal( $order->get_line_total( $fee_item ), 2 ),
-				'total_tax' => wc_format_decimal( $order->get_line_tax( $fee_item ), 2 ),
+				'total'     => wc_format_decimal( $order->get_line_total( $fee_item ), $dp ),
+				'total_tax' => wc_format_decimal( $order->get_line_tax( $fee_item ), $dp ),
 			);
 		}
 
@@ -290,7 +296,7 @@ class WC_API_Orders extends WC_API_Resource {
 			$order_data['coupon_lines'][] = array(
 				'id'     => $coupon_item_id,
 				'code'   => $coupon_item['name'],
-				'amount' => wc_format_decimal( $coupon_item['discount_amount'], 2 ),
+				'amount' => wc_format_decimal( $coupon_item['discount_amount'], $dp ),
 			);
 		}
 
@@ -300,7 +306,7 @@ class WC_API_Orders extends WC_API_Resource {
 	/**
 	 * Get the total number of orders
 	 *
-	 * @since 2.1
+	 * @since 2.4
 	 * @param string $status
 	 * @param array $filter
 	 * @return array
@@ -313,12 +319,28 @@ class WC_API_Orders extends WC_API_Resource {
 			}
 
 			if ( ! empty( $status ) ) {
-				$filter['status'] = $status;
+
+				if ( $status == 'any' ) {
+
+					$order_statuses = array();
+
+					foreach ( wc_get_order_statuses() as $slug => $name ) {
+						$filter['status'] = str_replace( 'wc-', '', $slug );
+						$query = $this->query_orders( $filter );
+						$order_statuses[ str_replace( 'wc-', '', $slug ) ] = (int) $query->found_posts;
+					}
+
+					return array( 'count' => $order_statuses );
+
+				} else {
+					$filter['status'] = $status;
+				}
 			}
 
 			$query = $this->query_orders( $filter );
 
 			return array( 'count' => (int) $query->found_posts );
+
 		} catch ( WC_API_Exception $e ) {
 			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
 		}
@@ -353,10 +375,16 @@ class WC_API_Orders extends WC_API_Resource {
 	 * @return array
 	 */
 	public function create_order( $data ) {
+		global $wpdb;
 
-		$data = isset( $data['order'] ) ? $data['order'] : array();
+		$wpdb->query( 'START TRANSACTION' );
 
 		try {
+			if ( ! isset( $data['order'] ) ) {
+				throw new WC_API_Exception( 'woocommerce_api_missing_order_data', sprintf( __( 'No %1$s data specified to create %1$s', 'woocommerce' ), 'order' ), 400 );
+			}
+
+			$data = $data['order'];
 
 			// permission check
 			if ( ! current_user_can( 'publish_shop_orders' ) ) {
@@ -460,9 +488,13 @@ class WC_API_Orders extends WC_API_Resource {
 
 			do_action( 'woocommerce_api_create_order', $order->id, $data, $this );
 
+			$wpdb->query( 'COMMIT' );
+
 			return $this->get_order( $order->id );
 
 		} catch ( WC_API_Exception $e ) {
+
+			$wpdb->query( 'ROLLBACK' );
 
 			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
 		}
@@ -491,9 +523,12 @@ class WC_API_Orders extends WC_API_Resource {
 	 */
 	public function edit_order( $id, $data ) {
 
-		$data = isset( $data['order'] ) ? $data['order'] : array();
-
 		try {
+			if ( ! isset( $data['order'] ) ) {
+				throw new WC_API_Exception( 'woocommerce_api_missing_order_data', sprintf( __( 'No %1$s data specified to edit %1$s', 'woocommerce' ), 'order' ), 400 );
+			}
+
+			$data = $data['order'];
 
 			$update_totals = false;
 
@@ -503,9 +538,12 @@ class WC_API_Orders extends WC_API_Resource {
 				return $id;
 			}
 
-			$data = apply_filters( 'woocommerce_api_edit_order_data', $data, $id, $this );
-
+			$data  = apply_filters( 'woocommerce_api_edit_order_data', $data, $id, $this );
 			$order = wc_get_order( $id );
+
+			if ( empty( $order ) ) {
+				throw new WC_API_Exception( 'woocommerce_api_invalid_order_id', __( 'Order ID is invalid', 'woocommerce' ), 400 );
+			}
 
 			$order_args = array( 'order_id' => $order->id );
 
@@ -843,8 +881,8 @@ class WC_API_Orders extends WC_API_Resource {
 		$creating = ( 'create' === $action );
 
 		// product is always required
-		if ( ! isset( $item['product_id'] ) ) {
-			throw new WC_API_Exception( 'woocommerce_api_invalid_product_id', __( 'Product ID is required', 'woocommerce' ), 400 );
+		if ( ! isset( $item['product_id'] ) && ! isset( $item['sku'] ) ) {
+			throw new WC_API_Exception( 'woocommerce_api_invalid_product_id', __( 'Product ID or SKU is required', 'woocommerce' ), 400 );
 		}
 
 		// when updating, ensure product ID provided matches
@@ -858,7 +896,25 @@ class WC_API_Orders extends WC_API_Resource {
 			}
 		}
 
-		$product = wc_get_product( $item['product_id'] );
+		if ( isset( $item['product_id'] ) ) {
+			$product_id = $item['product_id'];
+		} elseif ( isset( $item['sku'] ) ) {
+			$product_id = wc_get_product_id_by_sku( $item['sku'] );
+		}
+
+		// variations must each have a key & value
+		$variation_id = 0;
+		if ( isset( $item['variations'] ) && is_array( $item['variations'] ) ) {
+			foreach ( $item['variations'] as $key => $value ) {
+				if ( ! $key || ! $value ) {
+					throw new WC_API_Exception( 'woocommerce_api_invalid_product_variation', __( 'The product variation is invalid', 'woocommerce' ), 400 );
+				}
+			}
+			$item_args['variation'] = $item['variations'];
+			$variation_id = $this->get_variation_id( wc_get_product( $product_id ), $item_args['variation'] );
+		}
+
+		$product = wc_get_product( $variation_id ? $variation_id : $product_id );
 
 		// must be a valid WC_Product
 		if ( ! is_object( $product ) ) {
@@ -880,16 +936,6 @@ class WC_API_Orders extends WC_API_Resource {
 		// quantity
 		if ( isset( $item['quantity'] ) ) {
 			$item_args['qty'] = $item['quantity'];
-		}
-
-		// variations must each have a key & value
-		if ( isset( $item['variations'] ) && is_array( $item['variations'] ) ) {
-			foreach ( $item['variations'] as $key => $value ) {
-				if ( ! $key || ! $value ) {
-					throw new WC_API_Exception( 'woocommerce_api_invalid_product_variation', __( 'The product variation is invalid', 'woocommerce' ), 400 );
-				}
-			}
-			$item_args['variation'] = $item['variations'];
 		}
 
 		// total
@@ -928,6 +974,57 @@ class WC_API_Orders extends WC_API_Resource {
 				throw new WC_API_Exception( 'woocommerce_cannot_update_line_item', __( 'Cannot update line item, try again', 'woocommerce' ), 500 );
 			}
 		}
+	}
+
+	/**
+	 * Given a product ID & API provided variations, find the correct variation ID to use for calculation
+	 * We can't just trust input from the API to pass a variation_id manually, otherwise you could pass
+	 * the cheapest variation ID but provide other information so we have to look up the variation ID.
+	 *
+	 * @param  WC_Product $product Product instance
+	 * @return int                 Returns an ID if a valid variation was found for this product
+	 */
+	public function get_variation_id( $product, $variations = array() ) {
+		$variation_id = null;
+		$variations_normalized = array();
+
+		if ( $product->is_type( 'variable' ) && $product->has_child() ) {
+			if ( isset( $variations ) && is_array( $variations ) ) {
+				// start by normalizing the passed variations
+				foreach ( $variations as $key => $value ) {
+					$key = str_replace( 'attribute_', '', str_replace( 'pa_', '', $key ) ); // from get_attributes in class-wc-api-products.php
+					$variations_normalized[ $key ] = strtolower( $value );
+				}
+				// now search through each product child and see if our passed variations match anything
+				foreach ( $product->get_children() as $variation ) {
+					$meta = array();
+					foreach ( get_post_meta( $variation ) as $key => $value ) {
+						$value = $value[0];
+						$key = str_replace( 'attribute_', '', str_replace( 'pa_', '', $key ) );
+						$meta[ $key ] = strtolower( $value );
+					}
+					// if the variation array is a part of the $meta array, we found our match
+					if ( $this->array_contains( $variations_normalized, $meta ) ) {
+						$variation_id = $variation;
+						break;
+					}
+				}
+			}
+		}
+
+		return $variation_id;
+	}
+
+	/**
+	 * Utility function to see if the meta array contains data from variations
+	 */
+	protected function array_contains( $needles, $haystack ) {
+		foreach ( $needles as $key => $value ) {
+			if ( $haystack[ $key ] !== $value ) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -1003,10 +1100,14 @@ class WC_API_Orders extends WC_API_Resource {
 				throw new WC_API_Exception( 'woocommerce_invalid_fee_item', __( 'Fee title is required', 'woocommerce' ), 400 );
 			}
 
-			$order_fee         = new stdClass();
-			$order_fee->id     = sanitize_title( $fee['title'] );
-			$order_fee->name   = $fee['title'];
-			$order_fee->amount = isset( $fee['total'] ) ? floatval( $fee['total'] ) : 0;
+			$order_fee            = new stdClass();
+			$order_fee->id        = sanitize_title( $fee['title'] );
+			$order_fee->name      = $fee['title'];
+			$order_fee->amount    = isset( $fee['total'] ) ? floatval( $fee['total'] ) : 0;
+			$order_fee->taxable   = false;
+			$order_fee->tax       = 0;
+			$order_fee->tax_data  = array();
+			$order_fee->tax_class = '';
 
 			// if taxable, tax class and total are required
 			if ( isset( $fee['taxable'] ) && $fee['taxable'] ) {
@@ -1017,8 +1118,6 @@ class WC_API_Orders extends WC_API_Resource {
 
 				$order_fee->taxable   = true;
 				$order_fee->tax_class = $fee['tax_class'];
-				$order_fee->tax       = 0;
-				$order_fee->tax_data  = array();
 
 				if ( isset( $fee['total_tax'] ) ) {
 					$order_fee->tax = isset( $fee['total_tax'] ) ? wc_format_refund_total( $fee['total_tax'] ) : 0;
@@ -1205,7 +1304,11 @@ class WC_API_Orders extends WC_API_Resource {
 	 */
 	public function create_order_note( $order_id, $data ) {
 		try {
-			$data = isset( $data['order_note'] ) ? $data['order_note'] : array();
+			if ( ! isset( $data['order_note'] ) ) {
+				throw new WC_API_Exception( 'woocommerce_api_missing_order_note_data', sprintf( __( 'No %1$s data specified to create %1$s', 'woocommerce' ), 'order_note' ), 400 );
+			}
+
+			$data = $data['order_note'];
 
 			// permission check
 			if ( ! current_user_can( 'publish_shop_orders' ) ) {
@@ -1258,7 +1361,11 @@ class WC_API_Orders extends WC_API_Resource {
 	 */
 	public function edit_order_note( $order_id, $id, $data ) {
 		try {
-			$data = isset( $data['order_note'] ) ? $data['order_note'] : array();
+			if ( ! isset( $data['order_note'] ) ) {
+				throw new WC_API_Exception( 'woocommerce_api_missing_order_note_data', sprintf( __( 'No %1$s data specified to edit %1$s', 'woocommerce' ), 'order_note' ), 400 );
+			}
+
+			$data = $data['order_note'];
 
 			// Validate order ID
 			$order_id = $this->validate_request( $order_id, $this->post_type, 'edit' );
@@ -1304,7 +1411,7 @@ class WC_API_Orders extends WC_API_Resource {
 			// Customer note
 			if ( isset( $data['customer_note'] ) ) {
 
-				update_comment_meta( $note->comment_ID, 'is_customer_note', true === $data['customer_note'] );
+				update_comment_meta( $note->comment_ID, 'is_customer_note', true === $data['customer_note'] ? 1 : 0 );
 			}
 
 			do_action( 'woocommerce_api_edit_order_note', $note->comment_ID, $order->id, $this );
@@ -1436,7 +1543,7 @@ class WC_API_Orders extends WC_API_Resource {
 			foreach ( $refund->get_items( 'line_item' ) as $item_id => $item ) {
 
 				$product   = $order->get_product_from_item( $item );
-				$meta      = new WC_Order_Item_Meta( $item['item_meta'], $product );
+				$meta      = new WC_Order_Item_Meta( $item, $product );
 				$item_meta = array();
 
 				foreach ( $meta->get_formatted() as $meta_key => $formatted_meta ) {
@@ -1488,7 +1595,11 @@ class WC_API_Orders extends WC_API_Resource {
 	 */
 	public function create_order_refund( $order_id, $data, $api_refund = true ) {
 		try {
-			$data = isset( $data['order_refund'] ) ? $data['order_refund'] : array();
+			if ( ! isset( $data['order_refund'] ) ) {
+				throw new WC_API_Exception( 'woocommerce_api_missing_order_refund_data', sprintf( __( 'No %1$s data specified to create %1$s', 'woocommerce' ), 'order_refund' ), 400 );
+			}
+
+			$data = $data['order_refund'];
 
 			// Permission check
 			if ( ! current_user_can( 'publish_shop_orders' ) ) {
@@ -1561,7 +1672,11 @@ class WC_API_Orders extends WC_API_Resource {
 	 */
 	public function edit_order_refund( $order_id, $id, $data ) {
 		try {
-			$data = isset( $data['order_refund'] ) ? $data['order_refund'] : array();
+			if ( ! isset( $data['order_refund'] ) ) {
+				throw new WC_API_Exception( 'woocommerce_api_missing_order_refund_data', sprintf( __( 'No %1$s data specified to edit %1$s', 'woocommerce' ), 'order_refund' ), 400 );
+			}
+
+			$data = $data['order_refund'];
 
 			// Validate order ID
 			$order_id = $this->validate_request( $order_id, $this->post_type, 'edit' );
@@ -1653,6 +1768,75 @@ class WC_API_Orders extends WC_API_Resource {
 			do_action( 'woocommerce_api_delete_order_refund', $refund->ID, $order_id, $this );
 
 			return $this->delete( $refund->ID, 'refund', true );
+		} catch ( WC_API_Exception $e ) {
+			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
+		}
+	}
+
+	/**
+	 * Bulk update or insert orders
+	 * Accepts an array with orders in the formats supported by
+	 * WC_API_Orders->create_order() and WC_API_Orders->edit_order()
+	 *
+	 * @since 2.4.0
+	 * @param array $data
+	 * @return array
+	 */
+	public function bulk( $data ) {
+
+		try {
+			if ( ! isset( $data['orders'] ) ) {
+				throw new WC_API_Exception( 'woocommerce_api_missing_orders_data', sprintf( __( 'No %1$s data specified to create/edit %1$s', 'woocommerce' ), 'orders' ), 400 );
+			}
+
+			$data  = $data['orders'];
+			$limit = apply_filters( 'woocommerce_api_bulk_limit', 100, 'orders' );
+
+			// Limit bulk operation
+			if ( count( $data ) > $limit ) {
+				throw new WC_API_Exception( 'woocommerce_api_orders_request_entity_too_large', sprintf( __( 'Unable to accept more than %s items for this request', 'woocommerce' ), $limit ), 413 );
+			}
+
+			$orders = array();
+
+			foreach ( $data as $_order ) {
+				$order_id = 0;
+
+				// Try to get the order ID
+				if ( isset( $_order['id'] ) ) {
+					$order_id = intval( $_order['id'] );
+				}
+
+				// Order exists / edit order
+				if ( $order_id ) {
+					$edit = $this->edit_order( $order_id, array( 'order' => $_order ) );
+
+					if ( is_wp_error( $edit ) ) {
+						$orders[] = array(
+							'id'    => $order_id,
+							'error' => array( 'code' => $edit->get_error_code(), 'message' => $edit->get_error_message() )
+						);
+					} else {
+						$orders[] = $edit['order'];
+					}
+				}
+
+				// Order don't exists / create order
+				else {
+					$new = $this->create_order( array( 'order' => $_order ) );
+
+					if ( is_wp_error( $new ) ) {
+						$orders[] = array(
+							'id'    => $order_id,
+							'error' => array( 'code' => $new->get_error_code(), 'message' => $new->get_error_message() )
+						);
+					} else {
+						$orders[] = $new['order'];
+					}
+				}
+			}
+
+			return array( 'orders' => apply_filters( 'woocommerce_api_orders_bulk_response', $orders, $this ) );
 		} catch ( WC_API_Exception $e ) {
 			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
 		}

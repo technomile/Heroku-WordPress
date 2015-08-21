@@ -31,8 +31,11 @@ class WC_Gateway_Simplify_Commerce extends WC_Payment_Gateway {
 			'subscription_reactivation',
 			'subscription_suspension',
 			'subscription_amount_changes',
-			'subscription_payment_method_change',
+			'subscription_payment_method_change', // Subscriptions 1.n compatibility
+			'subscription_payment_method_change_customer',
+			'subscription_payment_method_change_admin',
 			'subscription_date_changes',
+			'multiple_subscriptions',
 			'default_credit_card_form',
 			'refunds',
 			'pre-orders'
@@ -67,8 +70,6 @@ class WC_Gateway_Simplify_Commerce extends WC_Payment_Gateway {
 
 	/**
 	 * Init Simplify SDK.
-	 *
-	 * @return void
 	 */
 	protected function init_simplify_sdk() {
 		// Include lib
@@ -82,9 +83,6 @@ class WC_Gateway_Simplify_Commerce extends WC_Payment_Gateway {
 	/**
 	 * Admin Panel Options
 	 * - Options for bits like 'title' and availability on a country-by-country basis
-	 *
-	 * @access public
-	 * @return void
 	 */
 	public function admin_options() {
 		?>
@@ -307,7 +305,8 @@ class WC_Gateway_Simplify_Commerce extends WC_Payment_Gateway {
 	 *
 	 * @param  WC_Order $order
 	 * @param  string   $cart_token
-	 *
+	 * @uses   Simplify_ApiException
+	 * @uses   Simplify_BadRequestException
 	 * @return array
 	 */
 	protected function process_standard_payments( $order, $cart_token = '' ) {
@@ -501,6 +500,8 @@ class WC_Gateway_Simplify_Commerce extends WC_Payment_Gateway {
 	 * @param  int $order_id
 	 * @param  float $amount
 	 * @param  string $reason
+	 * @uses   Simplify_ApiException
+	 * @uses   Simplify_BadRequestException
 	 * @return bool|WP_Error
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {

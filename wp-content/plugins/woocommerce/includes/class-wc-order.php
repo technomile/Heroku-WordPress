@@ -10,6 +10,46 @@
  */
 class WC_Order extends WC_Abstract_Order {
 
+	/** @public string Order type */
+	public $order_type = 'simple';
+
+	/**
+	 * Gets order total - formatted for display.
+	 *
+	 * @return string
+	 */
+	public function get_formatted_order_total( $tax_display = '' ) {
+		$formatted_total = wc_price( $this->get_total(), array( 'currency' => $this->get_order_currency() ) );
+		$order_total    = $this->get_total();
+		$total_refunded = $this->get_total_refunded();
+		$tax_string     = '';
+
+		// Tax for inclusive prices
+		if ( wc_tax_enabled() && 'incl' == $tax_display ) {
+			$tax_string_array = array();
+
+			if ( 'itemized' == get_option( 'woocommerce_tax_total_display' ) ) {
+				foreach ( $this->get_tax_totals() as $code => $tax ) {
+					$tax_amount         = $total_refunded ? wc_price( WC_Tax::round( $tax->amount - $this->get_total_tax_refunded_by_rate_id( $tax->rate_id ) ), array( 'currency' => $this->get_order_currency() ) ) : $tax->formatted_amount;
+					$tax_string_array[] = sprintf( '%s %s', $tax_amount, $tax->label );
+				}
+			} else {
+				$tax_string_array[] = sprintf( '%s %s', wc_price( $this->get_total_tax() - $this->get_total_tax_refunded(), array( 'currency' => $this->get_order_currency() ) ), WC()->countries->tax_or_vat() );
+			}
+			if ( ! empty( $tax_string_array ) ) {
+				$tax_string = ' ' . sprintf( __( '(Includes %s)', 'woocommerce' ), implode( ', ', $tax_string_array ) );
+			}
+		}
+
+		if ( $total_refunded ) {
+			$formatted_total = '<del>' . strip_tags( $formatted_total ) . '</del> <ins>' . wc_price( $order_total - $total_refunded, array( 'currency' => $this->get_order_currency() ) ) . $tax_string . '</ins>';
+		} else {
+			$formatted_total .= $tax_string;
+		}
+
+		return apply_filters( 'woocommerce_get_formatted_order_total', $formatted_total, $this );
+	}
+
 	/**
 	 * Get order refunds
 	 *
@@ -77,6 +117,69 @@ class WC_Order extends WC_Abstract_Order {
 		", $this->id ) );
 
 		return abs( $total );
+	}
+
+	/**
+	 * Get the total shipping refunded
+	 *
+	 * @since  2.4
+	 * @return float
+	 */
+	public function get_total_shipping_refunded() {
+		global $wpdb;
+
+		$total = $wpdb->get_var( $wpdb->prepare( "
+			SELECT SUM( order_itemmeta.meta_value )
+			FROM {$wpdb->prefix}woocommerce_order_itemmeta AS order_itemmeta
+			INNER JOIN $wpdb->posts AS posts ON ( posts.post_type = 'shop_order_refund' AND posts.post_parent = %d )
+			INNER JOIN {$wpdb->prefix}woocommerce_order_items AS order_items ON ( order_items.order_id = posts.ID AND order_items.order_item_type = 'shipping' )
+			WHERE order_itemmeta.order_item_id = order_items.order_item_id
+			AND order_itemmeta.meta_key IN ('cost')
+		", $this->id ) );
+
+		return abs( $total );
+	}
+
+	/**
+	 * Gets the count of order items of a certain type that have been refunded.
+	 * @since  2.4.0
+	 * @param string $item_type
+	 * @return string
+	 */
+	public function get_item_count_refunded( $item_type = '' ) {
+		if ( empty( $item_type ) ) {
+			$item_type = array( 'line_item' );
+		}
+		if ( ! is_array( $item_type ) ) {
+			$item_type = array( $item_type );
+		}
+		$count = 0;
+
+		foreach ( $this->get_refunds() as $refund ) {
+			foreach ( $refund->get_items( $item_type ) as $refunded_item ) {
+				$count += empty( $refunded_item['qty'] ) ? 0 : $refunded_item['qty'];
+			}
+		}
+
+		return apply_filters( 'woocommerce_get_item_count_refunded', $count, $item_type, $this );
+	}
+
+	/**
+	 * Get the total number of items refunded.
+	 *
+	 * @since  2.4.0
+	 * @param  int $item_id ID of the item we're checking
+	 * @param  string $item_type type of the item we're checking, if not a line_item
+	 * @return integer
+	 */
+	public function get_total_qty_refunded( $item_type = 'line_item' ) {
+		$qty = 0;
+		foreach ( $this->get_refunds() as $refund ) {
+			foreach ( $refund->get_items( $item_type ) as $refunded_item ) {
+				$qty += $refunded_item['qty'];
+			}
+		}
+		return $qty;
 	}
 
 	/**
@@ -154,7 +257,7 @@ class WC_Order extends WC_Abstract_Order {
 				}
 			}
 		}
-		return $total * -1;
+		return wc_round_tax_total( $total ) * -1;
 	}
 
 	/**

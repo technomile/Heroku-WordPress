@@ -10,7 +10,7 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit;
 }
 
 ?>
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		if ( $show_package_details ) {
 			printf( __( 'Shipping #%d', 'woocommerce' ), $index + 1 );
 		} else {
-			_e( 'Shipping and Handling', 'woocommerce' );
+			_e( 'Shipping', 'woocommerce' );
 		}
 	?></th>
 	<td>
@@ -52,7 +52,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 			<?php endif; ?>
 
-		<?php elseif ( ! WC()->customer->get_shipping_state() || ! WC()->customer->get_shipping_postcode() ) : ?>
+		<?php elseif ( ( WC()->countries->get_states( WC()->customer->get_shipping_country() ) && ! WC()->customer->get_shipping_state() ) || ! WC()->customer->get_shipping_postcode() ) : ?>
 
 			<?php if ( is_cart() && get_option( 'woocommerce_enable_shipping_calc' ) === 'yes' ) : ?>
 
@@ -73,7 +73,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php if ( is_cart() ) : ?>
 
 				<?php echo apply_filters( 'woocommerce_cart_no_shipping_available_html',
-					'<div class="woocommerce-info"><p>' . __( 'There are no shipping methods available. Please double check your address, or contact us if you need any help.', 'woocommerce' ) . '</p></div>'
+					'<p>' . __( 'There are no shipping methods available. Please double check your address, or contact us if you need any help.', 'woocommerce' ) . '</p>'
 				); ?>
 
 			<?php else : ?>

@@ -2,10 +2,10 @@
 /**
  * WooCommerce Admin Settings Class.
  *
- * @author      WooThemes
- * @category    Admin
- * @package     WooCommerce/Admin
- * @version     2.2.0
+ * @author   WooThemes
+ * @category Admin
+ * @package  WooCommerce/Admin
+ * @version  2.4.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -40,7 +40,7 @@ class WC_Admin_Settings {
 			$settings[] = include( 'settings/class-wc-settings-accounts.php' );
 			$settings[] = include( 'settings/class-wc-settings-emails.php' );
 			$settings[] = include( 'settings/class-wc-settings-integrations.php' );
-			$settings[] = include( 'settings/class-wc-settings-webhooks.php' );
+			$settings[] = include( 'settings/class-wc-settings-api.php' );
 
 			self::$settings = apply_filters( 'woocommerce_get_settings_pages', $settings );
 		}
@@ -100,11 +100,11 @@ class WC_Admin_Settings {
 	public static function show_messages() {
 		if ( sizeof( self::$errors ) > 0 ) {
 			foreach ( self::$errors as $error ) {
-				echo '<div id="message" class="error fade"><p><strong>' . esc_html( $error ) . '</strong></p></div>';
+				echo '<div id="message" class="error"><p><strong>' . esc_html( $error ) . '</strong></p></div>';
 			}
 		} elseif ( sizeof( self::$messages ) > 0 ) {
 			foreach ( self::$messages as $message ) {
-				echo '<div id="message" class="updated fade"><p><strong>' . esc_html( $message ) . '</strong></p></div>';
+				echo '<div id="message" class="updated"><p><strong>' . esc_html( $message ) . '</strong></p></div>';
 			}
 		}
 	}
@@ -296,6 +296,11 @@ class WC_Admin_Settings {
 							<?php echo $tooltip_html; ?>
 						</th>
 						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+							<?php
+							if ( 'color' == $value['type'] ) {
+								echo '<span class="colorpickpreview" style="background: ' . esc_attr( $option_value ) . ';"></span>';
+							}
+							?>
 							<input
 								name="<?php echo esc_attr( $value['id'] ); ?>"
 								id="<?php echo esc_attr( $value['id'] ); ?>"
@@ -459,6 +464,7 @@ class WC_Admin_Settings {
 								name="<?php echo esc_attr( $value['id'] ); ?>"
 								id="<?php echo esc_attr( $value['id'] ); ?>"
 								type="checkbox"
+							 	class="<?php echo esc_attr(isset($value['class']) ? $value['class'] : ''); ?>"
 								value="1"
 								<?php checked( $option_value, 'yes'); ?>
 								<?php echo implode( ' ', $custom_attributes ); ?>
@@ -482,12 +488,11 @@ class WC_Admin_Settings {
 				// Image width settings
 				case 'image_width' :
 
-					$image_size = str_replace( '_image_size', '', $value[ 'id' ] );
-					$size   = wc_get_image_size( $image_size );
-					$width  = isset( $size[ 'width' ] )  ? $size[ 'width' ]  : $value[ 'default' ][ 'width' ];
-					$height = isset( $size[ 'height' ] ) ? $size[ 'height' ] : $value[ 'default' ][ 'height' ];
-					$crop   = isset( $size[ 'crop' ] )   ? $size[ 'crop' ]   : $value[ 'default' ][ 'crop' ];
-
+					$image_size       = str_replace( '_image_size', '', $value[ 'id' ] );
+					$size             = wc_get_image_size( $image_size );
+					$width            = isset( $size[ 'width' ] ) ? $size[ 'width' ] : $value[ 'default' ][ 'width' ];
+					$height           = isset( $size[ 'height' ] ) ? $size[ 'height' ] : $value[ 'default' ][ 'height' ];
+					$crop             = isset( $size[ 'crop' ] ) ? $size[ 'crop' ] : $value[ 'default' ][ 'crop' ];
 					$disabled_attr    = '';
 					$disabled_message = '';
 
@@ -529,7 +534,7 @@ class WC_Admin_Settings {
 					?><tr valign="top" class="single_select_page">
 						<th scope="row" class="titledesc"><?php echo esc_html( $value['title'] ) ?> <?php echo $tooltip_html; ?></th>
 						<td class="forminp">
-							<?php echo str_replace(' id=', " data-placeholder='" . __( 'Select a page&hellip;', 'woocommerce' ) .  "' style='" . $value['css'] . "' class='" . $value['class'] . "' id=", wp_dropdown_pages( $args ) ); ?> <?php echo $description; ?>
+							<?php echo str_replace(' id=', " data-placeholder='" . esc_attr__( 'Select a page&hellip;', 'woocommerce' ) .  "' style='" . $value['css'] . "' class='" . $value['class'] . "' id=", wp_dropdown_pages( $args ) ); ?> <?php echo $description; ?>
 						</td>
 					</tr><?php
 					break;
@@ -551,7 +556,7 @@ class WC_Admin_Settings {
 							<label for="<?php echo esc_attr( $value['id'] ); ?>"><?php echo esc_html( $value['title'] ); ?></label>
 							<?php echo $tooltip_html; ?>
 						</th>
-						<td class="forminp"><select name="<?php echo esc_attr( $value['id'] ); ?>" style="<?php echo esc_attr( $value['css'] ); ?>" data-placeholder="<?php _e( 'Choose a country&hellip;', 'woocommerce' ); ?>" title="<?php _e( 'Country', 'woocommerce' ) ?>" class="wc-enhanced-select">
+						<td class="forminp"><select name="<?php echo esc_attr( $value['id'] ); ?>" style="<?php echo esc_attr( $value['css'] ); ?>" data-placeholder="<?php esc_attr_e( 'Choose a country&hellip;', 'woocommerce' ); ?>" title="<?php esc_attr_e( 'Country', 'woocommerce' ) ?>" class="wc-enhanced-select">
 							<?php WC()->countries->country_dropdown_options( $country, $state ); ?>
 						</select> <?php echo $description; ?>
 						</td>
@@ -576,9 +581,9 @@ class WC_Admin_Settings {
 							<?php echo $tooltip_html; ?>
 						</th>
 						<td class="forminp">
-							<select multiple="multiple" name="<?php echo esc_attr( $value['id'] ); ?>[]" style="width:350px" data-placeholder="<?php _e( 'Choose countries&hellip;', 'woocommerce' ); ?>" title="<?php _e( 'Country', 'woocommerce' ) ?>" class="wc-enhanced-select">
+							<select multiple="multiple" name="<?php echo esc_attr( $value['id'] ); ?>[]" style="width:350px" data-placeholder="<?php esc_attr_e( 'Choose countries&hellip;', 'woocommerce' ); ?>" title="<?php esc_attr_e( 'Country', 'woocommerce' ) ?>" class="wc-enhanced-select">
 								<?php
-									if ( $countries ) {
+									if ( ! empty( $countries ) ) {
 										foreach ( $countries as $key => $val ) {
 											echo '<option value="' . esc_attr( $key ) . '" ' . selected( in_array( $key, $selections ), true, false ).'>' . $val . '</option>';
 										}
@@ -621,7 +626,7 @@ class WC_Admin_Settings {
 		if ( $description && in_array( $value['type'], array( 'textarea', 'radio' ) ) ) {
 			$description = '<p style="margin-top:0">' . wp_kses_post( $description ) . '</p>';
 		} elseif ( $description && in_array( $value['type'], array( 'checkbox' ) ) ) {
-			$description =  wp_kses_post( $description );
+			$description = wp_kses_post( $description );
 		} elseif ( $description ) {
 			$description = '<span class="description">' . wp_kses_post( $description ) . '</span>';
 		}
@@ -651,110 +656,103 @@ class WC_Admin_Settings {
 			return false;
 		}
 
-		// Options to update will be stored here
+		// Options to update will be stored here and saved later
 		$update_options = array();
 
 		// Loop options and get values to save
-		foreach ( $options as $value ) {
-			if ( ! isset( $value['id'] ) || ! isset( $value['type'] ) ) {
+		foreach ( $options as $option ) {
+			if ( ! isset( $option['id'] ) || ! isset( $option['type'] ) ) {
 				continue;
 			}
 
 			// Get posted value
-			if ( strstr( $value['id'], '[' ) ) {
-				parse_str( $value['id'], $option_name_array );
-
+			if ( strstr( $option['id'], '[' ) ) {
+				parse_str( $option['id'], $option_name_array );
 				$option_name  = current( array_keys( $option_name_array ) );
 				$setting_name = key( $option_name_array[ $option_name ] );
-
-				$option_value = isset( $_POST[ $option_name ][ $setting_name ] ) ? wp_unslash( $_POST[ $option_name ][ $setting_name ] ) : null;
+				$raw_value    = isset( $_POST[ $option_name ][ $setting_name ] ) ? wp_unslash( $_POST[ $option_name ][ $setting_name ] ) : null;
 			} else {
-				$option_name  = $value['id'];
+				$option_name  = $option['id'];
 				$setting_name = '';
-				$option_value = isset( $_POST[ $value['id'] ] ) ? wp_unslash( $_POST[ $value['id'] ] ) : null;
+				$raw_value    = isset( $_POST[ $option['id'] ] ) ? wp_unslash( $_POST[ $option['id'] ] ) : null;
 			}
 
-			// Format value
-			switch ( sanitize_title( $value['type'] ) ) {
+			// Format the value based on option type
+			switch ( $option['type'] ) {
 				case 'checkbox' :
-					$option_value = is_null( $option_value ) ? 'no' : 'yes';
+					$value = is_null( $raw_value ) ? 'no' : 'yes';
 					break;
 				case 'textarea' :
-					$option_value = wp_kses_post( trim( $option_value ) );
-					break;
-				case 'text' :
-				case 'email':
-				case 'number':
-				case 'select' :
-				case 'color' :
-				case 'password' :
-				case 'single_select_page' :
-				case 'single_select_country' :
-				case 'radio' :
-					if ( in_array( $value['id'], array( 'woocommerce_price_thousand_sep', 'woocommerce_price_decimal_sep' ) ) ) {
-						$option_value = wp_kses_post( $option_value );
-
-					} elseif ( 'woocommerce_price_num_decimals' == $value['id'] ) {
-						$option_value = is_null( $option_value ) ? 2 : absint( $option_value );
-
-					} elseif ( 'woocommerce_hold_stock_minutes' == $value['id'] ) {
-						$option_value = ! empty( $option_value ) ? absint( $option_value ) : ''; // Allow > 0 or set to ''
-
-						wp_clear_scheduled_hook( 'woocommerce_cancel_unpaid_orders' );
-
-						if ( '' !== $option_value ) {
-							wp_schedule_single_event( time() + ( absint( $option_value ) * 60 ), 'woocommerce_cancel_unpaid_orders' );
-						}
-
-					} else {
-						$option_value = wc_clean( $option_value );
-					}
+					$value = wp_kses_post( trim( $raw_value ) );
 					break;
 				case 'multiselect' :
 				case 'multi_select_countries' :
-					$option_value = array_filter( array_map( 'wc_clean', (array) $option_value ) );
+					$value = array_filter( array_map( 'wc_clean', (array) $raw_value ) );
 					break;
 				case 'image_width' :
-					if ( isset( $option_value['width'] ) ) {
-						$update_options[ $value['id'] ]['width']  = wc_clean( $option_value['width'] );
-						$update_options[ $value['id'] ]['height'] = wc_clean( $option_value['height'] );
-						$update_options[ $value['id'] ]['crop']   = isset( $option_value['crop'] ) ? 1 : 0;
+					$value = array();
+					if ( isset( $raw_value['width'] ) ) {
+						$value['width']  = wc_clean( $raw_value['width'] );
+						$value['height'] = wc_clean( $raw_value['height'] );
+						$value['crop']   = isset( $raw_value['crop'] ) ? 1 : 0;
 					} else {
-						$update_options[ $value['id'] ]['width']  = $value['default']['width'];
-						$update_options[ $value['id'] ]['height'] = $value['default']['height'];
-						$update_options[ $value['id'] ]['crop']   = $value['default']['crop'];
+						$value['width']  = $option['default']['width'];
+						$value['height'] = $option['default']['height'];
+						$value['crop']   = $option['default']['crop'];
 					}
 					break;
 				default :
-					do_action( 'woocommerce_update_option_' . sanitize_title( $value['type'] ), $value );
+					$value = wc_clean( $raw_value );
 					break;
 			}
 
-			if ( ! is_null( $option_value ) ) {
-				// Check if option is an array
-				if ( $option_name && $setting_name ) {
-					// Get old option value
-					if ( ! isset( $update_options[ $option_name ] ) ) {
-						$update_options[ $option_name ] = get_option( $option_name, array() );
-					}
-
-					if ( ! is_array( $update_options[ $option_name ] ) ) {
-						$update_options[ $option_name ] = array();
-					}
-
-					$update_options[ $option_name ][ $setting_name ] = $option_value;
-
-				// Single value
-				} else {
-					$update_options[ $option_name ] = $option_value;
-				}
+			/**
+			 * Fire an action when a certain 'type' of field is being saved.
+			 * @deprecated 2.4.0 - doesn't allow manipulation of values!
+			 */
+			if ( has_action( 'woocommerce_update_option_' . sanitize_title( $option['type'] ) ) ) {
+				_deprecated_function( 'The woocommerce_update_option_X action', '2.4.0', 'woocommerce_admin_settings_sanitize_option filter' );
+				do_action( 'woocommerce_update_option_' . sanitize_title( $option['type'] ), $option );
+				continue;
 			}
 
-			// Custom handling
-			do_action( 'woocommerce_update_option', $value );
+			/**
+			 * Sanitize the value of an option
+			 * @since 2.4.0
+			 */
+			$value = apply_filters( 'woocommerce_admin_settings_sanitize_option', $value, $option, $raw_value );
+
+			/**
+			 * Sanitize the value of an option by option name
+			 * @since 2.4.0
+			 */
+			$value = apply_filters( "woocommerce_admin_settings_sanitize_option_$option_name", $value, $option, $raw_value );
+
+			if ( is_null( $value ) ) {
+				continue;
+			}
+
+			// Check if option is an array and handle that differently to single values.
+			if ( $option_name && $setting_name ) {
+				if ( ! isset( $update_options[ $option_name ] ) ) {
+					$update_options[ $option_name ] = get_option( $option_name, array() );
+				}
+				if ( ! is_array( $update_options[ $option_name ] ) ) {
+					$update_options[ $option_name ] = array();
+				}
+				$update_options[ $option_name ][ $setting_name ] = $value;
+			} else {
+				$update_options[ $option_name ] = $value;
+			}
+
+			/**
+			 * Fire an action before saved..
+			 * @deprecated 2.4.0 - doesn't allow manipulation of values!
+			 */
+			do_action( 'woocommerce_update_option', $option );
 		}
 
-		// Now save the options
+		// Save all options in our array
 		foreach ( $update_options as $name => $value ) {
 			update_option( $name, $value );
 		}

@@ -3,11 +3,11 @@
  * Plugin Name: WooCommerce
  * Plugin URI: http://www.woothemes.com/woocommerce/
  * Description: An e-commerce toolkit that helps you sell anything. Beautifully.
- * Version: 2.3.5
+ * Version: 2.4.5
  * Author: WooThemes
  * Author URI: http://woothemes.com
- * Requires at least: 4.0
- * Tested up to: 4.1
+ * Requires at least: 4.1
+ * Tested up to: 4.3
  *
  * Text Domain: woocommerce
  * Domain Path: /i18n/languages/
@@ -26,14 +26,14 @@ if ( ! class_exists( 'WooCommerce' ) ) :
  * Main WooCommerce Class
  *
  * @class WooCommerce
- * @version	2.3.0
+ * @version	2.4.0
  */
 final class WooCommerce {
 
 	/**
 	 * @var string
 	 */
-	public $version = '2.3.5';
+	public $version = '2.4.5';
 
 	/**
 	 * @var WooCommerce The single instance of the class
@@ -160,6 +160,7 @@ final class WooCommerce {
 		$this->define( 'WC_VERSION', $this->version );
 		$this->define( 'WOOCOMMERCE_VERSION', $this->version );
 		$this->define( 'WC_ROUNDING_PRECISION', 4 );
+		$this->define( 'WC_DISCOUNT_ROUNDING_MODE', 2 );
 		$this->define( 'WC_TAX_ROUNDING_MODE', 'yes' === get_option( 'woocommerce_prices_include_tax', 'no' ) ? 2 : 1 );
 		$this->define( 'WC_DELIMITER', '|' );
 		$this->define( 'WC_LOG_DIR', $upload_dir['basedir'] . '/wc-logs/' );
@@ -207,17 +208,19 @@ final class WooCommerce {
 		include_once( 'includes/class-wc-download-handler.php' );
 		include_once( 'includes/class-wc-comments.php' );
 		include_once( 'includes/class-wc-post-data.php' );
+		include_once( 'includes/class-wc-ajax.php' );
 
 		if ( $this->is_request( 'admin' ) ) {
 			include_once( 'includes/admin/class-wc-admin.php' );
 		}
 
-		if ( $this->is_request( 'ajax' ) ) {
-			$this->ajax_includes();
-		}
-
 		if ( $this->is_request( 'frontend' ) ) {
 			$this->frontend_includes();
+		}
+
+		if ( $this->is_request( 'frontend' ) || $this->is_request( 'cron' ) ) {
+			include_once( 'includes/abstracts/abstract-wc-session.php' );
+			include_once( 'includes/class-wc-session-handler.php' );
 		}
 
 		if ( $this->is_request( 'cron' ) && 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
@@ -227,6 +230,7 @@ final class WooCommerce {
 		$this->query = include( 'includes/class-wc-query.php' );                // The main query class
 		$this->api   = include( 'includes/class-wc-api.php' );                  // API Class
 
+		include_once( 'includes/class-wc-auth.php' );                           // Auth Class
 		include_once( 'includes/class-wc-post-types.php' );                     // Registers post types
 		include_once( 'includes/abstracts/abstract-wc-product.php' );           // Products
 		include_once( 'includes/abstracts/abstract-wc-order.php' );             // Orders
@@ -242,20 +246,11 @@ final class WooCommerce {
 	}
 
 	/**
-	 * Include required ajax files.
-	 */
-	public function ajax_includes() {
-		include_once( 'includes/class-wc-ajax.php' );                           // Ajax functions for admin and the front-end
-	}
-
-	/**
 	 * Include required frontend files.
 	 */
 	public function frontend_includes() {
 		include_once( 'includes/wc-cart-functions.php' );
 		include_once( 'includes/wc-notice-functions.php' );
-		include_once( 'includes/abstracts/abstract-wc-session.php' );
-		include_once( 'includes/class-wc-session-handler.php' );
 		include_once( 'includes/wc-template-hooks.php' );
 		include_once( 'includes/class-wc-template-loader.php' );                // Template Loader
 		include_once( 'includes/class-wc-frontend-scripts.php' );               // Frontend Scripts
@@ -271,9 +266,7 @@ final class WooCommerce {
 	 * Function used to Init WooCommerce Template Functions - This makes them pluggable by plugins and themes.
 	 */
 	public function include_template_functions() {
-		if ( $this->is_request( 'frontend' ) ) {
-			include_once( 'includes/wc-template-functions.php' );
-		}
+		include_once( 'includes/wc-template-functions.php' );
 	}
 
 	/**
@@ -292,13 +285,14 @@ final class WooCommerce {
 		$this->countries       = new WC_Countries();                            // Countries class
 		$this->integrations    = new WC_Integrations();                         // Integrations class
 
+		// Session class, handles session data for users - can be overwritten if custom handler is needed
+		if ( $this->is_request( 'frontend' ) || $this->is_request( 'cron' ) ) {
+			$session_class  = apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' );
+			$this->session  = new $session_class();
+		}
+
 		// Classes/actions loaded for the frontend and for ajax requests
 		if ( $this->is_request( 'frontend' ) ) {
-			// Session class, handles session data for users - can be overwritten if custom handler is needed
-			$session_class = apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' );
-
-			// Class instances
-			$this->session  = new $session_class();
 			$this->cart     = new WC_Cart();                                    // Cart class, stores the cart contents
 			$this->customer = new WC_Customer();                                // Customer class, handles data such as customer location
 		}
@@ -346,7 +340,6 @@ final class WooCommerce {
 
 		$this->add_thumbnail_support();
 		$this->add_image_sizes();
-		$this->fix_server_vars();
 	}
 
 	/**
@@ -372,28 +365,6 @@ final class WooCommerce {
 		add_image_size( 'shop_thumbnail', $shop_thumbnail['width'], $shop_thumbnail['height'], $shop_thumbnail['crop'] );
 		add_image_size( 'shop_catalog', $shop_catalog['width'], $shop_catalog['height'], $shop_catalog['crop'] );
 		add_image_size( 'shop_single', $shop_single['width'], $shop_single['height'], $shop_single['crop'] );
-	}
-
-	/**
-	 * Fix `$_SERVER` variables for various setups.
-	 *
-	 * Note: Removed IIS handling due to wp_fix_server_vars()
-	 *
-	 * @since 2.3
-	 */
-	private function fix_server_vars() {
-		// NGINX Proxy
-		if ( ! isset( $_SERVER['REMOTE_ADDR'] ) && isset( $_SERVER['HTTP_REMOTE_ADDR'] ) ) {
-			$_SERVER['REMOTE_ADDR'] = $_SERVER['HTTP_REMOTE_ADDR'];
-		}
-
-		if ( ! isset( $_SERVER['HTTPS'] ) ) {
-			if ( ! empty( $_SERVER['HTTP_HTTPS'] ) ) {
-				$_SERVER['HTTPS'] = $_SERVER['HTTP_HTTPS'];
-			} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' ) {
-				$_SERVER['HTTPS'] = '1';
-			}
-		}
 	}
 
 	/**

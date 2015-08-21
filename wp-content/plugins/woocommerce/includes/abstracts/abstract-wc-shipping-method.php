@@ -33,28 +33,28 @@ abstract class WC_Shipping_Method extends WC_Settings_API {
 	public $availability;
 
 	/** @var array Array of countries this method is enabled for. */
-	public $countries          = array();
+	public $countries    = array();
 
 	/** @var string If 'taxable' tax will be charged for this method (if applicable) */
-	public $tax_status         = 'taxable';
+	public $tax_status   = 'taxable';
 
 	/** @var mixed Fees for the method */
-	public $fee                = 0;
+	public $fee          = 0;
 
 	/** @var float Minimum fee for the method */
-	public $minimum_fee        = null;
+	public $minimum_fee  = null;
 
 	/** @var bool Enabled for disabled */
-	public $enabled            = false;
+	public $enabled      = false;
 
 	/** @var bool Whether the method has settings or not (In WooCommerce > Settings > Shipping) */
-	public $has_settings       = true;
+	public $has_settings = true;
 
 	/** @var array Features this method supports. */
-	public $supports           = array();
+	public $supports     = array();
 
 	/** @var array This is an array of rates - methods must populate this array to register shipping costs */
-	public $rates              = array();
+	public $rates        = array();
 
 	/**
 	 * Whether or not we need to calculate tax on top of the shipping rate
@@ -91,7 +91,7 @@ abstract class WC_Shipping_Method extends WC_Settings_API {
 		}
 
 		// Handle cost
-		$total_cost = round( ( is_array( $cost ) ) ? array_sum( $cost ) : $cost, wc_get_price_decimals() );
+		$total_cost = is_array( $cost ) ? array_sum( $cost ) : $cost;
 
 		// Taxes - if not an array and not set to false, calc tax based on cost and passed calc_tax variable
 		// This saves shipping methods having to do complex tax calculations
@@ -176,7 +176,6 @@ abstract class WC_Shipping_Method extends WC_Settings_API {
 		$countries = is_array( $this->countries ) ? $this->countries : array();
 
 		switch ( $this->availability ) {
-
 			case 'specific' :
 			case 'including' :
 				$ship_to_countries = array_intersect( $countries, array_keys( WC()->countries->get_shipping_countries() ) );

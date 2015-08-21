@@ -116,24 +116,10 @@ class WC_Frontend_Scripts {
 		// Chosen is @deprecated as of 2.3 in favour of 2.3. Here for backwards compatibility.
 		self::register_script( 'chosen', $assets_path . 'js/chosen/chosen.jquery' . $suffix . '.js', array( 'jquery' ), '1.0.0' );
 		self::register_script( 'select2', $assets_path . 'js/select2/select2' . $suffix . '.js', array( 'jquery' ), '3.5.2' );
-		wp_localize_script( 'select2', 'wc_select_params', array(
-			'i18n_matches_1'            => _x( 'One result is available, press enter to select it.', 'enhanced select', 'woocommerce' ),
-			'i18n_matches_n'            => _x( '%qty% results are available, use up and down arrow keys to navigate.', 'enhanced select', 'woocommerce' ),
-			'i18n_no_matches'           => _x( 'No matches found', 'enhanced select', 'woocommerce' ),
-			'i18n_ajax_error'           => _x( 'Loading failed', 'enhanced select', 'woocommerce' ),
-			'i18n_input_too_short_1'    => _x( 'Please enter 1 or more characters', 'enhanced select', 'woocommerce' ),
-			'i18n_input_too_short_n'    => _x( 'Please enter %qty% or more characters', 'enhanced select', 'woocommerce' ),
-			'i18n_input_too_long_1'     => _x( 'Please delete 1 character', 'enhanced select', 'woocommerce' ),
-			'i18n_input_too_long_n'     => _x( 'Please delete %qty% characters', 'enhanced select', 'woocommerce' ),
-			'i18n_selection_too_long_1' => _x( 'You can only select 1 item', 'enhanced select', 'woocommerce' ),
-			'i18n_selection_too_long_n' => _x( 'You can only select %qty% items', 'enhanced select', 'woocommerce' ),
-			'i18n_load_more'            => _x( 'Loading more results&hellip;', 'enhanced select', 'woocommerce' ),
-			'i18n_searching'            => _x( 'Searching&hellip;', 'enhanced select', 'woocommerce' ),
-		) );
 
 		// Register any scripts for later use, or used as dependencies
-		self::register_script( 'jquery-blockui', $assets_path . 'js/jquery-blockui/jquery.blockUI' . $suffix . '.js', array( 'jquery' ), '2.60' );
-		self::register_script( 'jquery-payment', $assets_path . 'js/jquery-payment/jquery.payment' . $suffix . '.js', array( 'jquery' ), '1.2.1' );
+		self::register_script( 'jquery-blockui', $assets_path . 'js/jquery-blockui/jquery.blockUI' . $suffix . '.js', array( 'jquery' ), '2.70' );
+		self::register_script( 'jquery-payment', $assets_path . 'js/jquery-payment/jquery.payment' . $suffix . '.js', array( 'jquery' ), '1.2.4' );
 		self::register_script( 'jquery-cookie', $assets_path . 'js/jquery-cookie/jquery.cookie' . $suffix . '.js', array( 'jquery' ), '1.4.1' );
 		self::register_script( 'wc-credit-card-form', $frontend_script_path . 'credit-card-form' . $suffix . '.js', array( 'jquery', 'jquery-payment' ) );
 		self::register_script( 'wc-add-to-cart-variation', $frontend_script_path . 'add-to-cart-variation' . $suffix . '.js' );
@@ -146,7 +132,7 @@ class WC_Frontend_Scripts {
 			self::enqueue_script( 'wc-add-to-cart', $frontend_script_path . 'add-to-cart' . $suffix . '.js' );
 		}
 		if ( is_cart() ) {
-			self::enqueue_script( 'wc-cart', $frontend_script_path . 'cart' . $suffix . '.js', array( 'jquery', 'wc-country-select' ) );
+			self::enqueue_script( 'wc-cart', $frontend_script_path . 'cart' . $suffix . '.js', array( 'jquery', 'wc-country-select', 'wc-address-i18n' ) );
 		}
 		if ( is_checkout() || is_page( get_option( 'woocommerce_myaccount_page_id' ) ) ) {
 			self::enqueue_script( 'select2' );
@@ -162,12 +148,15 @@ class WC_Frontend_Scripts {
 			self::enqueue_script( 'wc-lost-password', $frontend_script_path . 'lost-password' . $suffix . '.js', array( 'jquery', 'woocommerce' ) );
 		}
 		if ( $lightbox_en && ( is_product() || ( ! empty( $post->post_content ) && strstr( $post->post_content, '[product_page' ) ) ) ) {
-			self::enqueue_script( 'prettyPhoto', $assets_path . 'js/prettyPhoto/jquery.prettyPhoto' . $suffix . '.js', array( 'jquery' ), '3.1.5', true );
+			self::enqueue_script( 'prettyPhoto', $assets_path . 'js/prettyPhoto/jquery.prettyPhoto' . $suffix . '.js', array( 'jquery' ), '3.1.6', true );
 			self::enqueue_script( 'prettyPhoto-init', $assets_path . 'js/prettyPhoto/jquery.prettyPhoto.init' . $suffix . '.js', array( 'jquery','prettyPhoto' ) );
 			wp_enqueue_style( 'woocommerce_prettyPhoto_css', $assets_path . 'css/prettyPhoto.css' );
 		}
 		if ( is_product() ) {
 			self::enqueue_script( 'wc-single-product' );
+		}
+		if ( 'geolocation_ajax' === get_option( 'woocommerce_default_customer_address' ) ) {
+			self::enqueue_script( 'wc-geolocation', $frontend_script_path . 'geolocation' . $suffix . '.js', array( 'jquery' ) );
 		}
 
 		// Global frontend scripts
@@ -208,7 +197,16 @@ class WC_Frontend_Scripts {
 		switch ( $handle ) {
 			case 'woocommerce' :
 				return array(
-					'ajax_url'        => WC()->ajax_url(),
+					'ajax_url'    => WC()->ajax_url(),
+					'wc_ajax_url' => WC_AJAX::get_endpoint( "%%endpoint%%" )
+				);
+			break;
+			case 'wc-geolocation' :
+				return array(
+					'wc_ajax_url' => WC_AJAX::get_endpoint( "%%endpoint%%" ),
+					'home_url'    => home_url(),
+					'is_checkout' => is_checkout() ? '1' : '0',
+					'hash'        => isset( $_GET['v'] ) ? wc_clean( $_GET['v'] ) : ''
 				);
 			break;
 			case 'wc-single-product' :
@@ -220,13 +218,15 @@ class WC_Frontend_Scripts {
 			case 'wc-checkout' :
 				return array(
 					'ajax_url'                  => WC()->ajax_url(),
+					'wc_ajax_url'               => WC_AJAX::get_endpoint( "%%endpoint%%" ),
 					'update_order_review_nonce' => wp_create_nonce( 'update-order-review' ),
 					'apply_coupon_nonce'        => wp_create_nonce( 'apply-coupon' ),
 					'remove_coupon_nonce'       => wp_create_nonce( 'remove-coupon' ),
 					'option_guest_checkout'     => get_option( 'woocommerce_enable_guest_checkout' ),
-					'checkout_url'              => add_query_arg( 'action', 'woocommerce_checkout', WC()->ajax_url() ),
+					'checkout_url'              => WC_AJAX::get_endpoint( "checkout" ),
 					'is_checkout'               => is_page( wc_get_page_id( 'checkout' ) ) && empty( $wp->query_vars['order-pay'] ) && ! isset( $wp->query_vars['order-received'] ) ? 1 : 0,
-					'debug_mode'                => defined('WP_DEBUG') && WP_DEBUG
+					'debug_mode'                => defined('WP_DEBUG') && WP_DEBUG,
+					'i18n_checkout_error'       => esc_attr__( 'Error processing checkout. Please try again.', 'woocommerce' ),
 				);
 			break;
 			case 'wc-address-i18n' :
@@ -239,20 +239,23 @@ class WC_Frontend_Scripts {
 			case 'wc-cart' :
 				return array(
 					'ajax_url'                     => WC()->ajax_url(),
+					'wc_ajax_url'                  => WC_AJAX::get_endpoint( "%%endpoint%%" ),
 					'update_shipping_method_nonce' => wp_create_nonce( "update-shipping-method" ),
 				);
 			break;
 			case 'wc-cart-fragments' :
 				return array(
 					'ajax_url'      => WC()->ajax_url(),
+					'wc_ajax_url'   => WC_AJAX::get_endpoint( "%%endpoint%%" ),
 					'fragment_name' => apply_filters( 'woocommerce_cart_fragment_name', 'wc_fragments' )
 				);
 			break;
 			case 'wc-add-to-cart' :
 				return array(
 					'ajax_url'                => WC()->ajax_url(),
+					'wc_ajax_url'             => WC_AJAX::get_endpoint( "%%endpoint%%" ),
 					'i18n_view_cart'          => esc_attr__( 'View Cart', 'woocommerce' ),
-					'cart_url'                => wc_get_page_permalink( 'cart' ),
+					'cart_url'                => apply_filters( 'woocommerce_add_to_cart_redirect', WC()->cart->get_cart_url() ),
 					'is_cart'                 => is_cart(),
 					'cart_redirect_after_add' => get_option( 'woocommerce_cart_redirect_after_add' )
 				);
@@ -267,6 +270,18 @@ class WC_Frontend_Scripts {
 				return array(
 					'countries'              => json_encode( array_merge( WC()->countries->get_allowed_country_states(), WC()->countries->get_shipping_country_states() ) ),
 					'i18n_select_state_text' => esc_attr__( 'Select an option&hellip;', 'woocommerce' ),
+					'i18n_matches_1'            => _x( 'One result is available, press enter to select it.', 'enhanced select', 'woocommerce' ),
+					'i18n_matches_n'            => _x( '%qty% results are available, use up and down arrow keys to navigate.', 'enhanced select', 'woocommerce' ),
+					'i18n_no_matches'           => _x( 'No matches found', 'enhanced select', 'woocommerce' ),
+					'i18n_ajax_error'           => _x( 'Loading failed', 'enhanced select', 'woocommerce' ),
+					'i18n_input_too_short_1'    => _x( 'Please enter 1 or more characters', 'enhanced select', 'woocommerce' ),
+					'i18n_input_too_short_n'    => _x( 'Please enter %qty% or more characters', 'enhanced select', 'woocommerce' ),
+					'i18n_input_too_long_1'     => _x( 'Please delete 1 character', 'enhanced select', 'woocommerce' ),
+					'i18n_input_too_long_n'     => _x( 'Please delete %qty% characters', 'enhanced select', 'woocommerce' ),
+					'i18n_selection_too_long_1' => _x( 'You can only select 1 item', 'enhanced select', 'woocommerce' ),
+					'i18n_selection_too_long_n' => _x( 'You can only select %qty% items', 'enhanced select', 'woocommerce' ),
+					'i18n_load_more'            => _x( 'Loading more results&hellip;', 'enhanced select', 'woocommerce' ),
+					'i18n_searching'            => _x( 'Searching&hellip;', 'enhanced select', 'woocommerce' ),
 				);
 			break;
 		}

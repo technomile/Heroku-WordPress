@@ -4,10 +4,10 @@
  *
  * Functions for product specific things.
  *
- * @author 		WooThemes
- * @category 	Core
- * @package 	WooCommerce/Functions
- * @version     2.1.0
+ * @author   WooThemes
+ * @category Core
+ * @package  WooCommerce/Functions
+ * @version  2.3.0
  */
 
 /**
@@ -79,12 +79,14 @@ function wc_delete_product_transients( $post_id = 0 ) {
 	// Core transients
 	$transients_to_clear = array(
 		'wc_products_onsale',
-		'wc_featured_products'
+		'wc_featured_products',
+		'wc_outofstock_count',
+		'wc_low_stock_count'
 	);
 
 	// Transients that include an ID
 	$post_transient_names = array(
-		'wc_product_children_ids_',
+		'wc_product_children_',
 		'wc_product_total_stock_'
 	);
 
@@ -119,8 +121,9 @@ function wc_get_product_ids_on_sale() {
 	$product_ids_on_sale = get_transient( 'wc_products_onsale' );
 
 	// Valid cache found
-	if ( false !== $product_ids_on_sale )
+	if ( false !== $product_ids_on_sale ) {
 		return $product_ids_on_sale;
+	}
 
 	$on_sale_posts = $wpdb->get_results( "
 		SELECT post.ID, post.post_parent FROM `$wpdb->posts` AS post
@@ -138,7 +141,7 @@ function wc_get_product_ids_on_sale() {
 
 	$product_ids_on_sale = array_unique( array_map( 'absint', array_merge( wp_list_pluck( $on_sale_posts, 'ID' ), array_diff( wp_list_pluck( $on_sale_posts, 'post_parent' ), array( 0 ) ) ) ) );
 
-	set_transient( 'wc_products_onsale', $product_ids_on_sale, YEAR_IN_SECONDS );
+	set_transient( 'wc_products_onsale', $product_ids_on_sale, DAY_IN_SECONDS * 30 );
 
 	return $product_ids_on_sale;
 }
@@ -178,10 +181,10 @@ function wc_get_featured_product_ids() {
 	) );
 
 	$product_ids          = array_keys( $featured );
-	$parent_ids           = array_values( $featured );
+	$parent_ids           = array_values( array_filter( $featured ) );
 	$featured_product_ids = array_unique( array_merge( $product_ids, $parent_ids ) );
 
-	set_transient( 'wc_featured_products', $featured_product_ids, YEAR_IN_SECONDS );
+	set_transient( 'wc_featured_products', $featured_product_ids, DAY_IN_SECONDS * 30 );
 
 	return $featured_product_ids;
 }
@@ -196,23 +199,35 @@ function wc_get_featured_product_ids() {
  */
 function wc_product_post_type_link( $permalink, $post ) {
 	// Abort if post is not a product
-	if ( $post->post_type !== 'product' )
+	if ( $post->post_type !== 'product' ) {
 		return $permalink;
+	}
 
 	// Abort early if the placeholder rewrite tag isn't in the generated URL
-	if ( false === strpos( $permalink, '%' ) )
+	if ( false === strpos( $permalink, '%' ) ) {
 		return $permalink;
+	}
 
 	// Get the custom taxonomy terms in use by this post
 	$terms = get_the_terms( $post->ID, 'product_cat' );
 
-	if ( empty( $terms ) ) {
+	if ( ! empty( $terms ) ) {
+		usort( $terms, '_usort_terms_by_ID' ); // order by ID
+
+		$category_object = apply_filters( 'wc_product_post_type_link_product_cat', $terms[0], $terms, $post );
+		$category_object = get_term( $category_object, 'product_cat' );
+		$product_cat     = $category_object->slug;
+
+		if ( $parent = $category_object->parent ) {
+			$ancestors = get_ancestors( $category_object->term_id, 'product_cat' );
+			foreach ( $ancestors as $ancestor ) {
+				$ancestor_object = get_term( $ancestor, 'product_cat' );
+				$product_cat     = $ancestor_object->slug . '/' . $product_cat;
+			}
+		}
+	} else {
 		// If no terms are assigned to this post, use a string instead (can't leave the placeholder there)
 		$product_cat = _x( 'uncategorized', 'slug', 'woocommerce' );
-	} else {
-		// Replace the placeholder rewrite tag with the first term's slug
-		$first_term = array_shift( $terms );
-		$product_cat = $first_term->slug;
 	}
 
 	$find = array(
@@ -238,8 +253,6 @@ function wc_product_post_type_link( $permalink, $post ) {
 		$product_cat,
 		$product_cat
 	);
-
-	$replace = array_map( 'sanitize_title', $replace );
 
 	$permalink = str_replace( $find, $replace, $permalink );
 
@@ -267,7 +280,7 @@ function wc_placeholder_img_src() {
 function wc_placeholder_img( $size = 'shop_thumbnail' ) {
 	$dimensions = wc_get_image_size( $size );
 
-	return apply_filters('woocommerce_placeholder_img', '<img src="' . wc_placeholder_img_src() . '" alt="' . __( 'Placeholder', 'woocommerce' ) . '" width="' . esc_attr( $dimensions['width'] ) . '" class="woocommerce-placeholder wp-post-image" height="' . esc_attr( $dimensions['height'] ) . '" />', $size, $dimensions );
+	return apply_filters('woocommerce_placeholder_img', '<img src="' . wc_placeholder_img_src() . '" alt="' . esc_attr__( 'Placeholder', 'woocommerce' ) . '" width="' . esc_attr( $dimensions['width'] ) . '" class="woocommerce-placeholder wp-post-image" height="' . esc_attr( $dimensions['height'] ) . '" />', $size, $dimensions );
 }
 
 /**
@@ -328,7 +341,6 @@ function wc_get_formatted_variation( $variation, $flat = false ) {
  * Function which handles the start and end of scheduled sales via cron.
  *
  * @access public
- * @return void
  */
 function wc_scheduled_sales() {
 	global $wpdb;
@@ -403,9 +415,6 @@ function wc_scheduled_sales() {
 
 			// Sync parent
 			if ( $parent ) {
-				// We can force variable product price to sync up by removing their min price meta
-				delete_post_meta( $parent, '_min_variation_price' );
-
 				// Grouped products need syncing via a function
 				$this_product = wc_get_product( $product_id );
 				if ( $this_product->is_type( 'simple' ) ) {
@@ -414,6 +423,7 @@ function wc_scheduled_sales() {
 			}
 		}
 
+		WC_Cache_Helper::get_transient_version( 'product', true );
 		delete_transient( 'wc_products_onsale' );
 	}
 }
@@ -462,8 +472,9 @@ add_filter( 'wp_prepare_attachment_for_js', 'wc_prepare_attachment_for_js' );
  * Track product views
  */
 function wc_track_product_view() {
-	if ( ! is_singular( 'product' ) )
+	if ( ! is_singular( 'product' ) || ! is_active_widget( false, false, 'woocommerce_recently_viewed_products', true ) ) {
 		return;
+	}
 
 	global $post;
 
@@ -472,11 +483,13 @@ function wc_track_product_view() {
 	else
 		$viewed_products = (array) explode( '|', $_COOKIE['woocommerce_recently_viewed'] );
 
-	if ( ! in_array( $post->ID, $viewed_products ) )
+	if ( ! in_array( $post->ID, $viewed_products ) ) {
 		$viewed_products[] = $post->ID;
+	}
 
-	if ( sizeof( $viewed_products ) > 15 )
+	if ( sizeof( $viewed_products ) > 15 ) {
 		array_shift( $viewed_products );
+	}
 
 	// Store for session only
 	wc_setcookie( 'woocommerce_recently_viewed', implode( '|', $viewed_products ) );
@@ -520,7 +533,7 @@ function wc_product_has_unique_sku( $product_id, $sku ) {
 		AND $wpdb->postmeta.post_id <> %d LIMIT 1
 	 ", $sku, $product_id ) );
 
-	if ( $sku_found ) {
+	if ( apply_filters( 'wc_product_has_unique_sku', $sku_found, $product_id, $sku ) ) {
 		return false;
 	} else {
 		return true;
@@ -537,7 +550,120 @@ function wc_product_has_unique_sku( $product_id, $sku ) {
 function wc_get_product_id_by_sku( $sku ) {
 	global $wpdb;
 
-	$product_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_sku' AND meta_value='%s' LIMIT 1", $sku ) );
+	$product_id = $wpdb->get_var( $wpdb->prepare( "
+		SELECT posts.ID
+		FROM $wpdb->posts AS posts
+		LEFT JOIN $wpdb->postmeta AS postmeta ON ( posts.ID = postmeta.post_id )
+		WHERE posts.post_type IN ( 'product', 'product_variation' )
+		AND postmeta.meta_key = '_sku' AND postmeta.meta_value = '%s'
+		LIMIT 1
+	 ", $sku ) );
 
 	return ( $product_id ) ? intval( $product_id ) : 0;
+}
+
+/**
+ * Save product price
+ *
+ * This is a private function (internal use ONLY) used until a data manipulation api is built
+ *
+ * @since 2.4.0
+ * @todo  look into Data manipulation API
+ *
+ * @param int $product_id
+ * @param float $regular_price
+ * @param float $sale_price
+ * @param string $date_from
+ * @param string $date_to
+ */
+function _wc_save_product_price( $product_id, $regular_price, $sale_price = '', $date_from = '', $date_to = '' ) {
+	$product_id  = absint( $product_id );
+	$regular_price = wc_format_decimal( $regular_price );
+	$sale_price    = $sale_price === '' ? '' : wc_format_decimal( $sale_price );
+	$date_from     = wc_clean( $date_from );
+	$date_to       = wc_clean( $date_to );
+
+	update_post_meta( $product_id, '_regular_price', $regular_price );
+	update_post_meta( $product_id, '_sale_price', $sale_price );
+
+	// Save Dates
+	update_post_meta( $product_id, '_sale_price_dates_from', $date_from ? strtotime( $date_from ) : '' );
+	update_post_meta( $product_id, '_sale_price_dates_to', $date_to ? strtotime( $date_to ) : '' );
+
+	if ( $date_to && ! $date_from ) {
+		update_post_meta( $product_id, '_sale_price_dates_from', strtotime( 'NOW', current_time( 'timestamp' ) ) );
+	}
+
+	// Update price if on sale
+	if ( '' !== $sale_price && '' === $date_to && '' === $date_from ) {
+		update_post_meta( $product_id, '_price', $sale_price );
+	} else {
+		update_post_meta( $product_id, '_price', $regular_price );
+	}
+
+	if ( '' !== $sale_price && $date_from && strtotime( $date_from ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) {
+		update_post_meta( $product_id, '_price', $sale_price );
+	}
+
+	if ( $date_to && strtotime( $date_to ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) {
+		update_post_meta( $product_id, '_price', $regular_price );
+		update_post_meta( $product_id, '_sale_price_dates_from', '' );
+		update_post_meta( $product_id, '_sale_price_dates_to', '' );
+	}
+}
+
+/**
+ * Get attibutes/data for an individual variation from the database and maintain it's integrity.
+ * @since  2.4.0
+ * @param  int $variation_id
+ * @return array
+ */
+function wc_get_product_variation_attributes( $variation_id ) {
+	// Build variation data from meta
+	$all_meta                = get_post_meta( $variation_id );
+	$parent_id               = wp_get_post_parent_id( $variation_id );
+	$parent_attributes       = array_filter( (array) get_post_meta( $parent_id, '_product_attributes', true ) );
+	$found_parent_attributes = array();
+	$variation_attributes    = array();
+
+	// Compare to parent variable product attributes and ensure they match
+	foreach ( $parent_attributes as $attribute_name => $options ) {
+		$attribute                 = 'attribute_' . sanitize_title( $attribute_name );
+		$found_parent_attributes[] = $attribute;
+		if ( ! empty( $options['is_variation'] ) && ! array_key_exists( $attribute, $variation_attributes ) ) {
+			$variation_attributes[ $attribute ] = ''; // Add it - 'any' will be asumed
+		}
+	}
+
+	// Get the variation attributes from meta
+	foreach ( $all_meta as $name => $value ) {
+		// Only look at valid attribute meta, and also compare variation level attributes and remove any which do not exist at parent level
+		if ( 0 !== strpos( $name, 'attribute_' ) || ! in_array( $name, $found_parent_attributes ) ) {
+			unset( $variation_attributes[ $name ] );
+			continue;
+		}
+		/**
+		 * Pre 2.4 handling where 'slugs' were saved instead of the full text attribute.
+		 * Attempt to get full version of the text attribute from the parent.
+		 */
+		if ( sanitize_title( $value[0] ) === $value[0] && version_compare( get_post_meta( $parent_id, '_product_version', true ), '2.4.0', '<' ) ) {
+			foreach ( $parent_attributes as $attribute ) {
+				if ( $name !== 'attribute_' . sanitize_title( $attribute['name'] ) ) {
+					continue;
+				}
+				$text_attributes = wc_get_text_attributes( $attribute['value'] );
+
+				foreach ( $text_attributes as $text_attribute ) {
+					if ( sanitize_title( $text_attribute ) === $value[0] ) {
+						$value[0] = $text_attribute;
+						break;
+					}
+				}
+			}
+		}
+
+		$variation_attributes[ $name ] = $value[0];
+	}
+
+	return $variation_attributes;
 }

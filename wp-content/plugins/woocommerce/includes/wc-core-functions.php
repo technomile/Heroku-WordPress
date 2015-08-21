@@ -57,7 +57,9 @@ function wc_create_order( $args = array() ) {
 		'status'        => '',
 		'customer_id'   => null,
 		'customer_note' => null,
-		'order_id'      => 0
+		'order_id'      => 0,
+		'created_via'   => '',
+		'parent'        => 0
 	);
 
 	$args       = wp_parse_args( $args, $default_args );
@@ -74,6 +76,7 @@ function wc_create_order( $args = array() ) {
 		$order_data['post_author']   = 1;
 		$order_data['post_password'] = uniqid( 'order_' );
 		$order_data['post_title']    = sprintf( __( 'Order &ndash; %s', 'woocommerce' ), strftime( _x( '%b %d, %Y @ %I:%M %p', 'Order date parsed by strftime', 'woocommerce' ) ) );
+		$order_data['post_parent']   = absint( $args['parent'] );
 	}
 
 	if ( $args['status'] ) {
@@ -97,7 +100,6 @@ function wc_create_order( $args = array() ) {
 		return $order_id;
 	}
 
-	// Default order meta data.
 	if ( ! $updating ) {
 		update_post_meta( $order_id, '_order_key', 'wc_' . apply_filters( 'woocommerce_generate_order_key', uniqid( 'order_' ) ) );
 		update_post_meta( $order_id, '_order_currency', get_woocommerce_currency() );
@@ -105,13 +107,16 @@ function wc_create_order( $args = array() ) {
 		update_post_meta( $order_id, '_customer_ip_address', isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'] );
 		update_post_meta( $order_id, '_customer_user_agent', isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '' );
 		update_post_meta( $order_id, '_customer_user', 0 );
+		update_post_meta( $order_id, '_created_via', sanitize_text_field( $args['created_via'] ) );
 	}
 
 	if ( is_numeric( $args['customer_id'] ) ) {
 		update_post_meta( $order_id, '_customer_user', $args['customer_id'] );
 	}
 
-	return new WC_Order( $order_id );
+	update_post_meta( $order_id, '_order_version', WC_VERSION );
+
+	return wc_get_order( $order_id );
 }
 
 /**
@@ -132,7 +137,6 @@ function wc_update_order( $args ) {
  * @access public
  * @param mixed $slug
  * @param string $name (default: '')
- * @return void
  */
 function wc_get_template_part( $slug, $name = '' ) {
 	$template = '';
@@ -170,7 +174,6 @@ function wc_get_template_part( $slug, $name = '' ) {
  * @param array $args (default: array())
  * @param string $template_path (default: '')
  * @param string $default_path (default: '')
- * @return void
  */
 function wc_get_template( $template_name, $args = array(), $template_path = '', $default_path = '' ) {
 	if ( $args && is_array( $args ) ) {
@@ -252,6 +255,7 @@ function get_woocommerce_currencies() {
 		apply_filters( 'woocommerce_currencies',
 			array(
 				'AED' => __( 'United Arab Emirates Dirham', 'woocommerce' ),
+				'ARS' => __( 'Argentine Peso', 'woocommerce' ),
 				'AUD' => __( 'Australian Dollars', 'woocommerce' ),
 				'BDT' => __( 'Bangladeshi Taka', 'woocommerce' ),
 				'BRL' => __( 'Brazilian Real', 'woocommerce' ),
@@ -296,7 +300,7 @@ function get_woocommerce_currencies() {
 				'UAH' => __( 'Ukrainian Hryvnia', 'woocommerce' ),
 				'USD' => __( 'US Dollars', 'woocommerce' ),
 				'VND' => __( 'Vietnamese Dong', 'woocommerce' ),
-				'EGP' => __( 'Egyptian Pound', 'woocommerce' ),
+				'EGP' => __( 'Egyptian Pound', 'woocommerce' )
 			)
 		)
 	);
@@ -317,6 +321,7 @@ function get_woocommerce_currency_symbol( $currency = '' ) {
 			$currency_symbol = 'د.إ';
 			break;
 		case 'AUD' :
+		case 'ARS' :
 		case 'CAD' :
 		case 'CLP' :
 		case 'COP' :
@@ -348,7 +353,7 @@ function get_woocommerce_currency_symbol( $currency = '' ) {
 			$currency_symbol = '&#75;&#269;';
 			break;
 		case 'DKK' :
-			$currency_symbol = 'kr.';
+			$currency_symbol = 'DKK';
 			break;
 		case 'DOP' :
 			$currency_symbol = 'RD&#36;';
@@ -470,7 +475,7 @@ function wc_get_image_size( $image_size ) {
 		$width  = isset( $image_size[0] ) ? $image_size[0] : '300';
 		$height = isset( $image_size[1] ) ? $image_size[1] : '300';
 		$crop   = isset( $image_size[2] ) ? $image_size[2] : 1;
-		
+
 		$size = array(
 			'width'  => $width,
 			'height' => $height,
@@ -558,7 +563,8 @@ function wc_setcookie( $name, $value, $expire = 0, $secure = false ) {
  */
 function get_woocommerce_api_url( $path ) {
 
-	$version = defined( 'WC_API_REQUEST_VERSION' ) ? WC_API_REQUEST_VERSION : WC_API::VERSION;
+	$_version = substr( WC_API::VERSION, 0, 1 );
+	$version  = defined( 'WC_API_REQUEST_VERSION' ) ? WC_API_REQUEST_VERSION : $_version;
 
 	$url = get_home_url( null, "wc-api/v{$version}/", is_ssl() ? 'https' : 'http' );
 
@@ -673,7 +679,7 @@ add_filter( 'mod_rewrite_rules', 'wc_ms_protect_download_rewite_rules' );
  * WooCommerce Core Supported Themes
  *
  * @since 2.2
- * @return array
+ * @return string[]
  */
 function wc_get_core_supported_themes() {
 	return array( 'twentyfifteen', 'twentyfourteen', 'twentythirteen', 'twentyeleven', 'twentytwelve', 'twentyten' );
@@ -743,12 +749,16 @@ function wc_get_base_location() {
 
 /**
  * Get the customer's default location. Filtered, and set to base location or left blank.
+ *
+ * If cache-busting, this should only be used when 'location' is set in the querystring.
+ *
  * @todo should the woocommerce_default_country option be renamed to contain 'base'?
  * @since 2.3.0
  * @return array
  */
 function wc_get_customer_default_location() {
 	switch ( get_option( 'woocommerce_default_customer_address' ) ) {
+		case 'geolocation_ajax' :
 		case 'geolocation' :
 			$location = WC_Geolocation::geolocate_ip();
 
@@ -797,3 +807,28 @@ if ( ! function_exists( 'hash_equals' ) ) :
 		return $result === 0;
 	}
 endif;
+
+/**
+ * Generate a rand hash
+ *
+ * @since  2.4.0
+ * @return string
+ */
+function wc_rand_hash() {
+	if ( function_exists( 'openssl_random_pseudo_bytes' ) ) {
+		return bin2hex( openssl_random_pseudo_bytes( 20 ) );
+	} else {
+		return sha1( wp_rand() );
+	}
+}
+
+/**
+ * WC API - Hash
+ *
+ * @since  2.4.0
+ * @param  string $data
+ * @return string
+ */
+function wc_api_hash( $data ) {
+	return hash_hmac( 'sha256', $data, 'wc-api' );
+}

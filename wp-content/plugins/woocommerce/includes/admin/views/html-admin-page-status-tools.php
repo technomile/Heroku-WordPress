@@ -4,7 +4,7 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit;
 }
 
 ?>
@@ -20,11 +20,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</thead>
 		<tbody class="tools">
 			<?php foreach ( $tools as $action => $tool ) : ?>
-				<tr>
+				<tr class="<?php echo sanitize_html_class( $action ); ?>">
 					<td><?php echo esc_html( $tool['name'] ); ?></td>
 					<td>
 						<p>
-							<a href="<?php echo wp_nonce_url( admin_url('admin.php?page=wc-status&tab=tools&action=' . $action ), 'debug_action' ); ?>" class="button"><?php echo esc_html( $tool['button'] ); ?></a>
+							<a href="<?php echo wp_nonce_url( admin_url('admin.php?page=wc-status&tab=tools&action=' . $action ), 'debug_action' ); ?>" class="button <?php echo esc_attr( $action ); ?>"><?php echo esc_html( $tool['button'] ); ?></a>
 							<span class="description"><?php echo wp_kses_post( $tool['desc'] ); ?></span>
 						</p>
 					</td>
@@ -53,13 +53,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 				</td>
 			</tr>
 			<tr>
-				<td><?php _e( 'Uninstall on Delete', 'woocommerce' ); ?></td>
+				<td><?php _e( 'Remove All Data', 'woocommerce' ); ?></td>
 				<td>
 					<p>
 						<label><input type="checkbox" class="checkbox" name="woocommerce_status_options[uninstall_data]" value="1" <?php checked( '1', $options['uninstall_data'] ); ?> /> <?php _e( 'Enabled', 'woocommerce' ); ?></label>
 					</p>
 					<p>
-						<span class="description"><?php _e( 'This tool will delete all WooCommerce, Product and Order data when uninstalling via Plugins > Delete.', 'woocommerce' ); ?></span>
+						<span class="description"><?php _e( 'This tool will remove all WooCommerce, Product and Order data when using the "Delete" link on the plugins screen.', 'woocommerce' ); ?></span>
 					</p>
 				</td>
 			</tr>

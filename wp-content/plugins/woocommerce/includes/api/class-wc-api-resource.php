@@ -205,6 +205,11 @@ class WC_API_Resource {
 			unset( $request_args['in'] );
 		}
 
+		// exclude by a list of post id
+		if ( ! empty( $request_args['not_in'] ) ) {
+			$args['post__not_in'] = explode( ',', $request_args['not_in'] );
+			unset( $request_args['not_in'] );
+		}
 
 		// resource page
 		$args['paged'] = ( isset( $request_args['page'] ) ) ? absint( $request_args['page'] ) : 1;
@@ -434,25 +439,25 @@ class WC_API_Resource {
 	 */
 	private function check_permission( $post, $context ) {
 
-		if ( ! is_a( $post, 'WP_Post' ) )
+		if ( ! is_a( $post, 'WP_Post' ) ) {
 			$post = get_post( $post );
+		}
 
-		if ( is_null( $post ) )
+		if ( is_null( $post ) ) {
 			return false;
+		}
 
 		$post_type = get_post_type_object( $post->post_type );
 
-		if ( 'read' === $context )
-			return current_user_can( $post_type->cap->read_private_posts, $post->ID );
-
-		elseif ( 'edit' === $context )
+		if ( 'read' === $context ) {
+			return ( 'revision' !== $post->post_type && current_user_can( $post_type->cap->read_private_posts, $post->ID ) );
+		} elseif ( 'edit' === $context ) {
 			return current_user_can( $post_type->cap->edit_post, $post->ID );
-
-		elseif ( 'delete' === $context )
+		} elseif ( 'delete' === $context ) {
 			return current_user_can( $post_type->cap->delete_post, $post->ID );
-
-		else
+		} else {
 			return false;
+		}
 	}
 
 }

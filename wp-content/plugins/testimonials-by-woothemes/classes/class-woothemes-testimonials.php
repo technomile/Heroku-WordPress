@@ -42,6 +42,9 @@ class Woothemes_Testimonials {
 
 		add_action( 'init', array( $this, 'register_post_type' ) );
 		add_action( 'init', array( $this, 'register_taxonomy' ) );
+		add_action( 'init', array( $this, 'support_jetpack_omnisearch' ) );
+		add_filter( 'jetpack_relatedposts_filter_headline', array( $this, 'support_jetpack_relatedposts' )  );
+
 
 		if ( is_admin() ) {
 			global $pagenow;
@@ -103,7 +106,7 @@ class Woothemes_Testimonials {
 			'capability_type' => 'post',
 			'has_archive' => $archive_slug,
 			'hierarchical' => false,
-			'supports' => array( 'title', 'author' ,'editor', 'thumbnail', 'page-attributes' ),
+			'supports' => array( 'title', 'author' ,'editor', 'thumbnail', 'page-attributes', 'publicize', 'wpcom-markdown' ),
 			'menu_position' => 5,
 			'menu_icon' => ''
 		);
@@ -563,4 +566,28 @@ class Woothemes_Testimonials {
 	public function ensure_post_thumbnails_support () {
 		if ( ! current_theme_supports( 'post-thumbnails' ) ) { add_theme_support( 'post-thumbnails' ); }
 	} // End ensure_post_thumbnails_support()
+
+	/**
+    * Add Testimonial Support to Jetpack Omnisearch
+    */
+    public function support_jetpack_omnisearch() {
+        if ( class_exists( 'Jetpack_Omnisearch_Posts' ) ) {
+            new Jetpack_Omnisearch_Posts( 'testimonial' );
+        }
+    }
+
+    /**
+    * Better Jetpack Related Posts Support for Testimonials
+    */
+    function support_jetpack_relatedposts( $headline ) {
+        if ( is_singular( 'testimonial' ) ) {
+            $headline = sprintf(
+            '<h3 class="jp-relatedposts-headline"><em>%s</em></h3>',
+            esc_html( 'Similar Testimonials' )
+        );
+        return $headline;
+        }
+    }
+
 } // End Class
+

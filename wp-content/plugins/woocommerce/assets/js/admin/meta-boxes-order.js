@@ -1,4 +1,4 @@
-/*global woocommerce_admin_meta_boxes, woocommerce_admin, accounting */
+/*global woocommerce_admin_meta_boxes, woocommerce_admin, accounting, woocommerce_admin_meta_boxes_order */
 jQuery( function ( $ ) {
 
 	/**
@@ -14,14 +14,15 @@ jQuery( function ( $ ) {
 
 			$( '.js_field-country' ).select2().change( this.change_country );
 			$( '.js_field-country' ).trigger( 'change', [ true ] );
-			$( 'body' ).on( 'change', 'select.js_field-state', this.change_state );
+			$( document.body ).on( 'change', 'select.js_field-state', this.change_state );
 			$( '#woocommerce-order-actions input, #woocommerce-order-actions a' ).click(function() {
 				window.onbeforeunload = '';
 			});
 			$( 'a.edit_address' ).click( this.edit_address );
-			$( 'button.billing-same-as-shipping' ).on( 'click', this.copy_billing_to_shipping );
-			$( 'button.load_customer_billing' ).on( 'click', this.load_billing );
-			$( 'button.load_customer_shipping' ).on( 'click', this.load_shipping );
+			$( 'a.billing-same-as-shipping' ).on( 'click', this.copy_billing_to_shipping );
+			$( 'a.load_customer_billing' ).on( 'click', this.load_billing );
+			$( 'a.load_customer_shipping' ).on( 'click', this.load_shipping );
+			$( '#customer_user' ).on( 'change', this.change_customer_user );
 		},
 
 		change_country: function( e, stickValue ) {
@@ -37,7 +38,7 @@ jQuery( function ( $ ) {
 
 			var $this = $( this ),
 				country = $this.val(),
-				$state = $this.parents( '.edit_address' ).find( ':input.js_field-state' ),
+				$state = $this.parents( 'div.edit_address' ).find( ':input.js_field-state' ),
 				$parent = $state.parent(),
 				input_name = $state.attr( 'name' ),
 				input_id = $state.attr( 'id' ),
@@ -57,7 +58,7 @@ jQuery( function ( $ ) {
 
 				$states_select.append( $( '<option value="">' + woocommerce_admin_meta_boxes_order.i18n_select_state_text + '</option>' ) );
 
-				$.each( state, function( index, name ) {
+				$.each( state, function( index ) {
 					$states_select.append( $( '<option value="' + index + '">' + state[ index ] + '</option>' ) );
 				} );
 
@@ -70,14 +71,14 @@ jQuery( function ( $ ) {
 				$state.replaceWith( '<input type="text" class="js_field-state" name="' + input_name + '" id="' + input_id + '" value="' + value + '" placeholder="' + placeholder + '" />' );
 			}
 
-			$( 'body' ).trigger( 'contry-change.woocommerce', [country, $( this ).closest( 'div' )] );
+			$( document.body ).trigger( 'contry-change.woocommerce', [country, $( this ).closest( 'div' )] );
 		},
 
 		change_state: function() {
 			// Here we will find if state value on a select has changed and stick it to the country data
 			var $this = $( this ),
 				state = $this.val(),
-				$country = $this.parents( '.edit_address' ).find( ':input.js_field-country' ),
+				$country = $this.parents( 'div.edit_address' ).find( ':input.js_field-country' ),
 				country = $country.val();
 
 			$country.data( 'woocommerce.stickState-' + country, state );
@@ -97,12 +98,21 @@ jQuery( function ( $ ) {
 		edit_address: function( e ) {
 			e.preventDefault();
 			$( this ).hide();
+			$( this ).parent().find( 'a:not(.edit_address)' ).show();
 			$( this ).closest( '.order_data_column' ).find( 'div.address' ).hide();
 			$( this ).closest( '.order_data_column' ).find( 'div.edit_address' ).show();
 		},
 
-		load_billing: function() {
-			if ( window.confirm( woocommerce_admin_meta_boxes.load_billing ) ) {
+		change_customer_user: function() {
+			if ( ! $( '#_billing_country' ).val() ) {
+				$( 'a.edit_address' ).click();
+				wc_meta_boxes_order.load_billing( true );
+				wc_meta_boxes_order.load_shipping( true );
+			}
+		},
+
+		load_billing: function( force ) {
+			if ( true === force || window.confirm( woocommerce_admin_meta_boxes.load_billing ) ) {
 
 				// Get user ID to load data for
 				var user_id = $( '#customer_user' ).val();
@@ -119,7 +129,7 @@ jQuery( function ( $ ) {
 					security:     woocommerce_admin_meta_boxes.get_customer_details_nonce
 				};
 
-				$( this ).closest( '.edit_address' ).block({
+				$( this ).closest( 'div.edit_address' ).block({
 					message: null,
 					overlayCSS: {
 						background: '#fff',
@@ -148,15 +158,15 @@ jQuery( function ( $ ) {
 							$( 'input#_billing_phone' ).val( info.billing_phone ).change();
 						}
 
-						$( '.edit_address' ).unblock();
+						$( 'div.edit_address' ).unblock();
 					}
 				});
 			}
 			return false;
 		},
 
-		load_shipping: function() {
-			if ( window.confirm( woocommerce_admin_meta_boxes.load_shipping ) ) {
+		load_shipping: function( force ) {
+			if ( true === force || window.confirm( woocommerce_admin_meta_boxes.load_shipping ) ) {
 
 				// Get user ID to load data for
 				var user_id = $( '#customer_user' ).val();
@@ -173,7 +183,7 @@ jQuery( function ( $ ) {
 					security:     woocommerce_admin_meta_boxes.get_customer_details_nonce
 				};
 
-				$( this ).closest( '.edit_address' ).block({
+				$( this ).closest( 'div.edit_address' ).block({
 					message: null,
 					overlayCSS: {
 						background: '#fff',
@@ -200,7 +210,7 @@ jQuery( function ( $ ) {
 							$( '#_shipping_state' ).val( info.shipping_state ).change();
 						}
 
-						$( '.edit_address' ).unblock();
+						$( 'div.edit_address' ).unblock();
 					}
 				});
 			}
@@ -221,7 +231,7 @@ jQuery( function ( $ ) {
 			}
 			return false;
 		}
-	}
+	};
 
 	/**
 	 * Order Items Panel
@@ -273,7 +283,7 @@ jQuery( function ( $ ) {
 				.on( 'click', 'button.add_order_item_meta', this.item_meta.add )
 				.on( 'click', 'button.remove_order_item_meta', this.item_meta.remove );
 
-			$( 'body' )
+			$( document.body )
 				.on( 'wc_backbone_modal_loaded', this.backbone.init )
 				.on( 'wc_backbone_modal_response', this.backbone.response );
 		},
@@ -471,7 +481,7 @@ jQuery( function ( $ ) {
 					url:     woocommerce_admin_meta_boxes.ajax_url,
 					data:    data,
 					type:    'POST',
-					success: function( response ) {
+					success: function() {
 						$item.remove();
 						wc_meta_boxes_order_items.unblock();
 					}
@@ -710,14 +720,14 @@ jQuery( function ( $ ) {
 					var data = {
 						action:    'woocommerce_delete_refund',
 						refund_id: refund_id,
-						security:  woocommerce_admin_meta_boxes.order_item_nonce,
+						security:  woocommerce_admin_meta_boxes.order_item_nonce
 					};
 
 					$.ajax({
 						url:     woocommerce_admin_meta_boxes.ajax_url,
 						data:    data,
 						type:    'POST',
-						success: function( response ) {
+						success: function() {
 							wc_meta_boxes_order_items.reload_items();
 						}
 					});
@@ -853,7 +863,7 @@ jQuery( function ( $ ) {
 						url: woocommerce_admin_meta_boxes.ajax_url,
 						data: data,
 						type: 'POST',
-						success: function( response ) {
+						success: function() {
 							$row.hide();
 							wc_meta_boxes_order_items.unblock();
 						}
@@ -865,7 +875,7 @@ jQuery( function ( $ ) {
 
 		bulk_actions: {
 
-			check_column: function(){
+			check_column: function() {
 				if ( $( this ).is( ':checked' ) ) {
 					$( '#woocommerce-order-items' ).find( '.check-column input' ).attr( 'checked', 'checked' );
 				} else {
@@ -891,14 +901,14 @@ jQuery( function ( $ ) {
 					return;
 				}
 
-				if ( wc_meta_boxes_order_items.bulk_actions[ action ] ) {
-					wc_meta_boxes_order_items.bulk_actions[action]( selected_rows, item_ids );
+				if ( wc_meta_boxes_order_items.bulk_actions[ 'do_' + action ] ) {
+					wc_meta_boxes_order_items.bulk_actions[ 'do_' + action ]( selected_rows, item_ids );
 				}
 
 				return false;
 			},
 
-			delete: function( selected_rows, item_ids ) {
+			do_delete: function( selected_rows, item_ids ) {
 				if ( window.confirm( woocommerce_admin_meta_boxes.remove_item_notice ) ) {
 
 					wc_meta_boxes_order_items.block();
@@ -913,7 +923,7 @@ jQuery( function ( $ ) {
 						url: woocommerce_admin_meta_boxes.ajax_url,
 						data: data,
 						type: 'POST',
-						success: function( response ) {
+						success: function() {
 							$( selected_rows ).each(function() {
 								$( this ).closest( 'tr' ).remove();
 							});
@@ -923,7 +933,7 @@ jQuery( function ( $ ) {
 				}
 			},
 
-			increase_stock: function( selected_rows, item_ids ) {
+			do_increase_stock: function( selected_rows, item_ids ) {
 				wc_meta_boxes_order_items.block();
 
 				var quantities = {};
@@ -955,7 +965,7 @@ jQuery( function ( $ ) {
 				});
 			},
 
-			reduce_stock: function( selected_rows, item_ids ) {
+			do_reduce_stock: function( selected_rows, item_ids ) {
 				wc_meta_boxes_order_items.block();
 
 				var quantities = {};
@@ -984,7 +994,7 @@ jQuery( function ( $ ) {
 						window.alert( response );
 						wc_meta_boxes_order_items.unblock();
 					}
-				} );
+				});
 			}
 		},
 
@@ -992,7 +1002,7 @@ jQuery( function ( $ ) {
 
 			init: function( e, target ) {
 				if ( '#wc-modal-add-products' === target ) {
-					$( 'body' ).trigger( 'wc-enhanced-select-init' );
+					$( document.body ).trigger( 'wc-enhanced-select-init' );
 				}
 			},
 
@@ -1135,7 +1145,7 @@ jQuery( function ( $ ) {
 				post_id:   woocommerce_admin_meta_boxes.post_id,
 				note:      $( 'textarea#add_order_note' ).val(),
 				note_type: $( 'select#order_note_type' ).val(),
-				security:  woocommerce_admin_meta_boxes.add_order_note_nonce,
+				security:  woocommerce_admin_meta_boxes.add_order_note_nonce
 			};
 
 			$.post( woocommerce_admin_meta_boxes.ajax_url, data, function( response ) {
@@ -1161,16 +1171,16 @@ jQuery( function ( $ ) {
 			var data = {
 				action:   'woocommerce_delete_order_note',
 				note_id:  $( note ).attr( 'rel' ),
-				security: woocommerce_admin_meta_boxes.delete_order_note_nonce,
+				security: woocommerce_admin_meta_boxes.delete_order_note_nonce
 			};
 
-			$.post( woocommerce_admin_meta_boxes.ajax_url, data, function( response ) {
+			$.post( woocommerce_admin_meta_boxes.ajax_url, data, function() {
 				$( note ).remove();
 			});
 
 			return false;
-		},
-	}
+		}
+	};
 
 	/**
 	 * Order Downloads Panel
@@ -1202,7 +1212,7 @@ jQuery( function ( $ ) {
 				product_ids: products,
 				loop:        $('.order_download_permissions .wc-metabox').size(),
 				order_id:    woocommerce_admin_meta_boxes.post_id,
-				security:    woocommerce_admin_meta_boxes.grant_access_nonce,
+				security:    woocommerce_admin_meta_boxes.grant_access_nonce
 			};
 
 			$.post( woocommerce_admin_meta_boxes.ajax_url, data, function( response ) {
@@ -1213,7 +1223,7 @@ jQuery( function ( $ ) {
 					window.alert( woocommerce_admin_meta_boxes.i18n_download_permission_fail );
 				}
 
-				$('body').trigger( 'wc-init-datepickers' );
+				$( document.body ).trigger( 'wc-init-datepickers' );
 				$( '#grant_access_id' ).val( '' ).change();
 				$( '.order_download_permissions' ).unblock();
 			});
@@ -1241,10 +1251,10 @@ jQuery( function ( $ ) {
 						product_id:  product,
 						download_id: file,
 						order_id:    woocommerce_admin_meta_boxes.post_id,
-						security:    woocommerce_admin_meta_boxes.revoke_access_nonce,
+						security:    woocommerce_admin_meta_boxes.revoke_access_nonce
 					};
 
-					$.post( woocommerce_admin_meta_boxes.ajax_url, data, function ( response ) {
+					$.post( woocommerce_admin_meta_boxes.ajax_url, data, function() {
 						// Success
 						$( el ).fadeOut( '300', function () {
 							$( el ).remove();
@@ -1259,7 +1269,7 @@ jQuery( function ( $ ) {
 			}
 			return false;
 		}
-	}
+	};
 
 	wc_meta_boxes_order.init();
 	wc_meta_boxes_order_items.init();

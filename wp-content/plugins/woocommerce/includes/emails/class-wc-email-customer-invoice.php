@@ -11,11 +11,11 @@ if ( ! class_exists( 'WC_Email_Customer_Invoice' ) ) :
  *
  * An email sent to the customer via admin.
  *
- * @class 		WC_Email_Customer_Invoice
- * @version		2.3.0
- * @package		WooCommerce/Classes/Emails
- * @author 		WooThemes
- * @extends 	WC_Email
+ * @class       WC_Email_Customer_Invoice
+ * @version     2.3.0
+ * @package     WooCommerce/Classes/Emails
+ * @author      WooThemes
+ * @extends     WC_Email
  */
 class WC_Email_Customer_Invoice extends WC_Email {
 
@@ -48,10 +48,7 @@ class WC_Email_Customer_Invoice extends WC_Email {
 	}
 
 	/**
-	 * trigger function.
-	 *
-	 * @access public
-	 * @return void
+	 * Trigger.
 	 */
 	function trigger( $order ) {
 
@@ -60,8 +57,8 @@ class WC_Email_Customer_Invoice extends WC_Email {
 		}
 
 		if ( $order ) {
-			$this->object 		= $order;
-			$this->recipient	= $this->object->billing_email;
+			$this->object                  = $order;
+			$this->recipient               = $this->object->billing_email;
 
 			$this->find['order-date']      = '{order_date}';
 			$this->find['order-number']    = '{order_number}';
@@ -114,7 +111,7 @@ class WC_Email_Customer_Invoice extends WC_Email {
 	function get_content_html() {
 		ob_start();
 		wc_get_template( $this->template_html, array(
-			'order' 		=> $this->object,
+			'order'         => $this->object,
 			'email_heading' => $this->get_heading(),
 			'sent_to_admin' => false,
 			'plain_text'    => false
@@ -131,7 +128,7 @@ class WC_Email_Customer_Invoice extends WC_Email {
 	function get_content_plain() {
 		ob_start();
 		wc_get_template( $this->template_plain, array(
-			'order' 		=> $this->object,
+			'order'         => $this->object,
 			'email_heading' => $this->get_heading(),
 			'sent_to_admin' => false,
 			'plain_text'    => true
@@ -140,48 +137,45 @@ class WC_Email_Customer_Invoice extends WC_Email {
 	}
 
 	/**
-	 * Initialise Settings Form Fields
-	 *
-	 * @access public
-	 * @return void
+	 * Initialise settings form fields
 	 */
 	function init_form_fields() {
 		$this->form_fields = array(
 			'subject' => array(
-				'title' 		=> __( 'Email subject', 'woocommerce' ),
-				'type' 			=> 'text',
-				'description' 	=> sprintf( __( 'Defaults to <code>%s</code>', 'woocommerce' ), $this->subject ),
-				'placeholder' 	=> '',
-				'default' 		=> ''
+				'title'         => __( 'Email Subject', 'woocommerce' ),
+				'type'          => 'text',
+				'description'   => sprintf( __( 'Defaults to <code>%s</code>', 'woocommerce' ), $this->subject ),
+				'placeholder'   => '',
+				'default'       => ''
 			),
 			'heading' => array(
-				'title' 		=> __( 'Email heading', 'woocommerce' ),
-				'type' 			=> 'text',
-				'description' 	=> sprintf( __( 'Defaults to <code>%s</code>', 'woocommerce' ), $this->heading ),
-				'placeholder' 	=> '',
-				'default' 		=> ''
+				'title'         => __( 'Email Heading', 'woocommerce' ),
+				'type'          => 'text',
+				'description'   => sprintf( __( 'Defaults to <code>%s</code>', 'woocommerce' ), $this->heading ),
+				'placeholder'   => '',
+				'default'       => ''
 			),
 			'subject_paid' => array(
-				'title' 		=> __( 'Email subject (paid)', 'woocommerce' ),
-				'type' 			=> 'text',
-				'description' 	=> sprintf( __( 'Defaults to <code>%s</code>', 'woocommerce' ), $this->subject_paid ),
-				'placeholder' 	=> '',
-				'default' 		=> ''
+				'title'         => __( 'Email Subject (paid)', 'woocommerce' ),
+				'type'          => 'text',
+				'description'   => sprintf( __( 'Defaults to <code>%s</code>', 'woocommerce' ), $this->subject_paid ),
+				'placeholder'   => '',
+				'default'       => ''
 			),
 			'heading_paid' => array(
-				'title' 		=> __( 'Email heading (paid)', 'woocommerce' ),
-				'type' 			=> 'text',
-				'description' 	=> sprintf( __( 'Defaults to <code>%s</code>', 'woocommerce' ), $this->heading_paid ),
-				'placeholder' 	=> '',
-				'default' 		=> ''
+				'title'         => __( 'Email Heading (paid)', 'woocommerce' ),
+				'type'          => 'text',
+				'description'   => sprintf( __( 'Defaults to <code>%s</code>', 'woocommerce' ), $this->heading_paid ),
+				'placeholder'   => '',
+				'default'       => ''
 			),
 			'email_type' => array(
-				'title' 		=> __( 'Email type', 'woocommerce' ),
-				'type' 			=> 'select',
-				'description' 	=> __( 'Choose which format of email to send.', 'woocommerce' ),
-				'default' 		=> 'html',
-				'class'			=> 'email_type wc-enhanced-select',
-				'options'		=> $this->get_email_type_options()
+				'title'         => __( 'Email Type', 'woocommerce' ),
+				'type'          => 'select',
+				'description'   => __( 'Choose which format of email to send.', 'woocommerce' ),
+				'default'       => 'html',
+				'class'         => 'email_type wc-enhanced-select',
+				'options'       => $this->get_email_type_options()
 			)
 		);
 	}

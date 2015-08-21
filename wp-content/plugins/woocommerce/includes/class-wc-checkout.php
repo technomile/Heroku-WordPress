@@ -4,7 +4,7 @@
  *
  * The WooCommerce checkout class handles the checkout process, collecting user data and processing the payment.
  *
- * @class 		WC_Cart
+ * @class 		WC_Checkout
  * @version		2.1.0
  * @package		WooCommerce/Classes
  * @category		Class
@@ -137,9 +137,6 @@ class WC_Checkout {
 
 	/**
 	 * Output the billing information form
-	 *
-	 * @access public
-	 * @return void
 	 */
 	public function checkout_form_billing() {
 		wc_get_template( 'checkout/form-billing.php', array( 'checkout' => $this ) );
@@ -147,9 +144,6 @@ class WC_Checkout {
 
 	/**
 	 * Output the shipping information form
-	 *
-	 * @access public
-	 * @return void
 	 */
 	public function checkout_form_shipping() {
 		wc_get_template( 'checkout/form-shipping.php', array( 'checkout' => $this ) );
@@ -186,7 +180,8 @@ class WC_Checkout {
 			$order_data = array(
 				'status'        => apply_filters( 'woocommerce_default_order_status', 'pending' ),
 				'customer_id'   => $this->customer_id,
-				'customer_note' => isset( $this->posted['order_comments'] ) ? $this->posted['order_comments'] : ''
+				'customer_note' => isset( $this->posted['order_comments'] ) ? $this->posted['order_comments'] : '',
+				'created_via'   => 'checkout'
 			);
 
 			// Insert or update the post data
@@ -342,9 +337,6 @@ class WC_Checkout {
 
 	/**
 	 * Process the checkout after the confirm order button is pressed
-	 *
-	 * @access public
-	 * @return void
 	 */
 	public function process_checkout() {
 		try {
@@ -362,7 +354,7 @@ class WC_Checkout {
 
 			do_action( 'woocommerce_before_checkout_process' );
 
-			if ( 0 === sizeof( WC()->cart->get_cart() ) ) {
+			if ( WC()->cart->is_empty() ) {
 				throw new Exception( sprintf( __( 'Sorry, your session has expired. <a href="%s" class="wc-backward">Return to homepage</a>', 'woocommerce' ), home_url() ) );
 			}
 
@@ -405,7 +397,7 @@ class WC_Checkout {
 			foreach ( $this->checkout_fields as $fieldset_key => $fieldset ) {
 
 				// Skip shipping if not needed
-				if ( $fieldset_key == 'shipping' && ( $this->posted['ship_to_different_address'] == false || ! WC()->cart->needs_shipping() ) ) {
+				if ( $fieldset_key == 'shipping' && ( $this->posted['ship_to_different_address'] == false || ! WC()->cart->needs_shipping_address() ) ) {
 					$skipped_shipping = true;
 					continue;
 				}
@@ -595,30 +587,30 @@ class WC_Checkout {
 					$password     = ! empty( $this->posted['account_password'] ) ? $this->posted['account_password'] : '';
 					$new_customer = wc_create_new_customer( $this->posted['billing_email'], $username, $password );
 
-                	if ( is_wp_error( $new_customer ) ) {
-                		throw new Exception( $new_customer->get_error_message() );
-                	}
+					if ( is_wp_error( $new_customer ) ) {
+						throw new Exception( $new_customer->get_error_message() );
+					}
 
-                	$this->customer_id = $new_customer;
+					$this->customer_id = $new_customer;
 
-                	wc_set_customer_auth_cookie( $this->customer_id );
+					wc_set_customer_auth_cookie( $this->customer_id );
 
-                	// As we are now logged in, checkout will need to refresh to show logged in data
-                	WC()->session->set( 'reload_checkout', true );
+					// As we are now logged in, checkout will need to refresh to show logged in data
+					WC()->session->set( 'reload_checkout', true );
 
-                	// Also, recalculate cart totals to reveal any role-based discounts that were unavailable before registering
+					// Also, recalculate cart totals to reveal any role-based discounts that were unavailable before registering
 					WC()->cart->calculate_totals();
 
-                	// Add customer info from other billing fields
-                	if ( $this->posted['billing_first_name'] && apply_filters( 'woocommerce_checkout_update_customer_data', true, $this ) ) {
-                		$userdata = array(
+					// Add customer info from other billing fields
+					if ( $this->posted['billing_first_name'] && apply_filters( 'woocommerce_checkout_update_customer_data', true, $this ) ) {
+						$userdata = array(
 							'ID'           => $this->customer_id,
 							'first_name'   => $this->posted['billing_first_name'] ? $this->posted['billing_first_name'] : '',
 							'last_name'    => $this->posted['billing_last_name'] ? $this->posted['billing_last_name'] : '',
 							'display_name' => $this->posted['billing_first_name'] ? $this->posted['billing_first_name'] : ''
-                		);
-                		wp_update_user( apply_filters( 'woocommerce_checkout_customer_userdata', $userdata, $this ) );
-                	}
+						);
+						wp_update_user( apply_filters( 'woocommerce_checkout_customer_userdata', $userdata, $this ) );
+					}
 				}
 
 				// Do a final stock check at this point
@@ -651,8 +643,7 @@ class WC_Checkout {
 						$result = apply_filters( 'woocommerce_payment_successful_result', $result, $order_id );
 
 						if ( is_ajax() ) {
-							echo '<!--WC_START-->' . json_encode( $result ) . '<!--WC_END-->';
-							exit;
+							wp_send_json( $result );
 						} else {
 							wp_redirect( $result['redirect'] );
 							exit;
@@ -677,13 +668,10 @@ class WC_Checkout {
 
 					// Redirect to success/confirmation/payment page
 					if ( is_ajax() ) {
-						echo '<!--WC_START-->' . json_encode(
-							array(
-								'result' 	=> 'success',
-								'redirect'  => apply_filters( 'woocommerce_checkout_no_payment_needed_redirect', $return_url, $order )
-							)
-						) . '<!--WC_END-->';
-						exit;
+						wp_send_json( array(
+							'result' 	=> 'success',
+							'redirect'  => apply_filters( 'woocommerce_checkout_no_payment_needed_redirect', $return_url, $order )
+						) );
 					} else {
 						wp_safe_redirect(
 							apply_filters( 'woocommerce_checkout_no_payment_needed_redirect', $return_url, $order )
@@ -711,17 +699,16 @@ class WC_Checkout {
 				$messages = ob_get_clean();
 			}
 
-			echo '<!--WC_START-->' . json_encode(
-				array(
-					'result'	=> 'failure',
-					'messages' 	=> isset( $messages ) ? $messages : '',
-					'refresh' 	=> isset( WC()->session->refresh_totals ) ? 'true' : 'false',
-					'reload'    => isset( WC()->session->reload_checkout ) ? 'true' : 'false'
-				)
-			) . '<!--WC_END-->';
+			$response = array(
+				'result'	=> 'failure',
+				'messages' 	=> isset( $messages ) ? $messages : '',
+				'refresh' 	=> isset( WC()->session->refresh_totals ) ? 'true' : 'false',
+				'reload'    => isset( WC()->session->reload_checkout ) ? 'true' : 'false'
+			);
 
 			unset( WC()->session->refresh_totals, WC()->session->reload_checkout );
-			exit;
+
+			wp_send_json( $response );
 		}
 	}
 

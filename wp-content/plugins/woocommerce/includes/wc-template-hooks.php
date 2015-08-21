@@ -88,6 +88,7 @@ add_action( 'woocommerce_before_shop_loop', 'woocommerce_catalog_ordering', 30 )
  */
 add_action( 'woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart', 10 );
 add_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_template_loop_product_thumbnail', 10 );
+add_action( 'woocommerce_shop_loop_item_title', 'woocommerce_template_loop_product_title', 10 );
 add_action( 'woocommerce_after_shop_loop_item_title', 'woocommerce_template_loop_price', 10 );
 add_action( 'woocommerce_after_shop_loop_item_title', 'woocommerce_template_loop_rating', 5 );
 
@@ -148,6 +149,8 @@ add_action( 'woocommerce_simple_add_to_cart', 'woocommerce_simple_add_to_cart', 
 add_action( 'woocommerce_grouped_add_to_cart', 'woocommerce_grouped_add_to_cart', 30 );
 add_action( 'woocommerce_variable_add_to_cart', 'woocommerce_variable_add_to_cart', 30 );
 add_action( 'woocommerce_external_add_to_cart', 'woocommerce_external_add_to_cart', 30 );
+add_action( 'woocommerce_single_variation', 'woocommerce_single_variation', 10 );
+add_action( 'woocommerce_single_variation', 'woocommerce_single_variation_add_to_cart_button', 20 );
 
 /**
  * Pagination after shop loops
@@ -179,10 +182,12 @@ add_action( 'woocommerce_checkout_order_review', 'woocommerce_checkout_payment',
  * Cart
  *
  * @see woocommerce_cross_sell_display()
+ * @see woocommerce_cart_totals()
  * @see woocommerce_button_proceed_to_checkout()
  */
 add_action( 'woocommerce_cart_collaterals', 'woocommerce_cross_sell_display' );
-add_action( 'woocommerce_proceed_to_checkout', 'woocommerce_button_proceed_to_checkout', 10 );
+add_action( 'woocommerce_cart_collaterals', 'woocommerce_cart_totals', 10 );
+add_action( 'woocommerce_proceed_to_checkout', 'woocommerce_button_proceed_to_checkout', 20 );
 
 /**
  * Footer
@@ -202,3 +207,12 @@ add_action( 'wp_footer', 'woocommerce_demo_store' );
 add_action( 'woocommerce_view_order', 'woocommerce_order_details_table', 10 );
 add_action( 'woocommerce_thankyou', 'woocommerce_order_details_table', 10 );
 add_action( 'woocommerce_order_details_after_order_table', 'woocommerce_order_again_button' );
+
+/**
+ * Auth
+ *
+ * @see woocommerce_output_auth_header()
+ * @see woocommerce_output_auth_footer()
+ */
+add_action( 'woocommerce_auth_page_header', 'woocommerce_output_auth_header', 10 );
+add_action( 'woocommerce_auth_page_footer', 'woocommerce_output_auth_footer', 10 );

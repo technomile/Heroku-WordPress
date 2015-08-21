@@ -12,7 +12,7 @@ include_once( 'class-wc-gateway-paypal-response.php' );
 class WC_Gateway_Paypal_PDT_Handler extends WC_Gateway_Paypal_Response {
 
 	/** @var string identity_token for PDT support */
-	private $identity_token;
+	protected $identity_token;
 
 	/**
 	 * Constructor
@@ -29,21 +29,20 @@ class WC_Gateway_Paypal_PDT_Handler extends WC_Gateway_Paypal_Response {
 	 * @param  string $transaction
 	 * @return bool
 	 */
-	private function validate_transaction( $transaction ) {
+	protected function validate_transaction( $transaction ) {
 		$pdt = array(
 			'body' 			=> array(
 				'cmd' => '_notify-synch',
 				'tx'  => $transaction,
 				'at'  => $this->identity_token
 			),
-			'sslverify' 	=> false,
 			'timeout' 		=> 60,
 			'httpversion'   => '1.1',
 			'user-agent'	=> 'WooCommerce/' . WC_VERSION
 		);
 
 		// Post back to get a response
-		$response = wp_remote_post( $this->sandbox ? 'https://www.sandbox.paypal.com/cgi-bin/webscr' : 'https://www.paypal.com/cgi-bin/webscr', $pdt );
+		$response = wp_safe_remote_post( $this->sandbox ? 'https://www.sandbox.paypal.com/cgi-bin/webscr' : 'https://www.paypal.com/cgi-bin/webscr', $pdt );
 
 		if ( is_wp_error( $response ) || ! strpos( $response['body'], "SUCCESS" ) === 0 ) {
 			return false;
@@ -71,10 +70,15 @@ class WC_Gateway_Paypal_PDT_Handler extends WC_Gateway_Paypal_Response {
 
 		if ( $this->validate_transaction( $transaction ) && 'completed' === $status ) {
 			if ( $order->get_total() != $amount ) {
-				$this->log( 'Payment error: Amounts do not match (amt ' . $amount . ')' );
+				WC_Gateway_Paypal::log( 'Payment error: Amounts do not match (amt ' . $amount . ')' );
 				$this->payment_on_hold( $order, sprintf( __( 'Validation error: PayPal amounts do not match (amt %s).', 'woocommerce' ), $amount ) );
 			} else {
 				$this->payment_complete( $order, $transaction,  __( 'PDT payment completed', 'woocommerce' ) );
+
+				if ( ! empty( $_REQUEST['mc_fee'] ) ) {
+					// log paypal transaction fee
+					update_post_meta( $order->id, 'PayPal Transaction Fee', wc_clean( $_REQUEST['mc_fee'] ) );
+				}
 			}
 		}
 	}

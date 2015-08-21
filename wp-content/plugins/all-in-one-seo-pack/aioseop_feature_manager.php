@@ -10,7 +10,7 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Feature_Manager' ) ) {
 
 		protected $module_info = Array( );
 
-		function All_in_One_SEO_Pack_Feature_Manager( $mod ) {
+		function __construct( $mod ) {
 			$this->name = __('Feature Manager', 'all_in_one_seo_pack');		// Human-readable name of the plugin
 			$this->prefix = 'aiosp_feature_manager_';						// option prefix
 			$this->file = __FILE__;									// the current file
@@ -24,6 +24,8 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Feature_Manager' ) ) {
 									  'description' => __( 'Generate and validate your robots.txt file to guide search engines through your site.', 'all_in_one_seo_pack' ) ),
 				'file_editor' => Array( 'name' => __( 'File Editor', 'all_in_one_seo_pack' ),
 									  'description' => __( 'Edit your robots.txt file and your .htaccess file to fine-tune your site.', 'all_in_one_seo_pack' ) ),
+				'bad_robots'=> Array( 'name' => __( 'Bad Bot Blocker', 'all_in_one_seo_pack' ),
+									  'description' => __( 'Stop badly behaving bots from slowing down your website.', 'all_in_one_seo_pack' ) ),
 				'performance' => Array( 'name'			=> __( 'Performance', 'all_in_one_seo_pack' ),
 										'description'	=> __( 'Optimize performance related to SEO and check your system status.', 'all_in_one_seo_pack' ),
 										'default'	=> 'on' ),
@@ -71,8 +73,10 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Feature_Manager' ) ) {
 			);
 			// load initial options / set defaults
 			$this->update_options( );
-			add_filter( $this->prefix . 'output_option', Array( $this, 'display_option_div' ), 10, 2 );
-			add_filter( $this->prefix . 'submit_options', Array( $this, 'filter_submit' ) );
+			if ( is_admin() ) {
+				add_filter( $this->prefix . 'output_option', Array( $this, 'display_option_div' ), 10, 2 );
+				add_filter( $this->prefix . 'submit_options', Array( $this, 'filter_submit' ) );				
+			}
 		}
 		
 		function menu_order() {

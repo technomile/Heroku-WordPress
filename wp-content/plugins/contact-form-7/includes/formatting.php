@@ -219,4 +219,21 @@ function wpcf7_antiscript_file_name( $filename ) {
 	return $filename;
 }
 
-?>
+function wpcf7_mask_password( $text, $length_unmasked = 0 ) {
+	$length = strlen( $text );
+	$length_unmasked = absint( $length_unmasked );
+
+	if ( 0 == $length_unmasked ) {
+		if ( 9 < $length ) {
+			$length_unmasked = 4;
+		} elseif ( 3 < $length ) {
+			$length_unmasked = 2;
+		} else {
+			$length_unmasked = $length;
+		}
+	}
+
+	$text = substr( $text, 0 - $length_unmasked );
+	$text = str_pad( $text, $length, '*', STR_PAD_LEFT );
+	return $text;
+}

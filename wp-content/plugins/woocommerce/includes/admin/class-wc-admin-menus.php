@@ -39,7 +39,12 @@ class WC_Admin_Menus {
 		add_filter( 'custom_menu_order', array( $this, 'custom_menu_order' ) );
 
 		// Add endpoints custom URLs in Appearance > Menus > Pages
-		add_action('admin_init', array( $this, 'add_nav_menu_meta_boxes' ) );
+		add_action( 'admin_init', array( $this, 'add_nav_menu_meta_boxes' ) );
+
+		// Admin bar menus
+		if ( apply_filters( 'woocommerce_show_admin_bar_visit_store', true ) ) {
+			add_action( 'admin_bar_menu', array( $this, 'admin_bar_menus' ), 31 );
+		}
 	}
 
 	/**
@@ -63,7 +68,11 @@ class WC_Admin_Menus {
 	 * Add menu item
 	 */
 	public function reports_menu() {
-		add_submenu_page( 'woocommerce', __( 'Reports', 'woocommerce' ),  __( 'Reports', 'woocommerce' ) , 'view_woocommerce_reports', 'wc-reports', array( $this, 'reports_page' ) );
+		if ( current_user_can( 'manage_woocommerce' ) ) {
+			add_submenu_page( 'woocommerce', __( 'Reports', 'woocommerce' ),  __( 'Reports', 'woocommerce' ) , 'view_woocommerce_reports', 'wc-reports', array( $this, 'reports_page' ) );
+		} else {
+			add_menu_page( __( 'Sales Reports', 'woocommerce' ),  __( 'Sales Reports', 'woocommerce' ) , 'view_woocommerce_reports', 'wc-reports', array( $this, 'reports_page' ), null, '55.6' );
+		}
 	}
 
 	/**
@@ -267,12 +276,42 @@ class WC_Admin_Menus {
 					<a href="<?php echo admin_url( 'nav-menus.php?page-tab=all&selectall=1#posttype-woocommerce-endpoints' ); ?>" class="select-all"><?php _e( 'Select All', 'woocommerce' ); ?></a>
 				</span>
 				<span class="add-to-menu">
-					<input type="submit" class="button-secondary submit-add-to-menu right" value="<?php _e( 'Add to Menu', 'woocommerce' ); ?>" name="add-post-type-menu-item" id="submit-posttype-woocommerce-endpoints">
+					<input type="submit" class="button-secondary submit-add-to-menu right" value="<?php esc_attr_e( 'Add to Menu', 'woocommerce' ); ?>" name="add-post-type-menu-item" id="submit-posttype-woocommerce-endpoints">
 					<span class="spinner"></span>
 				</span>
 			</p>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Add the "Visit Store" link in admin bar main menu
+	 *
+	 * @since 2.4.0
+	 * @param WP_Admin_Bar $wp_admin_bar
+	 */
+	public function admin_bar_menus( $wp_admin_bar ) {
+		if ( ! is_admin() || ! is_user_logged_in() ) {
+			return;
+		}
+
+		// Show only when the user is a member of this site, or they're a super admin
+		if ( ! is_user_member_of_blog() && ! is_super_admin() ) {
+			return;
+		}
+
+		// Don't display when shop page is the same of the page on front
+		if ( get_option( 'page_on_front' ) == wc_get_page_id( 'shop' ) ) {
+			return;
+		}
+
+		// Add an option to visit the store
+		$wp_admin_bar->add_node( array(
+			'parent' => 'site-name',
+			'id'     => 'view-store',
+			'title'  => __( 'Visit Store', 'woocommerce' ),
+			'href'   => wc_get_page_permalink( 'shop' )
+		) );
 	}
 }
 

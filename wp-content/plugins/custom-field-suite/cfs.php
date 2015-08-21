@@ -3,7 +3,7 @@
 Plugin Name: Custom Field Suite
 Plugin URI: http://customfieldsuite.com/
 Description: Visually add custom fields to your WordPress edit pages.
-Version: 2.4.1
+Version: 2.4.5
 Author: Matt Gibbs
 Author URI: http://customfieldsuite.com/
 Text Domain: cfs
@@ -24,7 +24,7 @@ class Custom_Field_Suite
     function __construct() {
 
         // setup variables
-        define( 'CFS_VERSION', '2.4.1' );
+        define( 'CFS_VERSION', '2.4.5' );
         define( 'CFS_DIR', dirname( __FILE__ ) );
         define( 'CFS_URL', plugins_url( 'custom-field-suite' ) );
 
@@ -43,29 +43,13 @@ class Custom_Field_Suite
     }
 
 
-    /**
-     * Prevent cloning
-     */
-    function __clone() {
-
-    }
-
-
-    /**
-     * Prevent unserializing
-     */
-    function __wakeup() {
-
-    }
-
-
     function init() {
 
-        // i18n
-        $this->load_textdomain();
+        if ( is_admin() ) {
+            $this->load_textdomain();
+        }
 
         add_action( 'admin_head',               array( $this, 'admin_head' ) );
-        add_action( 'admin_footer',             array( $this, 'admin_footer' ) );
         add_action( 'admin_menu',               array( $this, 'admin_menu' ) );
         add_action( 'save_post',                array( $this, 'save_post' ) );
         add_action( 'delete_post',              array( $this, 'delete_post' ) );
@@ -81,19 +65,24 @@ class Custom_Field_Suite
             include( CFS_DIR . "/includes/$f.php" );
         }
 
-        $upgrade = new cfs_upgrade();
-
-        // load classes
-        $this->api = new cfs_api();
-        $this->form = new cfs_form();
-        $this->field_group = new cfs_field_group();
-        $this->third_party = new cfs_third_party();
+        $this->register_post_type();
         $this->fields = $this->get_field_types();
 
+        // customize the table header
+        add_filter( 'manage_cfs_posts_columns', array( $this, 'cfs_columns' ) );
+        add_action( 'manage_cfs_posts_custom_column', array( $this, 'cfs_column_content' ), 10, 2 );
+
+        do_action( 'cfs_init' );
+    }
+
+
+    /**
+     * Register the field group post type
+     */
+    function register_post_type() {
         register_post_type( 'cfs', array(
             'public'            => false,
             'show_ui'           => true,
-            'show_in_menu'      => false,
             'capability_type'   => 'page',
             'hierarchical'      => false,
             'supports'          => array( 'title' ),
@@ -101,7 +90,7 @@ class Custom_Field_Suite
             'labels'            => array(
                 'name'                  => __( 'Field Groups', 'cfs' ),
                 'singular_name'         => __( 'Field Group', 'cfs' ),
-                'add_new'               => __( 'Add New', 'cfs' ),
+                'all_items'             => __( 'All Field Groups', 'cfs' ),
                 'add_new_item'          => __( 'Add New Field Group', 'cfs' ),
                 'edit_item'             => __( 'Edit Field Group', 'cfs' ),
                 'new_item'              => __( 'New Field Group', 'cfs' ),
@@ -111,12 +100,6 @@ class Custom_Field_Suite
                 'not_found_in_trash'    => __( 'No Field Groups found in Trash', 'cfs' ),
             ),
         ));
-
-        // customize the table header
-        add_filter( 'manage_cfs_posts_columns', array( $this, 'cfs_columns' ) );
-        add_action( 'manage_cfs_posts_custom_column', array( $this, 'cfs_column_content' ), 10, 2 );
-
-        do_action( 'cfs_init' );
     }
 
 
@@ -173,7 +156,7 @@ class Custom_Field_Suite
 
     /**
      * Generate input field HTML
-     * @param object $field 
+     * @param object $field
      * @since 1.0.0
      */
     function create_field( $field ) {
@@ -191,12 +174,7 @@ class Custom_Field_Suite
 
 
     /**
-     * Retrieve custom field values
-     * @param mixed $field_name 
-     * @param mixed $post_id 
-     * @param array $options 
-     * @return mixed
-     * @since 1.0.0
+     * Abstractions
      */
     function get( $field_name = false, $post_id = false, $options = array() ) {
         if ( false !== $field_name ) {
@@ -207,54 +185,24 @@ class Custom_Field_Suite
     }
 
 
-    /**
-     * Get custom field properties (label, name, settings, etc.)
-     * @param mixed $field_name 
-     * @param mixed $post_id 
-     * @return array
-     * @since 1.8.3
-     */
     function get_field_info( $field_name = false, $post_id = false ) {
         return $this->api->get_field_info( $field_name, $post_id );
     }
 
 
-    /**
-     * Retrieve reverse-related values (using the relationship field type)
-     * @param int $post_id 
-     * @param array $options 
-     * @return array
-     * @since 1.4.4
-     */
     function get_reverse_related( $post_id, $options = array() ) {
         return $this->api->get_reverse_related( $post_id, $options );
     }
 
 
-    /**
-     * Save field values (and post data)
-     * @param array $field_data 
-     * @param array $post_data 
-     * @param array $options 
-     * @return int The post ID
-     * @since 1.1.4
-     */
     function save( $field_data = array(), $post_data = array(), $options = array() ) {
         return $this->api->save_fields( $field_data, $post_data, $options );
     }
 
 
-    /**
-     * Display a front-end form
-     * @param array $params 
-     * @return string The form HTML
-     * @since 1.8.5
-     */
     function form( $params = array() ) {
         ob_start();
-
         $this->form->render( $params );
-
         return ob_get_clean();
     }
 
@@ -268,19 +216,6 @@ class Custom_Field_Suite
 
         if ( is_object( $screen ) && 'post' == $screen->base ) {
             include( CFS_DIR . '/templates/admin_head.php' );
-        }
-    }
-
-
-    /**
-     * admin_footer
-     * @since 1.0.0
-     */
-    function admin_footer() {
-        $screen = get_current_screen();
-
-        if ( 'edit' == $screen->base && 'cfs' == $screen->post_type ) {
-            include( CFS_DIR . '/templates/admin_footer.php' );
         }
     }
 
@@ -302,7 +237,6 @@ class Custom_Field_Suite
      */
     function admin_menu() {
         if ( false === apply_filters( 'cfs_disable_admin', false ) ) {
-            add_object_page( __( 'Field Groups', 'cfs' ), __( 'Field Groups', 'cfs' ), 'manage_options', 'edit.php?post_type=cfs', null, CFS_URL . '/assets/images/logo-small.png' );
             add_submenu_page( 'edit.php?post_type=cfs', __( 'Add-ons', 'cfs' ), __( 'Add-ons', 'cfs' ), 'manage_options', 'cfs-addons', array( $this, 'page_addons' ) );
             add_submenu_page( 'edit.php?post_type=cfs', __( 'Tools', 'cfs' ), __( 'Tools', 'cfs' ), 'manage_options', 'cfs-tools', array( $this, 'page_tools' ) );
         }
@@ -311,7 +245,7 @@ class Custom_Field_Suite
 
     /**
      * save_post
-     * @param int $post_id 
+     * @param int $post_id
      * @since 1.0.0
      */
     function save_post( $post_id ) {
@@ -344,7 +278,7 @@ class Custom_Field_Suite
 
     /**
      * delete_post
-     * @param int $post_id 
+     * @param int $post_id
      * @return boolean
      * @since 1.0.0
      */
@@ -362,8 +296,8 @@ class Custom_Field_Suite
 
     /**
      * meta_box
-     * @param object $post 
-     * @param array $metabox 
+     * @param object $post
+     * @param array $metabox
      * @since 1.0.0
      */
     function meta_box( $post, $metabox ) {
@@ -374,7 +308,7 @@ class Custom_Field_Suite
 
     /**
      * field_html
-     * @param object $field 
+     * @param object $field
      * @since 1.0.3
      */
     function field_html( $field ) {
@@ -453,8 +387,8 @@ class Custom_Field_Suite
 
     /**
      * Populate the "Placement" column on the Field Groups listing page
-     * @param string $column_name 
-     * @param int $post_id 
+     * @param string $column_name
+     * @param int $post_id
      * @since 1.9.5
      */
     function cfs_column_content( $column_name, $post_id ) {
@@ -492,13 +426,9 @@ class Custom_Field_Suite
 }
 
 
-// Backwards-compatibility
-$cfs = CFS();
-
-
-/**
- * Allow direct access to CFS classes
- */
 function CFS() {
     return Custom_Field_Suite::instance();
 }
+
+
+$cfs = CFS();

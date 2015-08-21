@@ -4,10 +4,10 @@
  *
  * Displays the product data box, tabbed, with several panels covering price, stock etc.
  *
- * @author      WooThemes
- * @category    Admin
- * @package     WooCommerce/Admin/Meta Boxes
- * @version     2.1.0
+ * @author   WooThemes
+ * @category Admin
+ * @package  WooCommerce/Admin/Meta Boxes
+ * @version  2.4.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -42,7 +42,7 @@ class WC_Meta_Box_Product_Data {
 			'variable' => __( 'Variable product', 'woocommerce' )
 		), $product_type );
 
-		$type_box = '<label for="product-type"><select id="product-type" name="product-type"><optgroup label="' . __( 'Product Type', 'woocommerce' ) . '">';
+		$type_box = '<label for="product-type"><select id="product-type" name="product-type"><optgroup label="' . esc_attr__( 'Product Type', 'woocommerce' ) . '">';
 
 		foreach ( $product_type_selector as $value => $label ) {
 			$type_box .= '<option value="' . esc_attr( $value ) . '" ' . selected( $product_type, $value, false ) .'>' . esc_html( $label ) . '</option>';
@@ -173,7 +173,7 @@ class WC_Meta_Box_Product_Data {
 								<input type="text" class="short" name="_sale_price_dates_from" id="_sale_price_dates_from" value="' . esc_attr( $sale_price_dates_from ) . '" placeholder="' . _x( 'From&hellip;', 'placeholder', 'woocommerce' ) . ' YYYY-MM-DD" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" />
 								<input type="text" class="short" name="_sale_price_dates_to" id="_sale_price_dates_to" value="' . esc_attr( $sale_price_dates_to ) . '" placeholder="' . _x( 'To&hellip;', 'placeholder', 'woocommerce' ) . '  YYYY-MM-DD" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" />
 								<a href="#" class="cancel_sale_schedule">'. __( 'Cancel', 'woocommerce' ) .'</a>
-								<img class="help_tip" style="margin-top: 21px;" data-tip="' . __( 'The sale will end at the beginning of the set date.', 'woocommerce' ) . '" src="' . esc_url( WC()->plugin_url() ) . '/assets/images/help.png" height="16" width="16" />
+								<img class="help_tip" style="margin-top: 21px;" data-tip="' . esc_attr__( 'The sale will end at the beginning of the set date.', 'woocommerce' ) . '" src="' . esc_url( WC()->plugin_url() ) . '/assets/images/help.png" height="16" width="16" />
 							</p>';
 
 					do_action( 'woocommerce_product_options_pricing' );
@@ -189,8 +189,8 @@ class WC_Meta_Box_Product_Data {
 							<thead>
 								<tr>
 									<th class="sort">&nbsp;</th>
-									<th><?php _e( 'Name', 'woocommerce' ); ?> <span class="tips" data-tip="<?php _e( 'This is the name of the download shown to the customer.', 'woocommerce' ); ?>">[?]</span></th>
-									<th colspan="2"><?php _e( 'File URL', 'woocommerce' ); ?> <span class="tips" data-tip="<?php _e( 'This is the URL or absolute path to the file which customers will get access to.', 'woocommerce' ); ?>">[?]</span></th>
+									<th><?php _e( 'Name', 'woocommerce' ); ?> <span class="tips" data-tip="<?php esc_attr_e( 'This is the name of the download shown to the customer.', 'woocommerce' ); ?>">[?]</span></th>
+									<th colspan="2"><?php _e( 'File URL', 'woocommerce' ); ?> <span class="tips" data-tip="<?php esc_attr_e( 'This is the URL or absolute path to the file which customers will get access to. URLs entered here should already be encoded.', 'woocommerce' ); ?>">[?]</span></th>
 									<th>&nbsp;</th>
 								</tr>
 							</thead>
@@ -262,7 +262,7 @@ class WC_Meta_Box_Product_Data {
 						$classes_options     = array();
 						$classes_options[''] = __( 'Standard', 'woocommerce' );
 
-						if ( $tax_classes ) {
+						if ( ! empty( $tax_classes ) ) {
 
 							foreach ( $tax_classes as $class ) {
 								$classes_options[ sanitize_title( $class ) ] = esc_html( $class );
@@ -362,9 +362,9 @@ class WC_Meta_Box_Product_Data {
 						?><p class="form-field dimensions_field">
 							<label for="product_length"><?php echo __( 'Dimensions', 'woocommerce' ) . ' (' . get_option( 'woocommerce_dimension_unit' ) . ')'; ?></label>
 							<span class="wrap">
-								<input id="product_length" placeholder="<?php _e( 'Length', 'woocommerce' ); ?>" class="input-text wc_input_decimal" size="6" type="text" name="_length" value="<?php echo esc_attr( wc_format_localized_decimal( get_post_meta( $thepostid, '_length', true ) ) ); ?>" />
-								<input placeholder="<?php _e( 'Width', 'woocommerce' ); ?>" class="input-text wc_input_decimal" size="6" type="text" name="_width" value="<?php echo esc_attr( wc_format_localized_decimal( get_post_meta( $thepostid, '_width', true ) ) ); ?>" />
-								<input placeholder="<?php _e( 'Height', 'woocommerce' ); ?>" class="input-text wc_input_decimal last" size="6" type="text" name="_height" value="<?php echo esc_attr( wc_format_localized_decimal( get_post_meta( $thepostid, '_height', true ) ) ); ?>" />
+								<input id="product_length" placeholder="<?php esc_attr_e( 'Length', 'woocommerce' ); ?>" class="input-text wc_input_decimal" size="6" type="text" name="_length" value="<?php echo esc_attr( wc_format_localized_decimal( get_post_meta( $thepostid, '_length', true ) ) ); ?>" />
+								<input placeholder="<?php esc_attr_e( 'Width', 'woocommerce' ); ?>" class="input-text wc_input_decimal" size="6" type="text" name="_width" value="<?php echo esc_attr( wc_format_localized_decimal( get_post_meta( $thepostid, '_width', true ) ) ); ?>" />
+								<input placeholder="<?php esc_attr_e( 'Height', 'woocommerce' ); ?>" class="input-text wc_input_decimal last" size="6" type="text" name="_height" value="<?php echo esc_attr( wc_format_localized_decimal( get_post_meta( $thepostid, '_height', true ) ) ); ?>" />
 							</span>
 							<img class="help_tip" data-tip="<?php esc_attr_e( 'LxWxH in decimal form', 'woocommerce' ); ?>" src="<?php echo esc_url( WC()->plugin_url() ); ?>/assets/images/help.png" height="16" width="16" />
 						</p><?php
@@ -403,19 +403,31 @@ class WC_Meta_Box_Product_Data {
 			</div>
 
 			<div id="product_attributes" class="panel wc-metaboxes-wrapper">
+				<div class="toolbar toolbar-top">
+					<span class="expand-close">
+						<a href="#" class="expand_all"><?php _e( 'Expand', 'woocommerce' ); ?></a> / <a href="#" class="close_all"><?php _e( 'Close', 'woocommerce' ); ?></a>
+					</span>
+					<select name="attribute_taxonomy" class="attribute_taxonomy">
+						<option value=""><?php _e( 'Custom product attribute', 'woocommerce' ); ?></option>
+						<?php
+							global $wc_product_attributes;
 
-				<p class="toolbar">
-					<a href="#" class="close_all"><?php _e( 'Close all', 'woocommerce' ); ?></a><a href="#" class="expand_all"><?php _e( 'Expand all', 'woocommerce' ); ?></a>
-				</p>
+							// Array of defined attribute taxonomies
+							$attribute_taxonomies = wc_get_attribute_taxonomies();
 
+							if ( $attribute_taxonomies ) {
+								foreach ( $attribute_taxonomies as $tax ) {
+									$attribute_taxonomy_name = wc_attribute_taxonomy_name( $tax->attribute_name );
+									$label = $tax->attribute_label ? $tax->attribute_label : $tax->attribute_name;
+									echo '<option value="' . esc_attr( $attribute_taxonomy_name ) . '">' . esc_html( $label ) . '</option>';
+								}
+							}
+						?>
+					</select>
+					<button type="button" class="button add_attribute"><?php _e( 'Add', 'woocommerce' ); ?></button>
+				</div>
 				<div class="product_attributes wc-metaboxes">
-
 					<?php
-						global $wc_product_attributes;
-
-						// Array of defined attribute taxonomies
-						$attribute_taxonomies = wc_get_attribute_taxonomies();
-
 						// Product attributes - taxonomies and custom, ordered, with visibility and variation attributes set
 						$attributes           = maybe_unserialize( get_post_meta( $thepostid, '_product_attributes', true ) );
 
@@ -450,141 +462,106 @@ class WC_Meta_Box_Product_Data {
 						}
 					?>
 				</div>
-
-				<p class="toolbar">
-					<button type="button" class="button button-primary add_attribute"><?php _e( 'Add', 'woocommerce' ); ?></button>
-					<select name="attribute_taxonomy" class="attribute_taxonomy">
-						<option value=""><?php _e( 'Custom product attribute', 'woocommerce' ); ?></option>
-						<?php
-							if ( $attribute_taxonomies ) {
-								foreach ( $attribute_taxonomies as $tax ) {
-									$attribute_taxonomy_name = wc_attribute_taxonomy_name( $tax->attribute_name );
-									$label = $tax->attribute_label ? $tax->attribute_label : $tax->attribute_name;
-									echo '<option value="' . esc_attr( $attribute_taxonomy_name ) . '">' . esc_html( $label ) . '</option>';
-								}
-							}
-						?>
-					</select>
-
-					<button type="button" class="button save_attributes"><?php _e( 'Save attributes', 'woocommerce' ); ?></button>
-				</p>
+				<div class="toolbar">
+					<span class="expand-close">
+						<a href="#" class="expand_all"><?php _e( 'Expand', 'woocommerce' ); ?></a> / <a href="#" class="close_all"><?php _e( 'Close', 'woocommerce' ); ?></a>
+					</span>
+					<button type="button" class="button save_attributes button-primary"><?php _e( 'Save Attributes', 'woocommerce' ); ?></button>
+				</div>
 				<?php do_action( 'woocommerce_product_options_attributes' ); ?>
 			</div>
 			<div id="linked_product_data" class="panel woocommerce_options_panel">
 
 				<div class="options_group">
 
-				<p class="form-field"><label for="upsell_ids"><?php _e( 'Up-Sells', 'woocommerce' ); ?></label>
-				<input type="hidden" class="wc-product-search" style="width: 50%;" id="upsell_ids" name="upsell_ids" data-placeholder="<?php _e( 'Search for a product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_products" data-multiple="true" data-selected="<?php
-					$product_ids = array_filter( array_map( 'absint', (array) get_post_meta( $post->ID, '_upsell_ids', true ) ) );
-					$json_ids    = array();
+					<p class="form-field">
+						<label for="upsell_ids"><?php _e( 'Up-Sells', 'woocommerce' ); ?></label>
+						<input type="hidden" class="wc-product-search" style="width: 50%;" id="upsell_ids" name="upsell_ids" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_products" data-multiple="true" data-exclude="<?php echo intval( $post->ID ); ?>" data-selected="<?php
+							$product_ids = array_filter( array_map( 'absint', (array) get_post_meta( $post->ID, '_upsell_ids', true ) ) );
+							$json_ids    = array();
 
-					foreach ( $product_ids as $product_id ) {
-						$product = wc_get_product( $product_id );
-						$json_ids[ $product_id ] = wp_kses_post( $product->get_formatted_name() );
-					}
-
-					echo esc_attr( json_encode( $json_ids ) );
-				?>" value="<?php echo implode( ',', array_keys( $json_ids ) ); ?>" /> <img class="help_tip" data-tip='<?php _e( 'Up-sells are products which you recommend instead of the currently viewed product, for example, products that are more profitable or better quality or more expensive.', 'woocommerce' ) ?>' src="<?php echo WC()->plugin_url(); ?>/assets/images/help.png" height="16" width="16" /></p>
-
-				<p class="form-field"><label for="crosssell_ids"><?php _e( 'Cross-Sells', 'woocommerce' ); ?></label>
-				<input type="hidden" class="wc-product-search" style="width: 50%;" id="crosssell_ids" name="crosssell_ids" data-placeholder="<?php _e( 'Search for a product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_products" data-multiple="true" data-selected="<?php
-					$product_ids = array_filter( array_map( 'absint', (array) get_post_meta( $post->ID, '_crosssell_ids', true ) ) );
-					$json_ids    = array();
-
-					foreach ( $product_ids as $product_id ) {
-						$product = wc_get_product( $product_id );
-						$json_ids[ $product_id ] = wp_kses_post( $product->get_formatted_name() );
-					}
-
-					echo esc_attr( json_encode( $json_ids ) );
-				?>" value="<?php echo implode( ',', array_keys( $json_ids ) ); ?>" /> <img class="help_tip" data-tip='<?php _e( 'Cross-sells are products which you promote in the cart, based on the current product.', 'woocommerce' ) ?>' src="<?php echo WC()->plugin_url(); ?>/assets/images/help.png" height="16" width="16" /></p>
-
-				</div>
-
-				<?php
-
-				echo '<div class="options_group grouping show_if_simple show_if_external">';
-
-					// List Grouped products
-					$post_parents = array();
-					$post_parents[''] = __( 'Choose a grouped product&hellip;', 'woocommerce' );
-
-					if ( $grouped_term = get_term_by( 'slug', 'grouped', 'product_type' ) ) {
-
-						$posts_in = array_unique( (array) get_objects_in_term( $grouped_term->term_id, 'product_type' ) );
-
-						if ( sizeof( $posts_in ) > 0 ) {
-
-							$args = array(
-								'post_type'        => 'product',
-								'post_status'      => 'any',
-								'numberposts'      => -1,
-								'orderby'          => 'title',
-								'order'            => 'asc',
-								'post_parent'      => 0,
-								'suppress_filters' => 0,
-								'include'          => $posts_in,
-							);
-
-							$grouped_products = get_posts( $args );
-
-							if ( $grouped_products ) {
-
-								foreach ( $grouped_products as $product ) {
-
-									if ( $product->ID == $post->ID ) {
-										continue;
-									}
-
-									$post_parents[ $product->ID ] = $product->post_title;
+							foreach ( $product_ids as $product_id ) {
+								$product = wc_get_product( $product_id );
+								if ( is_object( $product ) ) {
+									$json_ids[ $product_id ] = wp_kses_post( html_entity_decode( $product->get_formatted_name() ) );
 								}
 							}
-						}
 
-					}
+							echo esc_attr( json_encode( $json_ids ) );
+						?>" value="<?php echo implode( ',', array_keys( $json_ids ) ); ?>" /> <img class="help_tip" data-tip='<?php _e( 'Up-sells are products which you recommend instead of the currently viewed product, for example, products that are more profitable or better quality or more expensive.', 'woocommerce' ) ?>' src="<?php echo WC()->plugin_url(); ?>/assets/images/help.png" height="16" width="16" />
+					</p>
 
-					woocommerce_wp_select( array( 'id' => 'parent_id', 'label' => __( 'Grouping', 'woocommerce' ), 'value' => absint( $post->post_parent ), 'options' => $post_parents, 'desc_tip' => true, 'description' => __( 'Set this option to make this product part of a grouped product.', 'woocommerce' ) ) );
+					<p class="form-field">
+						<label for="crosssell_ids"><?php _e( 'Cross-Sells', 'woocommerce' ); ?></label>
+						<input type="hidden" class="wc-product-search" style="width: 50%;" id="crosssell_ids" name="crosssell_ids" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_products" data-multiple="true" data-exclude="<?php echo intval( $post->ID ); ?>" data-selected="<?php
+							$product_ids = array_filter( array_map( 'absint', (array) get_post_meta( $post->ID, '_crosssell_ids', true ) ) );
+							$json_ids    = array();
 
-					woocommerce_wp_hidden_input( array( 'id' => 'previous_parent_id', 'value' => absint( $post->post_parent ) ) );
+							foreach ( $product_ids as $product_id ) {
+								$product = wc_get_product( $product_id );
+								if ( is_object( $product ) ) {
+									$json_ids[ $product_id ] = wp_kses_post( html_entity_decode( $product->get_formatted_name() ) );
+								}
+							}
 
-					do_action( 'woocommerce_product_options_grouping' );
+							echo esc_attr( json_encode( $json_ids ) );
+						?>" value="<?php echo implode( ',', array_keys( $json_ids ) ); ?>" /> <img class="help_tip" data-tip='<?php esc_attr_e( 'Cross-sells are products which you promote in the cart, based on the current product.', 'woocommerce' ) ?>' src="<?php echo WC()->plugin_url(); ?>/assets/images/help.png" height="16" width="16" />
+					</p>
+				</div>
 
-				echo '</div>';
-				?>
+				<div class="options_group grouping show_if_simple show_if_external">
+
+					<p class="form-field">
+						<label for="parent_id"><?php _e( 'Grouping', 'woocommerce' ); ?></label>
+						<input type="hidden" class="wc-product-search" style="width: 50%;" id="parent_id" name="parent_id" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_grouped_products" data-allow_clear="true" data-multiple="false" data-exclude="<?php echo intval( $post->ID ); ?>" data-selected="<?php
+							$parent_id = absint( $post->post_parent );
+
+							if ( $parent_id ) {
+								$parent    = wc_get_product( $parent_id );
+								if ( is_object( $parent ) ) {
+									$parent_title = wp_kses_post( html_entity_decode( $parent->get_formatted_name() ) );
+								}
+
+								echo esc_attr( $parent_title );
+							}
+						?>" value="<?php echo $parent_id ? $parent_id : ''; ?>" /> <img class="help_tip" data-tip='<?php _e( 'Set this option to make this product part of a grouped product.', 'woocommerce' ) ?>' src="<?php echo WC()->plugin_url(); ?>/assets/images/help.png" height="16" width="16" />
+					</p>
+
+					<?php
+						woocommerce_wp_hidden_input( array( 'id' => 'previous_parent_id', 'value' => absint( $post->post_parent ) ) );
+
+						do_action( 'woocommerce_product_options_grouping' );
+					?>
+				</div>
 
 				<?php do_action( 'woocommerce_product_options_related' ); ?>
-
 			</div>
 
 			<div id="advanced_product_data" class="panel woocommerce_options_panel">
 
-				<?php
+				<div class="options_group hide_if_external">
+					<?php
+						// Purchase note
+						woocommerce_wp_textarea_input(  array( 'id' => '_purchase_note', 'label' => __( 'Purchase Note', 'woocommerce' ), 'desc_tip' => 'true', 'description' => __( 'Enter an optional note to send the customer after purchase.', 'woocommerce' ) ) );
+					?>
+				</div>
 
-				echo '<div class="options_group hide_if_external">';
+				<div class="options_group">
+					<?php
+						// menu_order
+						woocommerce_wp_text_input(  array( 'id' => 'menu_order', 'label' => __( 'Menu order', 'woocommerce' ), 'desc_tip' => 'true', 'description' => __( 'Custom ordering position.', 'woocommerce' ), 'value' => intval( $post->menu_order ), 'type' => 'number', 'custom_attributes' => array(
+							'step' 	=> '1'
+						)  ) );
+					?>
+				</div>
 
-					// Purchase note
-					woocommerce_wp_textarea_input(  array( 'id' => '_purchase_note', 'label' => __( 'Purchase Note', 'woocommerce' ), 'desc_tip' => 'true', 'description' => __( 'Enter an optional note to send the customer after purchase.', 'woocommerce' ) ) );
+				<div class="options_group reviews">
+					<?php
+						woocommerce_wp_checkbox( array( 'id' => 'comment_status', 'label' => __( 'Enable reviews', 'woocommerce' ), 'cbvalue' => 'open', 'value' => esc_attr( $post->comment_status ) ) );
 
-				echo '</div>';
-
-				echo '<div class="options_group">';
-
-					// menu_order
-					woocommerce_wp_text_input(  array( 'id' => 'menu_order', 'label' => __( 'Menu order', 'woocommerce' ), 'desc_tip' => 'true', 'description' => __( 'Custom ordering position.', 'woocommerce' ), 'value' => intval( $post->menu_order ), 'type' => 'number', 'custom_attributes' => array(
-						'step' 	=> '1'
-					)  ) );
-
-				echo '</div>';
-
-				echo '<div class="options_group reviews">';
-
-					woocommerce_wp_checkbox( array( 'id' => 'comment_status', 'label' => __( 'Enable reviews', 'woocommerce' ), 'cbvalue' => 'open', 'value' => esc_attr( $post->comment_status ) ) );
-
-					do_action( 'woocommerce_product_options_reviews' );
-
-				echo '</div>';
-				?>
+						do_action( 'woocommerce_product_options_reviews' );
+					?>
+				</div>
 
 				<?php do_action( 'woocommerce_product_options_advanced' ); ?>
 
@@ -607,17 +584,16 @@ class WC_Meta_Box_Product_Data {
 	 * Show options for the variable product type
 	 */
 	public static function output_variations() {
-		global $post;
+		global $post, $wpdb;
 
+		// Get attributes
 		$attributes = maybe_unserialize( get_post_meta( $post->ID, '_product_attributes', true ) );
 
 		// See if any are set
 		$variation_attribute_found = false;
 
 		if ( $attributes ) {
-
 			foreach ( $attributes as $attribute ) {
-
 				if ( isset( $attribute['is_variation'] ) ) {
 					$variation_attribute_found = true;
 					break;
@@ -625,29 +601,9 @@ class WC_Meta_Box_Product_Data {
 			}
 		}
 
-		// Get tax classes
-		$tax_classes           = WC_Tax::get_tax_classes();
-		$tax_class_options     = array();
-		$tax_class_options[''] = __( 'Standard', 'woocommerce' );
-
-		if ( $tax_classes ) {
-
-			foreach ( $tax_classes as $class ) {
-				$tax_class_options[ sanitize_title( $class ) ] = esc_attr( $class );
-			}
-		}
-
-		$backorder_options = array(
-			'no'     => __( 'Do not allow', 'woocommerce' ),
-			'notify' => __( 'Allow, but notify customer', 'woocommerce' ),
-			'yes'    => __( 'Allow', 'woocommerce' )
-		);
-
-		$stock_status_options = array(
-			'instock'    => __( 'In stock', 'woocommerce' ),
-			'outofstock' => __( 'Out of stock', 'woocommerce' )
-		);
-
+		$variations_count       = absint( $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(ID) FROM $wpdb->posts WHERE post_parent = %d AND post_type = 'product_variation'", $post->ID ) ) );
+		$variations_per_page    = absint( apply_filters( 'woocommerce_admin_meta_boxes_variations_per_page', 10 ) );
+		$variations_total_pages = ceil( $variations_count / $variations_per_page );
 		?>
 		<div id="variable_product_options" class="panel wc-metaboxes-wrapper"><div id="variable_product_options_inner">
 
@@ -656,29 +612,73 @@ class WC_Meta_Box_Product_Data {
 				<div id="message" class="inline woocommerce-message">
 					<p><?php _e( 'Before adding variations, add and save some attributes on the <strong>Attributes</strong> tab.', 'woocommerce' ); ?></p>
 
-					<p class="submit"><a class="button-primary" href="<?php echo esc_url( apply_filters( 'woocommerce_docs_url', 'http://docs.woothemes.com/document/product-variations', 'product-variations' ) ); ?>" target="_blank"><?php _e( 'Learn more', 'woocommerce' ); ?></a></p>
+					<p class="submit"><a class="button-primary" href="<?php echo esc_url( apply_filters( 'woocommerce_docs_url', 'http://docs.woothemes.com/document/variable-product/', 'product-variations' ) ); ?>" target="_blank"><?php _e( 'Learn more', 'woocommerce' ); ?></a></p>
 				</div>
 
 			<?php else : ?>
 
-				<p class="toolbar">
-					<a href="#" class="close_all"><?php _e( 'Close all', 'woocommerce' ); ?></a><a href="#" class="expand_all"><?php _e( 'Expand all', 'woocommerce' ); ?></a>
-					<select id="field_to_edit">
-						<option value=""><?php _e( 'Choose a field to bulk edit&hellip;', 'woocommerce' ); ?></option>
+				<div class="toolbar toolbar-variations-defaults">
+					<div class="variations-defaults">
+						<strong><?php _e( 'Default Form Values', 'woocommerce' ); ?>: <span class="tips" data-tip="<?php esc_attr_e( 'These are the attributes that will be pre-selected on the frontend.', 'woocommerce' ); ?>">[?]</span></strong>
+						<?php
+							$default_attributes = maybe_unserialize( get_post_meta( $post->ID, '_default_attributes', true ) );
+
+							foreach ( $attributes as $attribute ) {
+
+								// Only deal with attributes that are variations
+								if ( ! $attribute['is_variation'] ) {
+									continue;
+								}
+
+								// Get current value for variation (if set)
+								$variation_selected_value = isset( $default_attributes[ sanitize_title( $attribute['name'] ) ] ) ? $default_attributes[ sanitize_title( $attribute['name'] ) ] : '';
+
+								// Name will be something like attribute_pa_color
+								echo '<select name="default_attribute_' . sanitize_title( $attribute['name'] ) . '" data-current="' . esc_attr( $variation_selected_value ) . '"><option value="">' . __( 'No default', 'woocommerce' ) . ' ' . esc_html( wc_attribute_label( $attribute['name'] ) ) . '&hellip;</option>';
+
+								// Get terms for attribute taxonomy or value if its a custom attribute
+								if ( $attribute['is_taxonomy'] ) {
+									$post_terms = wp_get_post_terms( $post->ID, $attribute['name'] );
+
+									foreach ( $post_terms as $term ) {
+										echo '<option ' . selected( $variation_selected_value, $term->slug, false ) . ' value="' . esc_attr( $term->slug ) . '">' . apply_filters( 'woocommerce_variation_option_name', esc_html( $term->name ) ) . '</option>';
+									}
+
+								} else {
+									$options = wc_get_text_attributes( $attribute['value'] );
+
+									foreach ( $options as $option ) {
+										$selected = sanitize_title( $variation_selected_value ) === $variation_selected_value ? selected( $variation_selected_value, sanitize_title( $option ), false ) : selected( $variation_selected_value, $option, false );
+										echo '<option ' . $selected . ' value="' . esc_attr( $option ) . '">' . esc_html( apply_filters( 'woocommerce_variation_option_name', $option ) )  . '</option>';
+									}
+
+								}
+
+								echo '</select>';
+							}
+						?>
+					</div>
+					<div class="clear"></div>
+				</div>
+
+				<div class="toolbar toolbar-top">
+					<select id="field_to_edit" class="variation_actions">
+						<option value="add_variation"><?php _e( 'Add variation', 'woocommerce' ); ?></option>
+						<option value="link_all_variations"><?php _e( 'Create variations from all attributes', 'woocommerce' ); ?></option>
+						<option value="delete_all"><?php _e( 'Delete all variations', 'woocommerce' ); ?></option>
 						<optgroup label="<?php esc_attr_e( 'Status', 'woocommerce' ); ?>">
 							<option value="toggle_enabled"><?php _e( 'Toggle &quot;Enabled&quot;', 'woocommerce' ); ?></option>
 							<option value="toggle_downloadable"><?php _e( 'Toggle &quot;Downloadable&quot;', 'woocommerce' ); ?></option>
 							<option value="toggle_virtual"><?php _e( 'Toggle &quot;Virtual&quot;', 'woocommerce' ); ?></option>
-							<option value="delete_all"><?php _e( 'Delete all variations', 'woocommerce' ); ?></option>
 						</optgroup>
 						<optgroup label="<?php esc_attr_e( 'Pricing', 'woocommerce' ); ?>">
-							<option value="variable_regular_price"><?php _e( 'Prices', 'woocommerce' ); ?></option>
-							<option value="variable_regular_price_increase"><?php _e( 'Prices increase by (fixed amount or %)', 'woocommerce' ); ?></option>
-							<option value="variable_regular_price_decrease"><?php _e( 'Prices decrease by (fixed amount or %)', 'woocommerce' ); ?></option>
-							<option value="variable_sale_price"><?php _e( 'Sale prices', 'woocommerce' ); ?></option>
-							<option value="variable_sale_price_increase"><?php _e( 'Sale prices increase by (fixed amount or %)', 'woocommerce' ); ?></option>
-							<option value="variable_sale_price_decrease"><?php _e( 'Sale prices decrease by (fixed amount or %)', 'woocommerce' ); ?></option>
-							<option value="variable_sale_schedule"><?php _e( 'Scheduled sale dates', 'woocommerce' ); ?></option>
+							<option value="variable_regular_price"><?php _e( 'Set regular prices', 'woocommerce' ); ?></option>
+							<option value="variable_regular_price_increase"><?php _e( 'Increase regular prices (fixed amount or percentage)', 'woocommerce' ); ?></option>
+							<option value="variable_regular_price_decrease"><?php _e( 'Decrease regular prices (fixed amount or percentage)', 'woocommerce' ); ?></option>
+							<option value="variable_sale_price"><?php _e( 'Set sale prices', 'woocommerce' ); ?></option>
+							<option value="variable_sale_price_increase"><?php _e( 'Increase sale prices (fixed amount or percentage)', 'woocommerce' ); ?></option>
+							<option value="variable_sale_price_decrease"><?php _e( 'Decrease sale prices (fixed amount or percentage)', 'woocommerce' ); ?></option>
+							<option value="variable_sale_schedule"><?php _e( 'Set scheduled sale dates', 'woocommerce' ); ?></option>
 						</optgroup>
 						<optgroup label="<?php esc_attr_e( 'Inventory', 'woocommerce' ); ?>">
 							<option value="toggle_manage_stock"><?php _e( 'Toggle &quot;Manage stock&quot;', 'woocommerce' ); ?></option>
@@ -692,170 +692,70 @@ class WC_Meta_Box_Product_Data {
 						</optgroup>
 						<optgroup label="<?php esc_attr_e( 'Downloadable products', 'woocommerce' ); ?>">
 							<option value="variable_download_limit"><?php _e( 'Download limit', 'woocommerce' ); ?></option>
-							<option value="variable_download_expiry"><?php _e( 'Download Expiry', 'woocommerce' ); ?></option>
+							<option value="variable_download_expiry"><?php _e( 'Download expiry', 'woocommerce' ); ?></option>
 						</optgroup>
 						<?php do_action( 'woocommerce_variable_product_bulk_edit_actions' ); ?>
 					</select>
-					<a class="button bulk_edit"><?php _e( 'Go', 'woocommerce' ); ?></a>
-				</p>
+					<a class="button bulk_edit do_variation_action"><?php _e( 'Go', 'woocommerce' ); ?></a>
 
-				<div class="woocommerce_variations wc-metaboxes">
-					<?php
-					// Get parent data
-					$parent_data = array(
-						'id'                   => $post->ID,
-						'attributes'           => $attributes,
-						'tax_class_options'    => $tax_class_options,
-						'sku'                  => get_post_meta( $post->ID, '_sku', true ),
-						'weight'               => wc_format_localized_decimal( get_post_meta( $post->ID, '_weight', true ) ),
-						'length'               => wc_format_localized_decimal( get_post_meta( $post->ID, '_length', true ) ),
-						'width'                => wc_format_localized_decimal( get_post_meta( $post->ID, '_width', true ) ),
-						'height'               => wc_format_localized_decimal( get_post_meta( $post->ID, '_height', true ) ),
-						'tax_class'            => get_post_meta( $post->ID, '_tax_class', true ),
-						'backorder_options'    => $backorder_options,
-						'stock_status_options' => $stock_status_options
-					);
-
-					if ( ! $parent_data['weight'] ) {
-						$parent_data['weight'] = wc_format_localized_decimal( 0 );
-					}
-
-					if ( ! $parent_data['length'] ) {
-						$parent_data['length'] = wc_format_localized_decimal( 0 );
-					}
-
-					if ( ! $parent_data['width'] ) {
-						$parent_data['width'] = wc_format_localized_decimal( 0 );
-					}
-
-					if ( ! $parent_data['height'] ) {
-						$parent_data['height'] = wc_format_localized_decimal( 0 );
-					}
-
-					// Get variations
-					$args = array(
-						'post_type'   => 'product_variation',
-						'post_status' => array( 'private', 'publish' ),
-						'numberposts' => -1,
-						'orderby'     => 'menu_order',
-						'order'       => 'asc',
-						'post_parent' => $post->ID
-					);
-
-					$variations = get_posts( $args );
-					$loop = 0;
-
-					if ( $variations ) {
-
-						foreach ( $variations as $variation ) {
-							$variation_id     = absint( $variation->ID );
-							$variation_meta   = get_post_meta( $variation_id );
-							$variation_data   = array();
-							$shipping_classes = get_the_terms( $variation_id, 'product_shipping_class' );
-							$variation_fields = array(
-								'_sku'                   => '',
-								'_stock'                 => '',
-								'_regular_price'         => '',
-								'_sale_price'            => '',
-								'_weight'                => '',
-								'_length'                => '',
-								'_width'                 => '',
-								'_height'                => '',
-								'_download_limit'        => '',
-								'_download_expiry'       => '',
-								'_downloadable_files'    => '',
-								'_downloadable'          => '',
-								'_virtual'               => '',
-								'_thumbnail_id'          => '',
-								'_sale_price_dates_from' => '',
-								'_sale_price_dates_to'   => '',
-								'_manage_stock'          => '',
-								'_stock_status'          => '',
-								'_backorders'            => null,
-								'_tax_class'             => null
-							);
-
-							foreach ( $variation_fields as $field => $value ) {
-								$variation_data[ $field ] = isset( $variation_meta[ $field ][0] ) ? maybe_unserialize( $variation_meta[ $field ][0] ) : $value;
-							}
-
-							// Add the variation attributes
-							foreach ( $variation_meta as $key => $value ) {
-								if ( false !== strpos( $key, 'attribute_' ) ) {
-									$variation_data[ $key ] = $value;
-								}
-							}
-
-							// Formatting
-							$variation_data['_regular_price'] = wc_format_localized_price( $variation_data['_regular_price'] );
-							$variation_data['_sale_price']    = wc_format_localized_price( $variation_data['_sale_price'] );
-							$variation_data['_weight']        = wc_format_localized_decimal( $variation_data['_weight'] );
-							$variation_data['_length']        = wc_format_localized_decimal( $variation_data['_length'] );
-							$variation_data['_width']         = wc_format_localized_decimal( $variation_data['_width'] );
-							$variation_data['_height']        = wc_format_localized_decimal( $variation_data['_height'] );
-							$variation_data['_thumbnail_id']  = absint( $variation_data['_thumbnail_id'] );
-							$variation_data['image']          = $variation_data['_thumbnail_id'] ? wp_get_attachment_thumb_url( $variation_data['_thumbnail_id'] ) : '';
-							$variation_data['shipping_class'] = $shipping_classes && ! is_wp_error( $shipping_classes ) ? current( $shipping_classes )->term_id : '';
-
-							// Stock BW compat
-							if ( '' !== $variation_data['_stock'] ) {
-								$variation_data['_manage_stock'] = 'yes';
-							}
-
-							include( 'views/html-variation-admin.php' );
-
-							$loop++;
-						}
-					}
-					?>
+					<div class="variations-pagenav">
+						<span class="displaying-num"><?php printf( _n( '%s item', '%s items', $variations_count, 'woocommerce' ), $variations_count ); ?></span>
+						<span class="expand-close">
+							(<a href="#" class="expand_all"><?php _e( 'Expand', 'woocommerce' ); ?></a> / <a href="#" class="close_all"><?php _e( 'Close', 'woocommerce' ); ?></a>)
+						</span>
+						<span class="pagination-links">
+							<a class="first-page disabled" title="<?php esc_attr_e( 'Go to the first page', 'woocommerce' ); ?>" href="#">&laquo;</a>
+							<a class="prev-page disabled" title="<?php esc_attr_e( 'Go to the previous page', 'woocommerce' ); ?>" href="#">&lsaquo;</a>
+							<span class="paging-select">
+								<label for="current-page-selector-1" class="screen-reader-text"><?php _e( 'Select Page', 'woocommerce' ); ?></label>
+								<select class="page-selector" id="current-page-selector-1" title="<?php esc_attr_e( 'Current page', 'woocommerce' ); ?>">
+									<?php for ( $i = 1; $i <= $variations_total_pages; $i++ ) : ?>
+										<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+									<?php endfor; ?>
+								</select>
+								 <?php _ex( 'of', 'number of pages', 'woocommerce' ); ?> <span class="total-pages"><?php echo $variations_total_pages; ?></span>
+							</span>
+							<a class="next-page" title="<?php esc_attr_e( 'Go to the next page', 'woocommerce' ); ?>" href="#">&rsaquo;</a>
+							<a class="last-page" title="<?php esc_attr_e( 'Go to the last page', 'woocommerce' ); ?>" href="#">&raquo;</a>
+						</span>
+					</div>
+					<div class="clear"></div>
 				</div>
 
-				<p class="toolbar">
+				<div class="woocommerce_variations wc-metaboxes" data-attributes="<?php
+					// esc_attr does not double encode - htmlspecialchars does
+					echo htmlspecialchars( json_encode( $attributes ) );
+				?>" data-total="<?php echo $variations_count; ?>" data-total_pages="<?php echo $variations_total_pages; ?>" data-page="1" data-edited="false">
+				</div>
 
-					<button type="button" class="button button-primary add_variation" <?php disabled( $variation_attribute_found, false ); ?>><?php _e( 'Add Variation', 'woocommerce' ); ?></button>
+				<div class="toolbar">
+					<button type="button" class="button-primary save-variation-changes" disabled="disabled"><?php _e( 'Save Changes', 'woocommerce' ); ?></button>
+					<button type="button" class="button cancel-variation-changes" disabled="disabled"><?php _e( 'Cancel', 'woocommerce' ); ?></button>
 
-					<button type="button" class="button link_all_variations" <?php disabled( $variation_attribute_found, false ); ?>><?php _e( 'Link all variations', 'woocommerce' ); ?></button>
+					<div class="variations-pagenav">
+						<span class="displaying-num"><?php printf( _n( '%s item', '%s items', $variations_count, 'woocommerce' ), $variations_count ); ?></span>
+						<span class="expand-close">
+							(<a href="#" class="expand_all"><?php _e( 'Expand', 'woocommerce' ); ?></a> / <a href="#" class="close_all"><?php _e( 'Close', 'woocommerce' ); ?></a>)
+						</span>
+						<span class="pagination-links">
+							<a class="first-page disabled" title="<?php esc_attr_e( 'Go to the first page', 'woocommerce' ); ?>" href="#">&laquo;</a>
+							<a class="prev-page disabled" title="<?php esc_attr_e( 'Go to the previous page', 'woocommerce' ); ?>" href="#">&lsaquo;</a>
+							<span class="paging-select">
+								<label for="current-page-selector-1" class="screen-reader-text"><?php _e( 'Select Page', 'woocommerce' ); ?></label>
+								<select class="page-selector" id="current-page-selector-1" title="<?php esc_attr_e( 'Current page', 'woocommerce' ); ?>">
+									<?php for ( $i = 1; $i <= $variations_total_pages; $i++ ) : ?>
+										<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+									<?php endfor; ?>
+								</select>
+								 <?php _ex( 'of', 'number of pages', 'woocommerce' ); ?> <span class="total-pages"><?php echo $variations_total_pages; ?></span>
+							</span>
+							<a class="next-page" title="<?php esc_attr_e( 'Go to the next page', 'woocommerce' ); ?>" href="#">&rsaquo;</a>
+							<a class="last-page" title="<?php esc_attr_e( 'Go to the last page', 'woocommerce' ); ?>" href="#">&raquo;</a>
+						</span>
+					</div>
 
-					<strong><?php _e( 'Defaults', 'woocommerce' ); ?>: <span class="tips" data-tip="<?php _e( 'These are the attributes that will be pre-selected on the frontend.', 'woocommerce' ); ?>">[?]</span></strong>
-					<?php
-						$default_attributes = maybe_unserialize( get_post_meta( $post->ID, '_default_attributes', true ) );
-
-						foreach ( $attributes as $attribute ) {
-
-							// Only deal with attributes that are variations
-							if ( ! $attribute['is_variation'] ) {
-								continue;
-							}
-
-							// Get current value for variation (if set)
-							$variation_selected_value = isset( $default_attributes[ sanitize_title( $attribute['name'] ) ] ) ? $default_attributes[ sanitize_title( $attribute['name'] ) ] : '';
-
-							// Name will be something like attribute_pa_color
-							echo '<select name="default_attribute_' . sanitize_title( $attribute['name'] ) . '"><option value="">' . __( 'No default', 'woocommerce' ) . ' ' . esc_html( wc_attribute_label( $attribute['name'] ) ) . '&hellip;</option>';
-
-							// Get terms for attribute taxonomy or value if its a custom attribute
-							if ( $attribute['is_taxonomy'] ) {
-
-								$post_terms = wp_get_post_terms( $post->ID, $attribute['name'] );
-
-								foreach ( $post_terms as $term ) {
-									echo '<option ' . selected( $variation_selected_value, $term->slug, false ) . ' value="' . esc_attr( $term->slug ) . '">' . apply_filters( 'woocommerce_variation_option_name', esc_html( $term->name ) ) . '</option>';
-								}
-
-							} else {
-
-								$options = array_map( 'trim', explode( WC_DELIMITER, $attribute['value'] ) );
-
-								foreach ( $options as $option ) {
-									echo '<option ' . selected( sanitize_title( $variation_selected_value ), sanitize_title( $option ), false ) . ' value="' . esc_attr( sanitize_title( $option ) ) . '">' . esc_html( apply_filters( 'woocommerce_variation_option_name', $option ) )  . '</option>';
-								}
-
-							}
-
-							echo '</select>';
-						}
-					?>
-				</p>
+					<div class="clear"></div>
+				</div>
 
 			<?php endif; ?>
 		</div></div>
@@ -975,13 +875,12 @@ class WC_Meta_Box_Product_Data {
 				$attribute_variation = $_POST['attribute_variation'];
 			}
 
-			$attribute_is_taxonomy = $_POST['attribute_is_taxonomy'];
-			$attribute_position    = $_POST['attribute_position'];
-			$attribute_names_count = sizeof( $attribute_names );
+			$attribute_is_taxonomy   = $_POST['attribute_is_taxonomy'];
+			$attribute_position      = $_POST['attribute_position'];
+			$attribute_names_max_key = max( array_keys( $attribute_names ) );
 
-			for ( $i = 0; $i < $attribute_names_count; $i++ ) {
-
-				if ( ! $attribute_names[ $i ] ) {
+			for ( $i = 0; $i <= $attribute_names_max_key; $i++ ) {
+				if ( empty( $attribute_names[ $i ] ) ) {
 					continue;
 				}
 
@@ -991,15 +890,18 @@ class WC_Meta_Box_Product_Data {
 
 				if ( $is_taxonomy ) {
 
+					$values_are_slugs = false;
+
 					if ( isset( $attribute_values[ $i ] ) ) {
 
 						// Select based attributes - Format values (posted values are slugs)
 						if ( is_array( $attribute_values[ $i ] ) ) {
-							$values = array_map( 'sanitize_title', $attribute_values[ $i ] );
+							$values           = array_map( 'sanitize_title', $attribute_values[ $i ] );
+							$values_are_slugs = true;
 
 						// Text based attributes - Posted values are term names - don't change to slugs
 						} else {
-							$values = array_map( 'stripslashes', array_map( 'strip_tags', explode( WC_DELIMITER, $attribute_values[ $i ] ) ) );
+							$values           = array_map( 'stripslashes', array_map( 'strip_tags', explode( WC_DELIMITER, $attribute_values[ $i ] ) ) );
 						}
 
 						// Remove empty items in the array
@@ -1011,10 +913,24 @@ class WC_Meta_Box_Product_Data {
 
 					// Update post terms
 					if ( taxonomy_exists( $attribute_names[ $i ] ) ) {
+
+						foreach( $values as $key => $value ) {
+							$term = get_term_by( $values_are_slugs ? 'slug' : 'name', trim( $value ), $attribute_names[ $i ] );
+
+							if ( $term ) {
+								$values[ $key ] = intval( $term->term_id );
+							} else {
+								$term = wp_insert_term( trim( $value ), $attribute_names[ $i ] );
+								if ( isset( $term->term_id ) ) {
+									$values[ $key ] = intval($term->term_id);
+								}
+							}
+						}
+
 						wp_set_object_terms( $post_id, $values, $attribute_names[ $i ] );
 					}
 
-					if ( $values ) {
+					if ( ! empty( $values ) ) {
 						// Add attribute to array, but don't set values
 						$attributes[ sanitize_title( $attribute_names[ $i ] ) ] = array(
 							'name'         => wc_clean( $attribute_names[ $i ] ),
@@ -1029,7 +945,7 @@ class WC_Meta_Box_Product_Data {
 				} elseif ( isset( $attribute_values[ $i ] ) ) {
 
 					// Text based, separate by pipe
-					$values = implode( ' ' . WC_DELIMITER . ' ', array_map( 'trim', array_map( 'wp_kses_post', array_map( 'stripslashes', explode( WC_DELIMITER, $attribute_values[ $i ] ) ) ) ) );
+					$values = implode( ' ' . WC_DELIMITER . ' ', array_map( 'wc_clean', wc_get_text_attributes( $attribute_values[ $i ] ) ) );
 
 					// Custom attribute - Add attribute to array and set the values
 					$attributes[ sanitize_title( $attribute_names[ $i ] ) ] = array(
@@ -1087,7 +1003,8 @@ class WC_Meta_Box_Product_Data {
 			}
 
 			if ( $date_to && ! $date_from ) {
-				update_post_meta( $post_id, '_sale_price_dates_from', strtotime( 'NOW', current_time( 'timestamp' ) ) );
+				$date_from = date( 'Y-m-d' );
+				update_post_meta( $post_id, '_sale_price_dates_from', strtotime( $date_from ) );
 			}
 
 			// Update price if on sale
@@ -1097,7 +1014,7 @@ class WC_Meta_Box_Product_Data {
 				update_post_meta( $post_id, '_price', ( $_POST['_regular_price'] === '' ) ? '' : wc_format_decimal( $_POST['_regular_price'] ) );
 			}
 
-			if ( '' !== $_POST['_sale_price'] && $date_from && strtotime( $date_from ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) {
+			if ( '' !== $_POST['_sale_price'] && $date_from && strtotime( $date_from ) <= strtotime( 'NOW', current_time( 'timestamp' ) ) ) {
 				update_post_meta( $post_id, '_price', wc_format_decimal( $_POST['_sale_price'] ) );
 			}
 
@@ -1125,7 +1042,7 @@ class WC_Meta_Box_Product_Data {
 				$clear_parent_ids[] = absint( $_POST['previous_parent_id'] );
 			}
 
-			if ( $clear_parent_ids ) {
+			if ( ! empty( $clear_parent_ids ) ) {
 				foreach ( $clear_parent_ids as $clear_id ) {
 					$children_by_price = get_posts( array(
 						'post_parent'    => $clear_id,
@@ -1223,15 +1140,53 @@ class WC_Meta_Box_Product_Data {
 			$files = array();
 
 			if ( isset( $_POST['_wc_file_urls'] ) ) {
-				$file_names    = isset( $_POST['_wc_file_names'] ) ? $_POST['_wc_file_names'] : array();
-				$file_urls     = isset( $_POST['_wc_file_urls'] )  ? array_map( 'trim', $_POST['_wc_file_urls'] ) : array();
-				$file_url_size = sizeof( $file_urls );
+				$file_names         = isset( $_POST['_wc_file_names'] ) ? $_POST['_wc_file_names'] : array();
+				$file_urls          = isset( $_POST['_wc_file_urls'] )  ? array_map( 'trim', $_POST['_wc_file_urls'] ) : array();
+				$file_url_size      = sizeof( $file_urls );
+				$allowed_file_types = apply_filters( 'woocommerce_downloadable_file_allowed_mime_types', get_allowed_mime_types() );
 
 				for ( $i = 0; $i < $file_url_size; $i ++ ) {
 					if ( ! empty( $file_urls[ $i ] ) ) {
-						$file_url            = 0 === strpos( $file_urls[ $i ], '[' ) ? wc_clean( $file_urls[ $i ] ) : esc_url_raw( $file_urls[ $i ] );
-						$file_name           = wc_clean( $file_names[ $i ] );
-						$file_hash           = md5( $file_url );
+						// Find type and file URL
+						if ( 0 === strpos( $file_urls[ $i ], 'http' ) ) {
+							$file_is  = 'absolute';
+							$file_url = esc_url_raw( $file_urls[ $i ] );
+						} elseif ( '[' === substr( $file_urls[ $i ], 0, 1 ) && ']' === substr( $file_urls[ $i ], -1 ) ) {
+							$file_is  = 'shortcode';
+							$file_url = wc_clean( $file_urls[ $i ] );
+						} else {
+							$file_is = 'relative';
+							$file_url = wc_clean( $file_urls[ $i ] );
+						}
+
+						$file_name = wc_clean( $file_names[ $i ] );
+						$file_hash = md5( $file_url );
+
+						// Validate the file extension
+						if ( in_array( $file_is, array( 'absolute', 'relative' ) ) ) {
+							$file_type  = wp_check_filetype( strtok( $file_url, '?' ) );
+							$parsed_url = parse_url( $file_url, PHP_URL_PATH );
+							$extension  = pathinfo( $parsed_url, PATHINFO_EXTENSION );
+
+							if ( ! empty( $extension ) && ! in_array( $file_type['type'], $allowed_file_types ) ) {
+								WC_Admin_Meta_Boxes::add_error( sprintf( __( 'The downloadable file %s cannot be used as it does not have an allowed file type. Allowed types include: %s', 'woocommerce' ), '<code>' . basename( $file_url ) . '</code>', '<code>' . implode( ', ', array_keys( $allowed_file_types ) ) . '</code>' ) );
+								continue;
+							}
+						}
+
+						// Validate the file exists
+						if ( 'relative' === $file_is ) {
+							$_file_url = $file_url;
+							if ( '..' === substr( $file_url, 0, 2 ) || '/' !== substr( $file_url, 0, 1 ) ) {
+								$_file_url = realpath( ABSPATH . $file_url );
+							}
+
+							if ( ! apply_filters( 'woocommerce_downloadable_file_exists', file_exists( $_file_url ), $file_url ) ) {
+								WC_Admin_Meta_Boxes::add_error( sprintf( __( 'The downloadable file %s cannot be used as it does not exist on the server.', 'woocommerce' ), '<code>' . $file_url . '</code>' ) );
+								continue;
+							}
+						}
+
 						$files[ $file_hash ] = array(
 							'name' => $file_name,
 							'file' => $file_url
@@ -1266,8 +1221,12 @@ class WC_Meta_Box_Product_Data {
 
 		// Save variations
 		if ( 'variable' == $product_type ) {
-			self::save_variations( $post_id, $post );
+			// Update parent if variable so price sorting works and stays in sync with the cheapest child
+			WC_Product_Variable::sync( $post_id );
 		}
+
+		// Update version after saving
+		update_post_meta( $post_id, '_product_version', WC_VERSION );
 
 		// Do action for product type
 		do_action( 'woocommerce_process_product_meta_' . $product_type, $post_id );
@@ -1278,6 +1237,7 @@ class WC_Meta_Box_Product_Data {
 
 	/**
 	 * Save meta box data
+	 *
 	 */
 	public static function save_variations( $post_id, $post ) {
 		global $wpdb;
@@ -1285,7 +1245,6 @@ class WC_Meta_Box_Product_Data {
 		$attributes = (array) maybe_unserialize( get_post_meta( $post_id, '_product_attributes', true ) );
 
 		if ( isset( $_POST['variable_sku'] ) ) {
-
 			$variable_post_id               = $_POST['variable_post_id'];
 			$variable_sku                   = $_POST['variable_sku'];
 			$variable_regular_price         = $_POST['variable_regular_price'];
@@ -1312,6 +1271,8 @@ class WC_Meta_Box_Product_Data {
 			$variable_backorders            = isset( $_POST['variable_backorders'] ) ? $_POST['variable_backorders'] : array();
 			$variable_stock_status          = isset( $_POST['variable_stock_status'] ) ? $_POST['variable_stock_status'] : array();
 
+			$variable_description           = isset( $_POST['variable_description'] ) ? $_POST['variable_description'] : array();
+
 			$max_loop = max( array_keys( $_POST['variable_post_id'] ) );
 
 			for ( $i = 0; $i <= $max_loop; $i ++ ) {
@@ -1323,10 +1284,10 @@ class WC_Meta_Box_Product_Data {
 				$variation_id = absint( $variable_post_id[ $i ] );
 
 				// Checkboxes
-				$is_virtual          = isset( $variable_is_virtual[ $i ] ) ? 'yes' : 'no';
-				$is_downloadable     = isset( $variable_is_downloadable[ $i ] ) ? 'yes' : 'no';
-				$post_status         = isset( $variable_enabled[ $i ] ) ? 'publish' : 'private';
-				$manage_stock        = isset( $variable_manage_stock[ $i ] ) ? 'yes' : 'no';
+				$is_virtual      = isset( $variable_is_virtual[ $i ] ) ? 'yes' : 'no';
+				$is_downloadable = isset( $variable_is_downloadable[ $i ] ) ? 'yes' : 'no';
+				$post_status     = isset( $variable_enabled[ $i ] ) ? 'publish' : 'private';
+				$manage_stock    = isset( $variable_manage_stock[ $i ] ) ? 'yes' : 'no';
 
 				// Generate a useful post title
 				$variation_post_title = sprintf( __( 'Variation #%s of %s', 'woocommerce' ), absint( $variation_id ), esc_html( get_the_title( $post_id ) ) );
@@ -1373,7 +1334,7 @@ class WC_Meta_Box_Product_Data {
 						$unique_sku = wc_product_has_unique_sku( $variation_id, $new_sku );
 
 						if ( ! $unique_sku ) {
-							WC_Admin_Meta_Boxes::add_error( __( 'Variation SKU must be unique.', 'woocommerce' ) );
+							WC_Admin_Meta_Boxes::add_error( sprintf( __( '#%s &ndash; Variation SKU must be unique.', 'woocommerce' ), $variation_id ) );
 						} else {
 							update_post_meta( $variation_id, '_sku', $new_sku );
 						}
@@ -1463,18 +1424,50 @@ class WC_Meta_Box_Product_Data {
 					update_post_meta( $variation_id, '_download_limit', wc_clean( $variable_download_limit[ $i ] ) );
 					update_post_meta( $variation_id, '_download_expiry', wc_clean( $variable_download_expiry[ $i ] ) );
 
-					$files         = array();
-					$file_names    = isset( $_POST['_wc_variation_file_names'][ $variation_id ] ) ? array_map( 'wc_clean', $_POST['_wc_variation_file_names'][ $variation_id ] ) : array();
-					$file_urls     = isset( $_POST['_wc_variation_file_urls'][ $variation_id ] ) ? array_map( 'wc_clean', $_POST['_wc_variation_file_urls'][ $variation_id ] ) : array();
-					$file_url_size = sizeof( $file_urls );
+					$files              = array();
+					$file_names         = isset( $_POST['_wc_variation_file_names'][ $variation_id ] ) ? array_map( 'wc_clean', $_POST['_wc_variation_file_names'][ $variation_id ] ) : array();
+					$file_urls          = isset( $_POST['_wc_variation_file_urls'][ $variation_id ] ) ? array_map( 'wc_clean', $_POST['_wc_variation_file_urls'][ $variation_id ] ) : array();
+					$file_url_size      = sizeof( $file_urls );
+					$allowed_file_types = get_allowed_mime_types();
 
 					for ( $ii = 0; $ii < $file_url_size; $ii ++ ) {
-
 						if ( ! empty( $file_urls[ $ii ] ) ) {
+							// Find type and file URL
+							if ( 0 === strpos( $file_urls[ $ii ], 'http' ) ) {
+								$file_is  = 'absolute';
+								$file_url = esc_url_raw( $file_urls[ $ii ] );
+							} elseif ( '[' === substr( $file_urls[ $ii ], 0, 1 ) && ']' === substr( $file_urls[ $ii ], -1 ) ) {
+								$file_is  = 'shortcode';
+								$file_url = wc_clean( $file_urls[ $ii ] );
+							} else {
+								$file_is = 'relative';
+								$file_url = wc_clean( $file_urls[ $ii ] );
+							}
 
-							$files[ md5( $file_urls[ $ii ] ) ] = array(
-								'name' => $file_names[ $ii ],
-								'file' => $file_urls[ $ii ]
+							$file_name = wc_clean( $file_names[ $ii ] );
+							$file_hash = md5( $file_url );
+
+							// Validate the file extension
+							if ( in_array( $file_is, array( 'absolute', 'relative' ) ) ) {
+								$file_type  = wp_check_filetype( strtok( $file_url, '?' ) );
+								$parsed_url = parse_url( $file_url, PHP_URL_PATH );
+								$extension  = pathinfo( $parsed_url, PATHINFO_EXTENSION );
+
+								if ( ! empty( $extension ) && ! in_array( $file_type['type'], $allowed_file_types ) ) {
+									WC_Admin_Meta_Boxes::add_error( sprintf( __( '#%s &ndash; The downloadable file %s cannot be used as it does not have an allowed file type. Allowed types include: %s', 'woocommerce' ), $variation_id, '<code>' . basename( $file_url ) . '</code>', '<code>' . implode( ', ', array_keys( $allowed_file_types ) ) . '</code>' ) );
+									continue;
+								}
+							}
+
+							// Validate the file exists
+							if ( 'relative' === $file_is && ! apply_filters( 'woocommerce_downloadable_file_exists', file_exists( $file_url ), $file_url ) ) {
+								WC_Admin_Meta_Boxes::add_error( sprintf( __( '#%s &ndash; The downloadable file %s cannot be used as it does not exist on the server.', 'woocommerce' ), $variation_id, '<code>' . $file_url . '</code>' ) );
+								continue;
+							}
+
+							$files[ $file_hash ] = array(
+								'name' => $file_name,
+								'file' => $file_url
 							);
 						}
 					}
@@ -1489,18 +1482,26 @@ class WC_Meta_Box_Product_Data {
 					update_post_meta( $variation_id, '_downloadable_files', '' );
 				}
 
+				update_post_meta( $variation_id, '_variation_description', wp_kses_post( $variable_description[ $i ] ) );
+
 				// Save shipping class
 				$variable_shipping_class[ $i ] = ! empty( $variable_shipping_class[ $i ] ) ? (int) $variable_shipping_class[ $i ] : '';
 				wp_set_object_terms( $variation_id, $variable_shipping_class[ $i ], 'product_shipping_class');
 
-				// Update taxonomies - don't use wc_clean as it destroys sanitized characters
+				// Update Attributes
 				$updated_attribute_keys = array();
 				foreach ( $attributes as $attribute ) {
-
 					if ( $attribute['is_variation'] ) {
-						$attribute_key = 'attribute_' . sanitize_title( $attribute['name'] );
-						$value         = isset( $_POST[ $attribute_key ][ $i ] ) ? sanitize_title( stripslashes( $_POST[ $attribute_key ][ $i ] ) ) : '';
+						$attribute_key            = 'attribute_' . sanitize_title( $attribute['name'] );
 						$updated_attribute_keys[] = $attribute_key;
+
+						if ( $attribute['is_taxonomy'] ) {
+							// Don't use wc_clean as it destroys sanitized characters
+							$value = isset( $_POST[ $attribute_key ][ $i ] ) ? sanitize_title( stripslashes( $_POST[ $attribute_key ][ $i ] ) ) : '';
+						} else {
+							$value = isset( $_POST[ $attribute_key ][ $i ] ) ? wc_clean( stripslashes( $_POST[ $attribute_key ][ $i ] ) ) : '';
+						}
+
 						update_post_meta( $variation_id, $attribute_key, $value );
 					}
 				}
@@ -1525,12 +1526,15 @@ class WC_Meta_Box_Product_Data {
 		foreach ( $attributes as $attribute ) {
 
 			if ( $attribute['is_variation'] ) {
+				$value = '';
 
-				// Don't use wc_clean as it destroys sanitized characters
 				if ( isset( $_POST[ 'default_attribute_' . sanitize_title( $attribute['name'] ) ] ) ) {
-					$value = sanitize_title( trim( stripslashes( $_POST[ 'default_attribute_' . sanitize_title( $attribute['name'] ) ] ) ) );
-				} else {
-					$value = '';
+					if ( $attribute['is_taxonomy'] ) {
+						// Don't use wc_clean as it destroys sanitized characters
+						$value = sanitize_title( trim( stripslashes( $_POST[ 'default_attribute_' . sanitize_title( $attribute['name'] ) ] ) ) );
+					} else {
+						$value = wc_clean( trim( stripslashes( $_POST[ 'default_attribute_' . sanitize_title( $attribute['name'] ) ] ) ) );
+					}
 				}
 
 				if ( $value ) {

@@ -25,6 +25,8 @@ class WC_Meta_Box_Order_Notes {
 
 		$args = array(
 			'post_id'   => $post->ID,
+			'orderby'   => 'comment_ID',
+			'order'     => 'DESC',
 			'approve'   => 'approve',
 			'type'      => 'order_note'
 		);
@@ -70,8 +72,8 @@ class WC_Meta_Box_Order_Notes {
 			</p>
 			<p>
 				<select name="order_note_type" id="order_note_type">
-					<option value="customer"><?php _e( 'Customer note', 'woocommerce' ); ?></option>
 					<option value=""><?php _e( 'Private note', 'woocommerce' ); ?></option>
+					<option value="customer"><?php _e( 'Note to customer', 'woocommerce' ); ?></option>
 				</select>
 				<a href="#" class="add_note button"><?php _e( 'Add', 'woocommerce' ); ?></a>
 			</p>

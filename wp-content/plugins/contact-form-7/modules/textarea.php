@@ -118,62 +118,77 @@ function wpcf7_textarea_validation_filter( $result, $tag ) {
 
 /* Tag generator */
 
-add_action( 'admin_init', 'wpcf7_add_tag_generator_textarea', 20 );
-
-function wpcf7_add_tag_generator_textarea() {
-	if ( ! function_exists( 'wpcf7_add_tag_generator' ) )
-		return;
-
-	wpcf7_add_tag_generator( 'textarea', __( 'Text area', 'contact-form-7' ),
-		'wpcf7-tg-pane-textarea', 'wpcf7_tg_pane_textarea' );
+if ( is_admin() ) {
+	add_action( 'admin_init', 'wpcf7_add_tag_generator_textarea', 20 );
 }
 
-function wpcf7_tg_pane_textarea( $contact_form ) {
+function wpcf7_add_tag_generator_textarea() {
+	$tag_generator = WPCF7_TagGenerator::get_instance();
+	$tag_generator->add( 'textarea', __( 'text area', 'contact-form-7' ),
+		'wpcf7_tag_generator_textarea' );
+}
+
+function wpcf7_tag_generator_textarea( $contact_form, $args = '' ) {
+	$args = wp_parse_args( $args, array() );
+	$type = 'textarea';
+
+	$description = __( "Generate a form-tag for a multi-line text input field. For more details, see %s.", 'contact-form-7' );
+
+	$desc_link = wpcf7_link( __( 'http://contactform7.com/text-fields/', 'contact-form-7' ), __( 'Text Fields', 'contact-form-7' ) );
+
 ?>
-<div id="wpcf7-tg-pane-textarea" class="hidden">
-<form action="">
-<table>
-<tr><td><input type="checkbox" name="required" />&nbsp;<?php echo esc_html( __( 'Required field?', 'contact-form-7' ) ); ?></td></tr>
-<tr><td><?php echo esc_html( __( 'Name', 'contact-form-7' ) ); ?><br /><input type="text" name="name" class="tg-name oneline" /></td><td></td></tr>
+<div class="control-box">
+<fieldset>
+<legend><?php echo sprintf( esc_html( $description ), $desc_link ); ?></legend>
+
+<table class="form-table">
+<tbody>
+	<tr>
+	<th scope="row"><?php echo esc_html( __( 'Field type', 'contact-form-7' ) ); ?></th>
+	<td>
+		<fieldset>
+		<legend class="screen-reader-text"><?php echo esc_html( __( 'Field type', 'contact-form-7' ) ); ?></legend>
+		<label><input type="checkbox" name="required" /> <?php echo esc_html( __( 'Required field', 'contact-form-7' ) ); ?></label>
+		</fieldset>
+	</td>
+	</tr>
+
+	<tr>
+	<th scope="row"><label for="<?php echo esc_attr( $args['content'] . '-name' ); ?>"><?php echo esc_html( __( 'Name', 'contact-form-7' ) ); ?></label></th>
+	<td><input type="text" name="name" class="tg-name oneline" id="<?php echo esc_attr( $args['content'] . '-name' ); ?>" /></td>
+	</tr>
+
+	<tr>
+	<th scope="row"><label for="<?php echo esc_attr( $args['content'] . '-values' ); ?>"><?php echo esc_html( __( 'Default value', 'contact-form-7' ) ); ?></label></th>
+	<td><input type="text" name="values" class="oneline" id="<?php echo esc_attr( $args['content'] . '-values' ); ?>" /><br />
+	<label><input type="checkbox" name="placeholder" class="option" /> <?php echo esc_html( __( 'Use this text as the placeholder of the field', 'contact-form-7' ) ); ?></label></td>
+	</tr>
+
+	<tr>
+	<th scope="row"><label for="<?php echo esc_attr( $args['content'] . '-id' ); ?>"><?php echo esc_html( __( 'Id attribute', 'contact-form-7' ) ); ?></label></th>
+	<td><input type="text" name="id" class="idvalue oneline option" id="<?php echo esc_attr( $args['content'] . '-id' ); ?>" /></td>
+	</tr>
+
+	<tr>
+	<th scope="row"><label for="<?php echo esc_attr( $args['content'] . '-class' ); ?>"><?php echo esc_html( __( 'Class attribute', 'contact-form-7' ) ); ?></label></th>
+	<td><input type="text" name="class" class="classvalue oneline option" id="<?php echo esc_attr( $args['content'] . '-class' ); ?>" /></td>
+	</tr>
+
+</tbody>
 </table>
+</fieldset>
+</div>
 
-<table>
-<tr>
-<td><code>id</code> (<?php echo esc_html( __( 'optional', 'contact-form-7' ) ); ?>)<br />
-<input type="text" name="id" class="idvalue oneline option" /></td>
+<div class="insert-box">
+	<input type="text" name="<?php echo $type; ?>" class="tag code" readonly="readonly" onfocus="this.select()" />
 
-<td><code>class</code> (<?php echo esc_html( __( 'optional', 'contact-form-7' ) ); ?>)<br />
-<input type="text" name="class" class="classvalue oneline option" /></td>
-</tr>
+	<div class="submitbox">
+	<input type="button" class="button button-primary insert-tag" value="<?php echo esc_attr( __( 'Insert Tag', 'contact-form-7' ) ); ?>" />
+	</div>
 
-<tr>
-<td><code>cols</code> (<?php echo esc_html( __( 'optional', 'contact-form-7' ) ); ?>)<br />
-<input type="number" name="cols" class="numeric oneline option" min="1" /></td>
+	<br class="clear" />
 
-<td><code>rows</code> (<?php echo esc_html( __( 'optional', 'contact-form-7' ) ); ?>)<br />
-<input type="number" name="rows" class="numeric oneline option" min="1" /></td>
-</tr>
-
-<tr>
-<td><code>maxlength</code> (<?php echo esc_html( __( 'optional', 'contact-form-7' ) ); ?>)<br />
-<input type="number" name="maxlength" class="numeric oneline option" min="1" /></td>
-</tr>
-
-<tr>
-<td><?php echo esc_html( __( 'Default value', 'contact-form-7' ) ); ?> (<?php echo esc_html( __( 'optional', 'contact-form-7' ) ); ?>)<br /><input type="text" name="values" class="oneline" /></td>
-
-<td>
-<br /><input type="checkbox" name="placeholder" class="option" />&nbsp;<?php echo esc_html( __( 'Use this text as placeholder?', 'contact-form-7' ) ); ?>
-</td>
-</tr>
-</table>
-
-<div class="tg-tag"><?php echo esc_html( __( "Copy this code and paste it into the form left.", 'contact-form-7' ) ); ?><br /><input type="text" name="textarea" class="tag wp-ui-text-highlight code" readonly="readonly" onfocus="this.select()" /></div>
-
-<div class="tg-mail-tag"><?php echo esc_html( __( "And, put this code into the Mail fields below.", 'contact-form-7' ) ); ?><br /><input type="text" class="mail-tag wp-ui-text-highlight code" readonly="readonly" onfocus="this.select()" /></div>
-</form>
+	<p class="description mail-tag"><label for="<?php echo esc_attr( $args['content'] . '-mailtag' ); ?>"><?php echo sprintf( esc_html( __( "To use the value input through this field in a mail field, you need to insert the corresponding mail-tag (%s) into the field on the Mail tab.", 'contact-form-7' ) ), '<strong><span class="mail-tag"></span></strong>' ); ?><input type="text" class="mail-tag code hidden" readonly="readonly" id="<?php echo esc_attr( $args['content'] . '-mailtag' ); ?>" /></label></p>
 </div>
 <?php
 }
-
-?>

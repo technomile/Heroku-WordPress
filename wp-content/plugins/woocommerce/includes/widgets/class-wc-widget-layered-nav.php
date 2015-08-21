@@ -49,8 +49,6 @@ class WC_Widget_Layered_Nav extends WC_Widget {
 	 * @see WP_Widget->form
 	 *
 	 * @param array $instance
-	 *
-	 * @return void
 	 */
 	public function form( $instance ) {
 		$this->init_settings();
@@ -60,8 +58,6 @@ class WC_Widget_Layered_Nav extends WC_Widget {
 
 	/**
 	 * Init settings after post types are registered
-	 *
-	 * @return void
 	 */
 	public function init_settings() {
 		$attribute_array      = array();
@@ -115,8 +111,6 @@ class WC_Widget_Layered_Nav extends WC_Widget {
 	 *
 	 * @param array $args
 	 * @param array $instance
-	 *
-	 * @return void
 	 */
 	public function widget( $args, $instance ) {
 		global $_chosen_attributes;
@@ -200,7 +194,7 @@ class WC_Widget_Layered_Nav extends WC_Widget {
 
 							$_products_in_term = get_objects_in_term( $term->term_id, $taxonomy );
 
-							set_transient( $transient_name, $_products_in_term, YEAR_IN_SECONDS );
+							set_transient( $transient_name, $_products_in_term, DAY_IN_SECONDS * 30 );
 						}
 
 						$option_is_set = ( isset( $_chosen_attributes[ $taxonomy ] ) && in_array( $term->term_id, $_chosen_attributes[ $taxonomy ]['terms'] ) );
@@ -229,19 +223,16 @@ class WC_Widget_Layered_Nav extends WC_Widget {
 
 						}
 
-						echo '<option value="' . esc_attr( $term->term_id ) . '" ' . selected( isset( $_GET[ 'filter_' . $taxonomy_filter ] ) ? $_GET[ 'filter_' .$taxonomy_filter ] : '' , $term->term_id, false ) . '>' . esc_html( $term->name ) . '</option>';
+						echo '<option value="' . esc_attr( $term->term_id ) . '" ' . selected( isset( $_GET[ 'filter_' . $taxonomy_filter ] ) ? $_GET[ 'filter_' . $taxonomy_filter ] : '' , $term->term_id, false ) . '>' . esc_html( $term->name ) . '</option>';
 					}
 
 					echo '</select>';
 
 					wc_enqueue_js( "
-
-						jQuery('.dropdown_layered_nav_$taxonomy_filter').change(function(){
-
-							location.href = '" . esc_url_raw( preg_replace( '%\/page/[0-9]+%', '', add_query_arg( 'filtering', '1', remove_query_arg( array( 'page', 'filter_' . $taxonomy_filter ) ) ) ) ) . "&filter_$taxonomy_filter=' + jQuery(this).val();
-
+						jQuery( '.dropdown_layered_nav_$taxonomy_filter' ).change( function() {
+							var term_id = parseInt( jQuery( this ).val(), 10 );
+							location.href = '" . preg_replace( '%\/page\/[0-9]+%', '', str_replace( array( '&amp;', '%2C' ), array( '&', ',' ), esc_js( add_query_arg( 'filtering', '1', remove_query_arg( array( 'page', 'filter_' . $taxonomy_filter ) ) ) ) ) ) . "&filter_$taxonomy_filter=' + ( isNaN( term_id ) ? '' : term_id );
 						});
-
 					" );
 
 				}
@@ -396,7 +387,7 @@ class WC_Widget_Layered_Nav extends WC_Widget {
 
 					echo ( $count > 0 || $option_is_set ) ? '</a>' : '</span>';
 
-					echo ' <small class="count">' . $count . '</small></li>';
+					echo ' <span class="count">(' . $count . ')</span></li>';
 
 				}
 

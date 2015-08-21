@@ -74,7 +74,7 @@ class WC_Settings_Shipping extends WC_Settings_Page {
 				'title'         => __( 'Shipping Calculations', 'woocommerce' ),
 				'desc'          => __( 'Enable shipping', 'woocommerce' ),
 				'id'            => 'woocommerce_calc_shipping',
-				'default'       => 'yes',
+				'default'       => 'no',
 				'type'          => 'checkbox',
 				'checkboxgroup' => 'start'
 			),
@@ -120,7 +120,7 @@ class WC_Settings_Shipping extends WC_Settings_Page {
 				'options' => array(
 					'shipping'     => __( 'Default to shipping address', 'woocommerce' ),
 					'billing'      => __( 'Default to billing address', 'woocommerce' ),
-					'billing_only' => __( 'Only ship to the users billing address', 'woocommerce' ),
+					'billing_only' => __( 'Only ship to the customer\'s billing address', 'woocommerce' ),
 				),
 				'autoload'        => false,
 				'desc_tip'        =>  true,
@@ -191,63 +191,52 @@ class WC_Settings_Shipping extends WC_Settings_Page {
 	 * Output shipping method settings.
 	 */
 	public function shipping_methods_setting() {
-
-		$default_shipping_method = esc_attr( get_option('woocommerce_default_shipping_method') );
+		$selection_priority = get_option( 'woocommerce_shipping_method_selection_priority', array() );
 		?>
 		<tr valign="top">
 			<th scope="row" class="titledesc"><?php _e( 'Shipping Methods', 'woocommerce' ) ?></th>
 			<td class="forminp">
-				<table class="wc_shipping widefat" cellspacing="0">
+				<table class="wc_shipping widefat wp-list-table" cellspacing="0">
 					<thead>
 						<tr>
-							<th class="default"><?php _e( 'Default', 'woocommerce' ); ?></th>
+							<th class="sort">&nbsp;</th>
 							<th class="name"><?php _e( 'Name', 'woocommerce' ); ?></th>
 							<th class="id"><?php _e( 'ID', 'woocommerce' ); ?></th>
-							<th class="status"><?php _e( 'Status', 'woocommerce' ); ?></th>
-							<th class="settings">&nbsp;</th>
+							<th class="status"><?php _e( 'Enabled', 'woocommerce' ); ?></th>
+							<th class="priority"><?php _e( 'Selection Priority', 'woocommerce' ); ?> <span class="tips" data-tip="<?php echo esc_attr( __( 'Available methods will be chosen by default in this order. If multiple methods have the same priority, they will be sorted by cost.', 'woocommerce' ) ); ?>">[?]</span></th>
 						</tr>
 					</thead>
 					<tbody>
-						<?php
-						foreach ( WC()->shipping->load_shipping_methods() as $key => $method ) {
-							echo '<tr>
-								<td width="1%" class="default">
-									<input type="radio" name="default_shipping_method" value="' . esc_attr( $method->id ) . '" ' . checked( $default_shipping_method, $method->id, false ) . ' />
-									<input type="hidden" name="method_order[]" value="' . esc_attr( $method->id ) . '" />
+						<?php foreach ( WC()->shipping->load_shipping_methods() as $key => $method ) : ?>
+							<tr>
+								<td width="1%" class="sort">
+									<input type="hidden" name="method_order[<?php echo esc_attr( $method->id ); ?>]" value="<?php echo esc_attr( $method->id ); ?>" />
 								</td>
 								<td class="name">
-									' . $method->get_title() . '
+									<?php if ( $method->has_settings ) : ?><a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=shipping&section=' . strtolower( get_class( $method ) ) ) ); ?>"><?php endif; ?>
+									<?php echo esc_html( $method->get_title() ); ?>
+									<?php if ( $method->has_settings ) : ?></a><?php endif; ?>
 								</td>
 								<td class="id">
-									' . $method->id . '
+									<?php echo esc_attr( $method->id ); ?>
 								</td>
-								<td class="status">';
-
-							if ( $method->enabled == 'yes' ) {
-								echo '<span class="status-enabled tips" data-tip="' . __ ( 'Enabled', 'woocommerce' ) . '">' . __ ( 'Enabled', 'woocommerce' ) . '</span>';
-							} else {
-								echo '-';
-							}
-
-							echo '</td>
-								<td class="settings">';
-
-							if ( $method->has_settings ) {
-								echo '<a class="button" href="' . admin_url( 'admin.php?page=wc-settings&tab=shipping&section=' . strtolower( get_class( $method ) ) ) . '">' . __( 'Settings', 'woocommerce' ) . '</a>';
-							}
-
-							echo '</td>
-							</tr>';
-						}
-						?>
+								<td class="status">
+									<?php if ( 'yes' === $method->enabled ) : ?>
+										<span class="status-enabled tips" data-tip="<?php esc_attr_e( 'Yes', 'woocommerce' ); ?>"><?php _e( 'Yes', 'woocommerce' ); ?></span>
+									<?php else : ?>
+										<span class="na">-</span>
+									<?php endif; ?>
+								</td>
+								<td width="1%" class="priority">
+									<input type="number" step="1" min="0" name="method_priority[<?php echo esc_attr( $method->id ); ?>]" value="<?php echo isset( $selection_priority[ $method->id ] ) ? absint( $selection_priority[ $method->id ] ) : 1; ?>" />
+								</td>
+							</tr>
+						<?php endforeach; ?>
 					</tbody>
 					<tfoot>
 						<tr>
-							<th width="1%" class="default">
-								<input type="radio" name="default_shipping_method" value="" <?php checked( $default_shipping_method, '' ); ?> />
-							</th>
-							<th><?php _e( 'Automatic', 'woocommerce' ); ?> <a class="tips" data-tip="<?php _e( 'The cheapest available shipping method will be selected by default.', 'woocommerce' ); ?>">[?]</a></th>
-							<th colspan="3"><span class="description"><?php _e( 'Drag and drop the above shipping methods to control their display order.', 'woocommerce' ); ?></span></th>
+							<th>&nbsp;</th>
+							<th colspan="4"><span class="description"><?php _e( 'Drag and drop the above shipping methods to control their display order.', 'woocommerce' ); ?></span></th>
 						</tr>
 					</tfoot>
 				</table>
@@ -262,18 +251,18 @@ class WC_Settings_Shipping extends WC_Settings_Page {
 	public function save() {
 		global $current_section;
 
+		$wc_shipping = WC_Shipping::instance();
+
 		if ( ! $current_section ) {
+			WC_Admin_Settings::save_fields( $this->get_settings() );
+			$wc_shipping->process_admin_options();
 
-			$settings = $this->get_settings();
-
-			WC_Admin_Settings::save_fields( $settings );
-			WC()->shipping->process_admin_options();
-
-		} elseif ( class_exists( $current_section ) ) {
-
-			$current_section_class = new $current_section();
-
-			do_action( 'woocommerce_update_options_' . $this->id . '_' . $current_section_class->id );
+		} else {
+			foreach ( $wc_shipping->get_shipping_methods() as $method_id => $method ) {
+				if ( $current_section === sanitize_title( get_class( $method ) ) ) {
+					do_action( 'woocommerce_update_options_' . $this->id . '_' . $method->id );
+				}
+			}
 		}
 
 		// Increments the transient version to invalidate cache

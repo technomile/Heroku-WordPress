@@ -13,50 +13,36 @@ abstract class WC_Gateway_Paypal_Response {
 	protected $sandbox = false;
 
 	/**
-	 * Stores logging class
-	 * @var WC_Logger
-	 */
-	protected $log;
-
-	/**
-	 * Logging method
-	 * @param  string $message
-	 */
-	protected function log( $message ) {
-		if ( $this->sandbox ) {
-			if ( empty( $this->log ) ) {
-				$this->log = new WC_Logger();
-			}
-			$this->log->add( 'paypal', $message );
-		}
-	}
-
-	/**
 	 * Get the order from the PayPal 'Custom' variable
 	 *
-	 * @param  string $custom
+	 * @param  string $raw_custom JSON Data passed back by PayPal
 	 * @return bool|WC_Order object
 	 */
-	protected function get_paypal_order( $custom ) {
-		$custom = maybe_unserialize( $custom );
+	protected function get_paypal_order( $raw_custom ) {
+		// We have the data in the correct format, so get the order
+		if ( ( $custom = json_decode( $raw_custom ) ) && is_object( $custom ) ) {
+			$order_id  = $custom->order_id;
+			$order_key = $custom->order_key;
 
-		if ( is_array( $custom ) ) {
+		// Fallback to serialized data if safe. This is @deprecated in 2.3.11
+		} elseif ( preg_match( '/^a:2:{/', $raw_custom ) && ! preg_match( '/[CO]:\+?[0-9]+:"/', $raw_custom ) && ( $custom = maybe_unserialize( $raw_custom ) ) ) {
+			$order_id  = $custom[0];
+			$order_key = $custom[1];
 
-			list( $order_id, $order_key ) = $custom;
+		// Nothing was found
+		} else {
+			WC_Gateway_Paypal::log( 'Error: Order ID and key were not found in "custom".' );
+			return false;
+		}
 
-			if ( ! $order = wc_get_order( $order_id ) ) {
-				// We have an invalid $order_id, probably because invoice_prefix has changed
-				$order_id 	= wc_get_order_id_by_order_key( $order_key );
-				$order 		= wc_get_order( $order_id );
-			}
+		if ( ! $order = wc_get_order( $order_id ) ) {
+			// We have an invalid $order_id, probably because invoice_prefix has changed
+			$order_id = wc_get_order_id_by_order_key( $order_key );
+			$order    = wc_get_order( $order_id );
+		}
 
-			if ( ! $order || $order->order_key !== $order_key ) {
-				$this->log( 'Error: Order Keys do not match.' );
-				return false;
-			}
-
-		} elseif ( ! $order = apply_filters( 'woocommerce_get_paypal_order', false, $custom ) ) {
-			$this->log( 'Error: Order ID and key were not found in "custom".' );
+		if ( ! $order || $order->order_key !== $order_key ) {
+			WC_Gateway_Paypal::log( 'Error: Order Keys do not match.' );
 			return false;
 		}
 
@@ -81,5 +67,7 @@ abstract class WC_Gateway_Paypal_Response {
 	 */
 	protected function payment_on_hold( $order, $reason = '' ) {
 		$order->update_status( 'on-hold', $reason );
+		$order->reduce_order_stock();
+		WC()->cart->empty_cart();
 	}
 }

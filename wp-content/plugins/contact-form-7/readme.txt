@@ -2,9 +2,9 @@
 Contributors: takayukister
 Donate link: http://contactform7.com/donate/
 Tags: contact, form, contact form, feedback, email, ajax, captcha, akismet, multilingual
-Requires at least: 4.0
-Tested up to: 4.1
-Stable tag: 4.1
+Requires at least: 4.1
+Tested up to: 4.3
+Stable tag: 4.2.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,9 +49,9 @@ The following are other recommended plugins by the author of Contact Form 7.
 * Croatian (hr) - tolingo Translation Services, Marko Puskaric
 * Czech (cs_CZ) - Korry, Radovan Fiser, Tomas Vesely, Pavel Bilek, Vladislav Šenk
 * Danish (da_DK) - Jens Griebel, Georg S. Adamsen
-* Dutch (nl_NL) - Chris Devriese, Martin Hein, Rene, TenSheep, Tim de Hoog
+* Dutch (nl_NL) - Chris Devriese, Martin Hein, Rene, TenSheep, Tim de Hoog, Henk Buma
 * Esperanto (eo_EO) - Arkadiusz Zychewicz
-* Estonian (et) - Peeter Rahuvarm, Egon Elbre
+* Estonian (et) - Peeter Rahuvarm, Egon Elbre, Tanel Jüris
 * Finnish (fi) - Miika Turunen, Mediajalostamo, Jani Alha
 * French (fr_FR) - Jillij, Oncle Tom, Maître Mô, Emmanuel Simond, Hédi Sellami
 * Galician (gl_ES) - Arume Desenvolvementos Informáticos
@@ -81,13 +81,13 @@ The following are other recommended plugins by the author of Contact Form 7.
 * Portuguese (Brazil; pt_BR) - Leonardo Pinheiro, Henrique Vianna, Caciano Gabriel Batista, Gervásio Antônio, Gilvanilson Santos
 * Portuguese (Portugal; pt_PT) - Hugo Baeta, Pedro Nave, Pedro Mendonça
 * Punjabi (pa_IN) - Jasvinder Sing
-* Russian (ru_RU) - Dmitry Volotovich, Denis Voituk, kg69design
+* Russian (ru_RU) - Dmitry Volotovich, Denis Voituk, twisted tits, kg69design
 * Romanian (ro_RO) - Stas Sushkov, Anunturi Jibo, Marius Olar, Inbox Translation
 * Serbian (sr_RS) - Vedran, Aleksandar Urošević
 * Sinhala (si_LK) - Nitin Aggarwal
 * Slovak (sk_SK) - Patrik Bóna, WordPress Slovakia
-* Slovene (sl_SI) - Mihael Simonič, Jani Roskar
-* Spanish (es_ES) - Jordi Sancho, Vladimir Prieto, Federico Mikaelian, Matias Baldanza, Carlos Agnese, Lourdes Cuesta, Carlos Oropesa
+* Slovene (sl_SI) - Mihael Simonič, Jani Roskar, Marko Ambrožič
+* Spanish (es_ES) - Jordi Sancho, Vladimir Prieto, Federico Mikaelian, Matias Baldanza, Carlos Agnese, Lourdes Cuesta, Carlos Oropesa, Ana Ayelén Martínez
 * Swedish (sv_SE) - Fredrik Jonsson, the Swedish community
 * Tagalog (tl) - Rupert Agnew Lanuza, Hanne, Language Connect
 * Tamil (ta) - Nitin Aggarwal
@@ -119,40 +119,25 @@ Do you have questions or issues with Contact Form 7? Use these support channels 
 
 == Screenshots ==
 
-1. screenshot-1.png 
+1. screenshot-1.png
 
 == Changelog ==
 
 For more information, see [Releases](http://contactform7.com/category/releases/).
 
-= 4.1 =
+= 4.2.2 =
 
-* Added maxlength and minlength options to several form-tag types.
-* Added [count] form-tag type that represents character count for form fields.
-* Introduced WPCF7_Validation class to handle the user-input validation process.
-* Added the front-end URL normalization for [url] fields.
-* Added default:get, default:post and default:post_meta options to get default values from the context.
-* Translations for Turkish, German, Portuguese, Dutch, and Hebrew have been updated.
-* WordPress 4.0 or higher is required.
+* Fixed: Possible empty name attribute of form element (invalid HTML5).
+* Translations for Portuguese, Hungarian, and Spanish have been updated.
 
-= 4.0.3 =
+= 4.2.1 =
 
-* The contextual help tab has been added to admin pages.
-* Changed the admin menu icon to "email" dashicon.
-* Translations for Croatian, Turkish, and Catalan have been updated.
+* Corrected admin script dependencies.
+* Shows a hint for keyboard operation in the editor screen.
+* Translations for Estonian, Portuguese, Dutch, and Turkish have been updated.
 
-= 4.0.2 =
+= 4.2 =
 
-* Introduced wpcf7_build_query() to correctly apply urlencode to keys and values in URL queries.
-* Translations for Portuguese, Spanish, Hungarian, and German have been updated.
-
-= 4.0.1 =
-
-* Fixed a bug that caused an error when creating new contact forms in some environment.
-* Translations for Portuguese and Croatian have been updated.
-
-= 4.0 =
-
-* The default mail template changed (see [Best Practice to Set Up Mail](http://contactform7.com/best-practice-to-set-up-mail/)).
-* Translations for Slovak, German, Turkish and Portuguese have been updated.
-* WordPress 3.9 or higher is required.
+* Renewal of the editor screen.
+* Translation for Slovene has been updated.
+* WordPress 4.1 or higher is required.

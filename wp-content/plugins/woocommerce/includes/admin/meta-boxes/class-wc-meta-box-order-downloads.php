@@ -65,7 +65,7 @@ class WC_Meta_Box_Order_Downloads {
 
 			<div class="toolbar">
 				<p class="buttons">
-					<input type="hidden" id="grant_access_id" name="grant_access_id" data-multiple="true" class="wc-product-search" style="width: 400px;" data-placeholder="<?php _e( 'Search for a downloadable product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_downloadable_products_and_variations" />
+					<input type="hidden" id="grant_access_id" name="grant_access_id" data-multiple="true" class="wc-product-search" style="width: 400px;" data-placeholder="<?php esc_attr_e( 'Search for a downloadable product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_downloadable_products_and_variations" />
 					<button type="button" class="button grant_access"><?php _e( 'Grant Access', 'woocommerce' ); ?></button>
 				</p>
 				<div class="clear"></div>
@@ -109,12 +109,10 @@ class WC_Meta_Box_Order_Downloads {
 
 				$format = array( '%d', '%s', '%s' );
 
-				$expiry  = ( array_key_exists( $i, $access_expires ) && $access_expires[ $i ] != '' ) ? date_i18n( 'Y-m-d', strtotime( $access_expires[ $i ] ) ) : null;
+				$expiry  = ( array_key_exists( $i, $access_expires ) && '' != $access_expires[ $i ] ) ? date_i18n( 'Y-m-d', strtotime( $access_expires[ $i ] ) ) : null;
 
-				if ( ! is_null( $expiry ) ) {
-					$data['access_expires'] = $expiry;
-					$format[]               = '%s';
-				}
+				$data['access_expires'] = $expiry;
+				$format[]               = '%s';
 
 				$wpdb->update( $wpdb->prefix . "woocommerce_downloadable_product_permissions",
 					$data,

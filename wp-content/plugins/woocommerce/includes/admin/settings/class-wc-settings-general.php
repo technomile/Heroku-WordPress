@@ -84,6 +84,22 @@ class WC_Settings_General extends WC_Settings_Page {
 			),
 
 			array(
+				'title'    => __( 'Default Customer Address', 'woocommerce' ),
+				'id'       => 'woocommerce_default_customer_address',
+				'desc_tip' =>  __( 'This option determines the customers default address (before they input their details).', 'woocommerce' ),
+				'desc'     =>  sprintf( __( 'The %sMaxMind GeoLite Database%s will be periodically downloaded to your wp-content directory if using geolocation.', 'woocommerce' ), '<a href="http://dev.maxmind.com/geoip/legacy/geolite/">', '</a>' ),
+				'default'  => 'geolocation',
+				'type'     => 'select',
+				'class'    => 'wc-enhanced-select',
+				'options'  => array(
+					''                 => __( 'No address', 'woocommerce' ),
+					'base'             => __( 'Shop base address', 'woocommerce' ),
+					'geolocation'      => __( 'Geolocate', 'woocommerce' ),
+					'geolocation_ajax' => __( 'Geolocate (with page caching support)', 'woocommerce' ),
+				),
+			),
+
+			array(
 				'title'   => __( 'Store Notice', 'woocommerce' ),
 				'desc'    => __( 'Enable site-wide store notice text', 'woocommerce' ),
 				'id'      => 'woocommerce_demo_store',
@@ -99,14 +115,6 @@ class WC_Settings_General extends WC_Settings_Page {
 				'type'     => 'text',
 				'css'      => 'min-width:300px;',
 				'autoload' => false
-			),
-
-			array(
-				'title'   => __( 'API', 'woocommerce' ),
-				'desc'    => __( 'Enable the REST API', 'woocommerce' ),
-				'id'      => 'woocommerce_api_enabled',
-				'type'    => 'checkbox',
-				'default' => 'yes',
 			),
 
 			array( 'type' => 'sectionend', 'id' => 'general_options'),

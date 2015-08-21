@@ -19,7 +19,7 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Sitemap' ) ) {
 		var $freq_sel;
 		var $extra_sitemaps;
 		
-		function All_in_One_SEO_Pack_Sitemap( ) {
+		function __construct( ) {
 			if ( get_class( $this ) === 'All_in_One_SEO_Pack_Sitemap' ) { // Set this up only when instantiated as this class
 				$this->name = __( 'XML Sitemap', 'all_in_one_seo_pack' ); // Human-readable name of the plugin
 				$this->prefix = 'aiosp_sitemap_';						  // option prefix
@@ -34,6 +34,7 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Sitemap' ) ) {
 				"filename"			=> __( "Specifies the name of your sitemap file. This will default to 'sitemap'.", 'all_in_one_seo_pack' ),
 				"google"			=> __( "Notify Google when you update your sitemap settings.", 'all_in_one_seo_pack' ),
 				"bing"				=> __("Notify Bing when you update your sitemap settings.", 'all_in_one_seo_pack' ),
+				"daily_cron"		=> __( "Notify search engines daily, and also update static sitemap daily if in use. (this uses WP-Cron, so make sure this is working properly on your server as well)", 'all_in_one_seo_pack' ),
 				"indexes"			=> __( "Organize sitemap entries into distinct files in your sitemap. Enable this only if your sitemap contains over 50,000 URLs or the file is over 5MB in size.", 'all_in_one_seo_pack' ),
 				"paginate"			=> __( "Split long sitemaps into separate files.", 'all_in_one_seo_pack' ),
 				"max_posts"			=> __( "Allows you to specify the maximum number of posts in a sitemap (up to 50,000).", 'all_in_one_seo_pack' ),
@@ -79,6 +80,12 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Sitemap' ) ) {
 				 						  'default'	  => 'sitemap', 'type' => 'text', 'sanitize' => 'filename' ),
 					'google'	=> Array( 'name'	  => __( 'Notify Google', 'all_in_one_seo_pack') ),
 					'bing'		=> Array( 'name'	  => __( 'Notify Bing',  'all_in_one_seo_pack') ),
+					'daily_cron'=> Array( 'name'	  => __( 'Schedule Updates', 'all_in_one_seo_pack' ), 'type' => 'select',
+										   'initial_options' => Array(	0		 => __( 'No Schedule', 'all_in_one_seo_pack' ),
+																		'daily'	 => __( 'Daily', 'all_in_one_seo_pack' ),
+																		'weekly' => __( 'Weekly', 'all_in_one_seo_pack' ),
+																		'monthly'=> __( 'Monthly', 'all_in_one_seo_pack' ) ),
+									  		'default' => 0 ),
 					'indexes'	=> Array( 'name'	  => __( 'Enable Sitemap Indexes', 'all_in_one_seo_pack' ) ),
 					'paginate'	=> Array( 'name'	  => __( 'Paginate Sitemap Indexes', 'all_in_one_seo_pack' ),
 										  'condshow'  => Array( "{$this->prefix}indexes" => 'on' ) ),
@@ -95,7 +102,7 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Sitemap' ) ) {
 					'robots'	=> Array( 'name'	  => __( 'Link From Virtual Robots.txt', 'all_in_one_seo_pack' ), 'default' => 'On' ),
 					'rewrite'	=> Array( 'name'	  => __( 'Dynamically Generate Sitemap', 'all_in_one_seo_pack' ), 'default'	  => 'On' ),
 					'noindex'	=> Array( 'name'	  => __( 'Noindex Sitemap file', 'all_in_one_seo_pack' ),
-										  'condshow'  => Array( "{$this->prefix}rewrite" => 'on' ) )
+										  'condshow'  => Array( "{$this->prefix}rewrite" => true ) )
 			);
 			
 			$status_options = Array(
@@ -193,13 +200,42 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Sitemap' ) ) {
 			$this->default_options = array_merge( $status_options, $this->default_options, $addl_options, $excl_options, $prio_options, $freq_options );
 
 			$this->add_help_text_links();
-					
+			
 			add_action( 'init', Array( $this, 'load_sitemap_options' ) );
 			add_action( $this->prefix . 'settings_update',  Array( $this, 'do_sitemaps' ) );
 			add_filter( $this->prefix . 'display_settings', Array( $this, 'update_post_data' ) );
 			add_filter( $this->prefix . 'display_options',  Array( $this, 'filter_display_options' ) );
 			add_filter( $this->prefix . 'update_options',   Array( $this, 'filter_options' ) );
 			add_filter( $this->prefix . 'output_option', Array( $this, 'display_custom_options' ), 10, 2 );
+			add_action( $this->prefix . 'daily_update_cron', Array( $this, 'daily_update' ) );
+		}
+		
+		// Add new intervals of a week and a month
+		// See http://codex.wordpress.org/Plugin_API/Filter_Reference/cron_schedules
+		function add_cron_schedules( $schedules ) {
+		    $schedules['weekly'] = array(
+		        'interval' => 604800, // 1 week in seconds
+		        'display'  => __( 'Once Weekly', 'all_in_one_seo_pack' )
+		    );
+		    $schedules['monthly'] = array(
+		        'interval' => 2629740, // 1 month in seconds
+		        'display'  => __( 'Once Monthly', 'all_in_one_seo_pack' )
+		    );
+		    return $schedules;
+		}
+		
+		function cron_update() {
+			add_filter( 'cron_schedules', Array( $this, 'add_cron_schedules' ) );
+			if ( !wp_next_scheduled( $this->prefix . 'daily_update_cron' ) )
+		        wp_schedule_event( time(), $this->options[$this->prefix . 'daily_cron'], $this->prefix . 'daily_update_cron' );
+		}
+		
+		function daily_update() {
+			$last_run = get_option( $this->prefix . 'cron_last_run' );
+			if ( empty( $last_run ) || ( time() - $last_run > 23.5 * 60 * 60 ) ) // sanity check
+				$this->do_sitemaps( __( "Daily scheduled sitemap check has finished.", 'all_in_one_seo_pack' ) );
+			$last_run = time();
+			update_option( $this->prefix . 'cron_last_run', $last_run );
 		}
 		
 		/** Initialize options, after constructor **/
@@ -218,6 +254,13 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Sitemap' ) ) {
 			
 			if ( $this->option_isset( 'robots' ) )
 				add_action( 'do_robots', Array( $this, 'do_robots' ), 100 );
+			
+			if ( isset( $this->options[$this->prefix . 'daily_cron'] ) && $this->options[$this->prefix . 'daily_cron'] ) {
+				add_action( 'wp', Array( $this, 'cron_update' ) );				
+			} else {
+				if ( $time = wp_next_scheduled( $this->prefix . 'daily_update_cron' ) )
+			        wp_unschedule_event( $time, $this->prefix . 'daily_update_cron' );
+			}
 		}
 		
 		/** Custom settings - displays boxes for add pages to sitemap option. **/
@@ -242,33 +285,6 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Sitemap' ) ) {
 			$buf .= $this->get_option_html( $args );
 			$buf .= '</div>';
 			return $buf;
-		}
-		
-		// original code thanks to Sean M. Brown -- http://smbrown.wordpress.com/2009/04/29/verify-googlebot-forward-reverse-dns/
-		function is_good_bot() {
-			$botlist = Array(
-				"Yahoo! Slurp" => "crawl.yahoo.net",
-				"googlebot" => ".googlebot.com",
-				"msnbot" => "search.msn.com"
-			);
-			$botlist = apply_filters( $this->prefix . "botlist", $botlist );
-			if ( !empty( $botlist ) )
-			    $ua = $_SERVER['HTTP_USER_AGENT'];
-				$uas = join( '|', array_map( 'preg_quote', array_keys( $botlist ) ) );
-			    if ( preg_match( '/' . $uas . '/i', $ua ) ) {
-					$ip = $_SERVER['REMOTE_ADDR'];
-					$hostname = gethostbyaddr( $ip );
-					$ip_by_hostname = gethostbyname( $hostname );
-			        if ( $ip_by_hostname == $ip ) {
-						$hosts = array_values( $botlist );
-						foreach( $hosts as $k => $h )
-							$hosts[$k] = preg_quote( $h ) . '$';
-						$hosts = join( '|', $hosts );
-						if ( preg_match( '/' . $hosts . '/i', $hostname ) )
-							return true;
-					}
-				}
-				return false;
 		}
 		
 		/** Add post type details for settings once post types have been registered. **/
@@ -794,7 +810,7 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Sitemap' ) ) {
 		}
 
 		/** Build static sitemaps on submit if rewrite rules are not in use, do logging. **/
-		function do_sitemaps() {
+		function do_sitemaps( $message = '' ) {
 			if ( !empty( $this->options["{$this->prefix}indexes"] ) && !empty( $this->options["{$this->prefix}paginate"] ) ) {
 				$this->paginate = true;
 				if ( ( $this->options["{$this->prefix}max_posts"] ) && ( $this->options["{$this->prefix}max_posts"] > 0 ) && ( $this->options["{$this->prefix}max_posts"] < 50000 ) )
@@ -819,7 +835,11 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Sitemap' ) ) {
 				delete_transient( "{$this->prefix}rules_flushed" );
 			}
 			$this->do_notify();
-			$this->debug_message( __( 'Updated sitemap settings.', 'all_in_one_seo_pack' ) );
+			if ( !empty( $message ) && is_string( $message ) ) {
+				$this->debug_message( $message );
+			} else {
+				$this->debug_message( __( 'Updated sitemap settings.', 'all_in_one_seo_pack' ) );				
+			}
 		}
 
 		function add_xml_mime_type( $mime ) {
@@ -1507,6 +1527,7 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Sitemap' ) ) {
 							$pr_info[ 'changefreq' ] = $this->options[ $this->prefix . 'freq_post_' . $post->post_type ];
 					}
 					$pr_info['loc'] = $url;
+					if ( is_float( $pr_info['priority'] ) ) $pr_info['priority'] = sprintf( "%0.1F", $pr_info['priority'] );
 					$pr_info = apply_filters( $this->prefix . 'prio_item_filter', $pr_info, $post, $args );
 					if ( !empty( $pr_info ) )
 						$prio[] = $pr_info;

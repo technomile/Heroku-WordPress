@@ -9,7 +9,7 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit;
 }
 
 /**
@@ -51,42 +51,26 @@ class WC_Admin_Status {
 				break;
 				case 'clear_expired_transients' :
 
-					// http://w-shadow.com/blog/2012/04/17/delete-stale-transients/
-					$rows = $wpdb->query( "
-						DELETE
-							a, b
-						FROM
-							{$wpdb->options} a, {$wpdb->options} b
-						WHERE
-							a.option_name LIKE '_transient_%' AND
-							a.option_name NOT LIKE '_transient_timeout_%' AND
-							b.option_name = CONCAT(
-								'_transient_timeout_',
-								SUBSTRING(
-									a.option_name,
-									CHAR_LENGTH('_transient_') + 1
-								)
-							)
-							AND b.option_value < UNIX_TIMESTAMP()
-					" );
+					/*
+					 * Deletes all expired transients. The multi-table delete syntax is used
+					 * to delete the transient record from table a, and the corresponding
+					 * transient_timeout record from table b.
+					 *
+					 * Based on code inside core's upgrade_network() function.
+					 */
+					$sql = "DELETE a, b FROM $wpdb->options a, $wpdb->options b
+						WHERE a.option_name LIKE %s
+						AND a.option_name NOT LIKE %s
+						AND b.option_name = CONCAT( '_transient_timeout_', SUBSTRING( a.option_name, 12 ) )
+						AND b.option_value < %d";
+					$rows = $wpdb->query( $wpdb->prepare( $sql, $wpdb->esc_like( '_transient_' ) . '%', $wpdb->esc_like( '_transient_timeout_' ) . '%', time() ) );
 
-					$rows2 = $wpdb->query( "
-						DELETE
-							a, b
-						FROM
-							{$wpdb->options} a, {$wpdb->options} b
-						WHERE
-							a.option_name LIKE '_site_transient_%' AND
-							a.option_name NOT LIKE '_site_transient_timeout_%' AND
-							b.option_name = CONCAT(
-								'_site_transient_timeout_',
-								SUBSTRING(
-									a.option_name,
-									CHAR_LENGTH('_site_transient_') + 1
-								)
-							)
-							AND b.option_value < UNIX_TIMESTAMP()
-					" );
+					$sql = "DELETE a, b FROM $wpdb->options a, $wpdb->options b
+						WHERE a.option_name LIKE %s
+						AND a.option_name NOT LIKE %s
+						AND b.option_name = CONCAT( '_site_transient_timeout_', SUBSTRING( a.option_name, 17 ) )
+						AND b.option_value < %d";
+					$rows2 = $wpdb->query( $wpdb->prepare( $sql, $wpdb->esc_like( '_site_transient_' ) . '%', $wpdb->esc_like( '_site_transient_timeout_' ) . '%', time() ) );
 
 					echo '<div class="updated"><p>' . sprintf( __( '%d Transients Rows Cleared', 'woocommerce' ), $rows + $rows2 ) . '</p></div>';
 
@@ -159,24 +143,7 @@ class WC_Admin_Status {
 
 		// Manual translation update messages
 		if ( isset( $_GET['translation_updated'] ) ) {
-			switch ( $_GET['translation_updated'] ) {
-				case 2 :
-					echo '<div class="error"><p>' . __( 'Failed to install/update the translation:', 'woocommerce' ) . ' ' . __( 'Seems you don\'t have permission to do this!', 'woocommerce' ) . '</p></div>';
-					break;
-				case 3 :
-					echo '<div class="error"><p>' . __( 'Failed to install/update the translation:', 'woocommerce' ) . ' ' . sprintf( __( 'An authentication error occurred while updating the translation. Please try again or configure your %sUpgrade Constants%s.', 'woocommerce' ), '<a href="http://codex.wordpress.org/Editing_wp-config.php#WordPress_Upgrade_Constants">', '</a>' ) . '</p></div>';
-					break;
-				case 4 :
-					echo '<div class="error"><p>' . __( 'Failed to install/update the translation:', 'woocommerce' ) . ' ' . __( 'Sorry but there is no translation available for your language =/', 'woocommerce' ) . '</p></div>';
-					break;
-
-				default :
-					// Force WordPress find for new updates and hide the WooCommerce translation update
-					set_site_transient( 'update_plugins', null );
-
-					echo '<div class="updated"><p>' . __( 'Translations installed/updated successfully!', 'woocommerce' ) . '</p></div>';
-					break;
-			}
+			WC_Language_Pack_Upgrader::language_update_messages();
 		}
 
 		// Display message if settings settings have been saved
@@ -189,34 +156,33 @@ class WC_Admin_Status {
 
 	/**
 	 * Get tools
-	 *
 	 * @return array of tools
 	 */
 	public static function get_tools() {
 		$tools = array(
 			'clear_transients' => array(
-				'name'    => __( 'WC Transients','woocommerce'),
-				'button'  => __('Clear transients','woocommerce'),
+				'name'    => __( 'WC Transients', 'woocommerce' ),
+				'button'  => __( 'Clear transients', 'woocommerce' ),
 				'desc'    => __( 'This tool will clear the product/shop transients cache.', 'woocommerce' ),
 			),
 			'clear_expired_transients' => array(
-				'name'    => __( 'Expired Transients','woocommerce'),
-				'button'  => __('Clear expired transients','woocommerce'),
+				'name'    => __( 'Expired Transients', 'woocommerce' ),
+				'button'  => __( 'Clear expired transients', 'woocommerce' ),
 				'desc'    => __( 'This tool will clear ALL expired transients from WordPress.', 'woocommerce' ),
 			),
 			'recount_terms' => array(
-				'name'    => __('Term counts','woocommerce'),
-				'button'  => __('Recount terms','woocommerce'),
+				'name'    => __( 'Term counts', 'woocommerce' ),
+				'button'  => __( 'Recount terms', 'woocommerce' ),
 				'desc'    => __( 'This tool will recount product terms - useful when changing your settings in a way which hides products from the catalog.', 'woocommerce' ),
 			),
 			'reset_roles' => array(
-				'name'    => __('Capabilities','woocommerce'),
-				'button'  => __('Reset capabilities','woocommerce'),
+				'name'    => __( 'Capabilities', 'woocommerce' ),
+				'button'  => __( 'Reset capabilities', 'woocommerce' ),
 				'desc'    => __( 'This tool will reset the admin, customer and shop_manager roles to default. Use this if your users cannot access all of the WooCommerce admin pages.', 'woocommerce' ),
 			),
 			'clear_sessions' => array(
-				'name'    => __('Customer Sessions','woocommerce'),
-				'button'  => __('Clear all sessions','woocommerce'),
+				'name'    => __( 'Customer Sessions', 'woocommerce' ),
+				'button'  => __( 'Clear all sessions', 'woocommerce' ),
 				'desc'    => __( '<strong class="red">Warning:</strong> This tool will delete all customer session data from the database, including any current live carts.', 'woocommerce' ),
 			),
 			'install_pages' => array(
@@ -256,7 +222,7 @@ class WC_Admin_Status {
 
 		if ( ! empty( $_REQUEST['log_file'] ) && isset( $logs[ sanitize_title( $_REQUEST['log_file'] ) ] ) ) {
 			$viewed_log = $logs[ sanitize_title( $_REQUEST['log_file'] ) ];
-		} elseif ( $logs ) {
+		} elseif ( ! empty( $logs ) ) {
 			$viewed_log = current( $logs );
 		}
 
@@ -265,9 +231,8 @@ class WC_Admin_Status {
 
 	/**
 	 * Retrieve metadata from a file. Based on WP Core's get_file_data function
-	 *
-	 * @since 2.1.1
-	 * @param string $file Path to the file
+	 * @since  2.1.1
+	 * @param  string $file Path to the file
 	 * @return string
 	 */
 	public static function get_file_version( $file ) {
@@ -298,16 +263,15 @@ class WC_Admin_Status {
 
 	/**
 	 * Scan the template files
-	 *
-	 * @param string $template_path
+	 * @param  string $template_path
 	 * @return array
 	 */
 	public static function scan_template_files( $template_path ) {
 
-		$files         = scandir( $template_path );
-		$result        = array();
+		$files  = @scandir( $template_path );
+		$result = array();
 
-		if ( $files ) {
+		if ( ! empty( $files ) ) {
 
 			foreach ( $files as $key => $value ) {
 
@@ -329,12 +293,11 @@ class WC_Admin_Status {
 
 	/**
 	 * Scan the log files
-	 *
 	 * @return array
 	 */
 	public static function scan_log_files() {
-		$files         = @scandir( WC_LOG_DIR );
-		$result        = array();
+		$files  = @scandir( WC_LOG_DIR );
+		$result = array();
 
 		if ( $files ) {
 
@@ -346,7 +309,9 @@ class WC_Admin_Status {
 					}
 				}
 			}
+
 		}
+
 		return $result;
 	}
 }

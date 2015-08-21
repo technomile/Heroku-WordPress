@@ -51,7 +51,7 @@ class WC_Admin_Attributes {
 		}
 
 		if ( is_wp_error( $result ) ) {
-			echo '<div id="woocommerce_errors" class="error fade"><p>' . $result->get_error_message() . '</p></div>';
+			echo '<div id="woocommerce_errors" class="error"><p>' . $result->get_error_message() . '</p></div>';
 		}
 
 		// Show admin interface
@@ -94,23 +94,10 @@ class WC_Admin_Attributes {
 	 * @return bool|WP_error result
 	 */
 	private static function valid_attribute_name( $attribute_name ) {
-		// Forbidden attribute names
-		// http://codex.wordpress.org/Function_Reference/register_taxonomy#Reserved_Terms
-		$reserved_terms = array(
-			'attachment', 'attachment_id', 'author', 'author_name', 'calendar', 'cat', 'category', 'category__and',
-			'category__in', 'category__not_in', 'category_name', 'comments_per_page', 'comments_popup', 'cpage', 'day',
-			'debug', 'error', 'exact', 'feed', 'hour', 'link_category', 'm', 'minute', 'monthnum', 'more', 'name',
-			'nav_menu', 'nopaging', 'offset', 'order', 'orderby', 'p', 'page', 'page_id', 'paged', 'pagename', 'pb', 'perm',
-			'post', 'post__in', 'post__not_in', 'post_format', 'post_mime_type', 'post_status', 'post_tag', 'post_type',
-			'posts', 'posts_per_archive_page', 'posts_per_page', 'preview', 'robots', 's', 'search', 'second', 'sentence',
-			'showposts', 'static', 'subpost', 'subpost_id', 'tag', 'tag__and', 'tag__in', 'tag__not_in', 'tag_id',
-			'tag_slug__and', 'tag_slug__in', 'taxonomy', 'tb', 'term', 'type', 'w', 'withcomments', 'withoutcomments', 'year',
-		);
-
 		if ( strlen( $attribute_name ) >= 28 ) {
 			return new WP_Error( 'error', sprintf( __( 'Slug "%s" is too long (28 characters max). Shorten it, please.', 'woocommerce' ), sanitize_title( $attribute_name ) ) );
-		} elseif ( in_array( $attribute_name, $reserved_terms ) ) {
-			return new WP_Error( 'error', __( 'Slug "%s" is not allowed because it is a reserved term. Change it, please.', 'woocommerce' ), sanitize_title( $attribute_name ) );
+		} elseif ( wc_check_if_attribute_name_is_reserved( $attribute_name ) ) {
+			return new WP_Error( 'error', sprintf( __( 'Slug "%s" is not allowed because it is a reserved term. Change it, please.', 'woocommerce' ), sanitize_title( $attribute_name ) ) );
 		}
 
 		return true;
@@ -190,11 +177,10 @@ class WC_Admin_Attributes {
 			$old_attribute_name_length = strlen( $old_attribute_name ) + 3;
 			$attribute_name_length     = strlen( $attribute['attribute_name'] ) + 3;
 
-			$wpdb->query( "
-				UPDATE {$wpdb->postmeta}
-				SET meta_value = REPLACE( meta_value, 's:{$old_attribute_name_length}:\"pa_{$old_attribute_name}\"', 's:{$attribute_name_length}:\"pa_{$attribute['attribute_name']}\"' )
-				WHERE meta_key = '_product_attributes'"
-			);
+			$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->postmeta} SET meta_value = REPLACE( meta_value, %s, %s ) WHERE meta_key = '_product_attributes'",
+				's:' . $old_attribute_name_length . ':"pa_' . $old_attribute_name . '"',
+				's:' . $attribute_name_length . ':"pa_' . $attribute['attribute_name'] . '"'
+			) );
 
 			// Update variations which use this taxonomy
 			$wpdb->update(
@@ -204,7 +190,7 @@ class WC_Admin_Attributes {
 			);
 		}
 
-		echo '<div class="updated fade"><p>' . __( 'Attribute updated successfully', 'woocommerce' ) . '</p></div>';
+		echo '<div class="updated"><p>' . __( 'Attribute updated successfully', 'woocommerce' ) . '</p></div>';
 
 		flush_rewrite_rules();
 		delete_transient( 'wc_attribute_taxonomies' );
@@ -255,77 +241,97 @@ class WC_Admin_Attributes {
 
 		$attribute_to_edit = $wpdb->get_row( "SELECT * FROM " . $wpdb->prefix . "woocommerce_attribute_taxonomies WHERE attribute_id = '$edit'" );
 
-		$att_type    = $attribute_to_edit->attribute_type;
-		$att_label   = $attribute_to_edit->attribute_label;
-		$att_name    = $attribute_to_edit->attribute_name;
-		$att_orderby = $attribute_to_edit->attribute_orderby;
-		$att_public  = $attribute_to_edit->attribute_public;
 		?>
 		<div class="wrap woocommerce">
 			<div class="icon32 icon32-attributes" id="icon-woocommerce"><br/></div>
 			<h2><?php _e( 'Edit Attribute', 'woocommerce' ) ?></h2>
-			<form action="edit.php?post_type=product&amp;page=product_attributes&amp;edit=<?php echo absint( $edit ); ?>" method="post">
-				<table class="form-table">
-					<tbody>
-						<tr class="form-field form-required">
-							<th scope="row" valign="top">
-								<label for="attribute_label"><?php _e( 'Name', 'woocommerce' ); ?></label>
-							</th>
-							<td>
-								<input name="attribute_label" id="attribute_label" type="text" value="<?php echo esc_attr( $att_label ); ?>" />
-								<p class="description"><?php _e( 'Name for the attribute (shown on the front-end).', 'woocommerce' ); ?></p>
-							</td>
-						</tr>
-						<tr class="form-field form-required">
-							<th scope="row" valign="top">
-								<label for="attribute_name"><?php _e( 'Slug', 'woocommerce' ); ?></label>
-							</th>
-							<td>
-								<input name="attribute_name" id="attribute_name" type="text" value="<?php echo esc_attr( $att_name ); ?>" maxlength="28" />
-								<p class="description"><?php _e( 'Unique slug/reference for the attribute; must be shorter than 28 characters.', 'woocommerce' ); ?></p>
-							</td>
-						</tr>
-						<tr class="form-field form-required">
-							<th scope="row" valign="top">
-								<label for="attribute_public"><?php _e( 'Enable Archives?', 'woocommerce' ); ?></label>
-							</th>
-							<td>
-								<input name="attribute_public" id="attribute_public" type="checkbox" value="1" <?php checked( $att_public, 1 ); ?> />
-								<p class="description"><?php _e( 'Enable this if you want this attribute to have product archives in your store.', 'woocommerce' ); ?></p>
-							</td>
-						</tr>
-						<tr class="form-field form-required">
-							<th scope="row" valign="top">
-								<label for="attribute_type"><?php _e( 'Type', 'woocommerce' ); ?></label>
-							</th>
-							<td>
-								<select name="attribute_type" id="attribute_type">
-									<option value="select" <?php selected( $att_type, 'select' ); ?>><?php _e( 'Select', 'woocommerce' ); ?></option>
-									<option value="text" <?php selected( $att_type, 'text' ); ?>><?php _e( 'Text', 'woocommerce' ); ?></option>
-									<?php do_action('woocommerce_admin_attribute_types'); ?>
-								</select>
-								<p class="description"><?php _e( 'Determines how you select attributes for products. Under admin panel -> products -> product data -> attributes -> values, <strong>Text</strong> allows manual entry whereas <strong>select</strong> allows pre-configured terms in a drop-down list.', 'woocommerce' ); ?></p>
-							</td>
-						</tr>
-						<tr class="form-field form-required">
-							<th scope="row" valign="top">
-								<label for="attribute_orderby"><?php _e( 'Default sort order', 'woocommerce' ); ?></label>
-							</th>
-							<td>
-								<select name="attribute_orderby" id="attribute_orderby">
-									<option value="menu_order" <?php selected( $att_orderby, 'menu_order' ); ?>><?php _e( 'Custom ordering', 'woocommerce' ); ?></option>
-									<option value="name" <?php selected( $att_orderby, 'name' ); ?>><?php _e( 'Name', 'woocommerce' ); ?></option>
-									<option value="name_num" <?php selected( $att_orderby, 'name_num' ); ?>><?php _e( 'Name (numeric)', 'woocommerce' ); ?></option>
-									<option value="id" <?php selected( $att_orderby, 'id' ); ?>><?php _e( 'Term ID', 'woocommerce' ); ?></option>
-								</select>
-								<p class="description"><?php _e( 'Determines the sort order of the terms on the frontend shop product pages. If using custom ordering, you can drag and drop the terms in this attribute.', 'woocommerce' ); ?></p>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-				<p class="submit"><input type="submit" name="save_attribute" id="submit" class="button-primary" value="<?php _e( 'Update', 'woocommerce' ); ?>"></p>
-				<?php wp_nonce_field( 'woocommerce-save-attribute_' . $edit ); ?>
-			</form>
+
+			<?php
+
+				if ( ! $attribute_to_edit ) {
+					echo '<div id="woocommerce_errors" class="error"><p>' . __( 'Error: non-existing attribute ID.', 'woocommerce' ) . '</p></div>';
+				} else {
+					$att_type    = $attribute_to_edit->attribute_type;
+					$att_label   = $attribute_to_edit->attribute_label;
+					$att_name    = $attribute_to_edit->attribute_name;
+					$att_orderby = $attribute_to_edit->attribute_orderby;
+					$att_public  = $attribute_to_edit->attribute_public;
+
+				?>
+
+				<form action="edit.php?post_type=product&amp;page=product_attributes&amp;edit=<?php echo absint( $edit ); ?>" method="post">
+					<table class="form-table">
+						<tbody>
+							<tr class="form-field form-required">
+								<th scope="row" valign="top">
+									<label for="attribute_label"><?php _e( 'Name', 'woocommerce' ); ?></label>
+								</th>
+								<td>
+									<input name="attribute_label" id="attribute_label" type="text" value="<?php echo esc_attr( $att_label ); ?>" />
+									<p class="description"><?php _e( 'Name for the attribute (shown on the front-end).', 'woocommerce' ); ?></p>
+								</td>
+							</tr>
+							<tr class="form-field form-required">
+								<th scope="row" valign="top">
+									<label for="attribute_name"><?php _e( 'Slug', 'woocommerce' ); ?></label>
+								</th>
+								<td>
+									<input name="attribute_name" id="attribute_name" type="text" value="<?php echo esc_attr( $att_name ); ?>" maxlength="28" />
+									<p class="description"><?php _e( 'Unique slug/reference for the attribute; must be shorter than 28 characters.', 'woocommerce' ); ?></p>
+								</td>
+							</tr>
+							<tr class="form-field form-required">
+								<th scope="row" valign="top">
+									<label for="attribute_public"><?php _e( 'Enable Archives?', 'woocommerce' ); ?></label>
+								</th>
+								<td>
+									<input name="attribute_public" id="attribute_public" type="checkbox" value="1" <?php checked( $att_public, 1 ); ?> />
+									<p class="description"><?php _e( 'Enable this if you want this attribute to have product archives in your store.', 'woocommerce' ); ?></p>
+								</td>
+							</tr>
+							<tr class="form-field form-required">
+								<th scope="row" valign="top">
+									<label for="attribute_type"><?php _e( 'Type', 'woocommerce' ); ?></label>
+								</th>
+								<td>
+									<select name="attribute_type" id="attribute_type">
+										<?php foreach ( wc_get_attribute_types() as $key => $value ) : ?>
+											<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $att_type, $key ); ?>><?php echo esc_attr( $value ); ?></option>
+										<?php endforeach; ?>
+
+										<?php
+
+											/**
+											 * Deprecated action in favor of product_attributes_type_selector filter
+											 *
+											 * @deprecated 2.4.0
+											 */
+											do_action( 'woocommerce_admin_attribute_types' );
+										?>
+									</select>
+									<p class="description"><?php _e( 'Determines how you select attributes for products. Under admin panel -> products -> product data -> attributes -> values, <strong>Text</strong> allows manual entry whereas <strong>select</strong> allows pre-configured terms in a drop-down list.', 'woocommerce' ); ?></p>
+								</td>
+							</tr>
+							<tr class="form-field form-required">
+								<th scope="row" valign="top">
+									<label for="attribute_orderby"><?php _e( 'Default sort order', 'woocommerce' ); ?></label>
+								</th>
+								<td>
+									<select name="attribute_orderby" id="attribute_orderby">
+										<option value="menu_order" <?php selected( $att_orderby, 'menu_order' ); ?>><?php _e( 'Custom ordering', 'woocommerce' ); ?></option>
+										<option value="name" <?php selected( $att_orderby, 'name' ); ?>><?php _e( 'Name', 'woocommerce' ); ?></option>
+										<option value="name_num" <?php selected( $att_orderby, 'name_num' ); ?>><?php _e( 'Name (numeric)', 'woocommerce' ); ?></option>
+										<option value="id" <?php selected( $att_orderby, 'id' ); ?>><?php _e( 'Term ID', 'woocommerce' ); ?></option>
+									</select>
+									<p class="description"><?php _e( 'Determines the sort order of the terms on the frontend shop product pages. If using custom ordering, you can drag and drop the terms in this attribute.', 'woocommerce' ); ?></p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<p class="submit"><input type="submit" name="save_attribute" id="submit" class="button-primary" value="<?php esc_attr_e( 'Update', 'woocommerce' ); ?>"></p>
+					<?php wp_nonce_field( 'woocommerce-save-attribute_' . $edit ); ?>
+				</form>
+			<?php } ?>
 		</div>
 		<?php
 	}
@@ -408,7 +414,7 @@ class WC_Admin_Attributes {
 														echo '<span class="na">&ndash;</span>';
 													}
 												?></td>
-												<td class="attribute-actions"><a href="edit-tags.php?taxonomy=<?php echo esc_html( wc_attribute_taxonomy_name( $tax->attribute_name ) ); ?>&amp;post_type=product" class="button alignright tips configure-terms" data-tip="<?php _e( 'Configure terms', 'woocommerce' ); ?>"><?php _e( 'Configure terms', 'woocommerce' ); ?></a></td>
+												<td class="attribute-actions"><a href="edit-tags.php?taxonomy=<?php echo esc_html( wc_attribute_taxonomy_name( $tax->attribute_name ) ); ?>&amp;post_type=product" class="button alignright tips configure-terms" data-tip="<?php esc_attr_e( 'Configure terms', 'woocommerce' ); ?>"><?php _e( 'Configure terms', 'woocommerce' ); ?></a></td>
 											</tr><?php
 										endforeach;
 									else :
@@ -446,9 +452,19 @@ class WC_Admin_Attributes {
 								<div class="form-field">
 									<label for="attribute_type"><?php _e( 'Type', 'woocommerce' ); ?></label>
 									<select name="attribute_type" id="attribute_type">
-										<option value="select"><?php _e( 'Select', 'woocommerce' ) ?></option>
-										<option value="text"><?php _e( 'Text', 'woocommerce' ); ?></option>
-										<?php do_action('woocommerce_admin_attribute_types'); ?>
+										<?php foreach ( wc_get_attribute_types() as $key => $value ) : ?>
+											<option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_attr( $value ); ?></option>
+										<?php endforeach; ?>
+
+										<?php
+
+											/**
+											 * Deprecated action in favor of product_attributes_type_selector filter
+											 *
+											 * @deprecated 2.4.0
+											 */
+											do_action( 'woocommerce_admin_attribute_types' );
+										?>
 									</select>
 									<p class="description"><?php _e( 'Determines how you select attributes for products. Under admin panel -> products -> product data -> attributes -> values, <strong>Text</strong> allows manual entry whereas <strong>select</strong> allows pre-configured terms in a drop-down list.', 'woocommerce' ); ?></p>
 								</div>
@@ -458,12 +474,13 @@ class WC_Admin_Attributes {
 									<select name="attribute_orderby" id="attribute_orderby">
 										<option value="menu_order"><?php _e( 'Custom ordering', 'woocommerce' ); ?></option>
 										<option value="name"><?php _e( 'Name', 'woocommerce' ); ?></option>
+										<option value="name_num"><?php _e( 'Name (numeric)', 'woocommerce' ); ?></option>
 										<option value="id"><?php _e( 'Term ID', 'woocommerce' ); ?></option>
 									</select>
 									<p class="description"><?php _e( 'Determines the sort order of the terms on the frontend shop product pages. If using custom ordering, you can drag and drop the terms in this attribute.', 'woocommerce' ); ?></p>
 								</div>
 
-								<p class="submit"><input type="submit" name="add_new_attribute" id="submit" class="button button-primary" value="<?php _e( 'Add Attribute', 'woocommerce' ); ?>"></p>
+								<p class="submit"><input type="submit" name="add_new_attribute" id="submit" class="button button-primary" value="<?php esc_attr_e( 'Add Attribute', 'woocommerce' ); ?>"></p>
 								<?php wp_nonce_field( 'woocommerce-add-new_attribute' ); ?>
 							</form>
 						</div>
@@ -474,7 +491,7 @@ class WC_Admin_Attributes {
 			/* <![CDATA[ */
 
 				jQuery( 'a.delete' ).click( function() {
-					if ( window.confirm( "<?php _e( 'Are you sure you want to delete this attribute?', 'woocommerce' ); ?>" ) ) {
+					if ( window.confirm( '<?php _e( "Are you sure you want to delete this attribute?", "woocommerce" ); ?>' ) ) {
 						return true;
 					}
 					return false;

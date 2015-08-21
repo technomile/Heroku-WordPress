@@ -5,10 +5,11 @@ function wpcf7_plugin_path( $path = '' ) {
 }
 
 function wpcf7_plugin_url( $path = '' ) {
-	$url = untrailingslashit( WPCF7_PLUGIN_URL );
+	$url = plugins_url( $path, WPCF7_PLUGIN );
 
-	if ( ! empty( $path ) && is_string( $path ) && false === strpos( $path, '..' ) )
-		$url .= '/' . ltrim( $path, '/' );
+	if ( is_ssl() && 'http:' == substr( $url, 0, 5 ) ) {
+		$url = 'https:' . substr( $url, 5 );
+	}
 
 	return $url;
 }
@@ -126,9 +127,6 @@ function wpcf7_is_rtl( $locale = '' ) {
 function wpcf7_ajax_loader() {
 	$url = wpcf7_plugin_url( 'images/ajax-loader.gif' );
 
-	if ( is_ssl() && 'http:' == substr( $url, 0, 5 ) )
-		$url = 'https:' . substr( $url, 5 );
-
 	return apply_filters( 'wpcf7_ajax_loader', $url );
 }
 
@@ -146,19 +144,24 @@ function wpcf7_create_nonce( $action = -1 ) {
 function wpcf7_blacklist_check( $target ) {
 	$mod_keys = trim( get_option( 'blacklist_keys' ) );
 
-	if ( empty( $mod_keys ) )
+	if ( empty( $mod_keys ) ) {
 		return false;
+	}
 
 	$words = explode( "\n", $mod_keys );
 
 	foreach ( (array) $words as $word ) {
 		$word = trim( $word );
 
-		if ( empty( $word ) )
+		if ( empty( $word ) || 256 < strlen( $word ) ) {
 			continue;
+		}
 
-		if ( preg_match( '#' . preg_quote( $word, '#' ) . '#', $target ) )
+		$pattern = sprintf( '#%s#i', preg_quote( $word, '#' ) );
+
+		if ( preg_match( $pattern, $target ) ) {
 			return true;
+		}
 	}
 
 	return false;
@@ -234,6 +237,23 @@ function wpcf7_format_atts( $atts ) {
 	return $html;
 }
 
+function wpcf7_link( $url, $anchor_text, $args = '' ) {
+	$defaults = array(
+		'id' => '',
+		'class' => '' );
+
+	$args = wp_parse_args( $args, $defaults );
+	$args = array_intersect_key( $args, $defaults );
+	$atts = wpcf7_format_atts( $args );
+
+	$link = sprintf( '<a href="%1$s"%3$s>%2$s</a>',
+		esc_url( $url ),
+		esc_html( $anchor_text ),
+		$atts ? ( ' ' . $atts ) : '' );
+
+	return $link;
+}
+
 function wpcf7_load_textdomain( $locale = null ) {
 	global $l10n;
 
@@ -286,7 +306,7 @@ function wpcf7_load_modules() {
 		$file = trailingslashit( $dir ) . $mod . '.php';
 
 		if ( file_exists( $file ) ) {
-			include_once $file; 
+			include_once $file;
 		}
 	}
 }
@@ -456,4 +476,7 @@ function wpcf7_count_code_units( $string ) {
 	return floor( $byte_count / 2 );
 }
 
-?>
+function wpcf7_is_localhost() {
+	$server_name = strtolower( $_SERVER['SERVER_NAME'] );
+	return in_array( $server_name, array( 'localhost', '127.0.0.1' ) );
+}

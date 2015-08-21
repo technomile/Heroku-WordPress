@@ -67,9 +67,10 @@ class WC_Session_Handler extends WC_Session {
     	add_action( 'woocommerce_set_cart_cookies', array( $this, 'set_customer_session_cookie' ), 10 );
     	add_action( 'woocommerce_cleanup_sessions', array( $this, 'cleanup_sessions' ), 10 );
     	add_action( 'shutdown', array( $this, 'save_data' ), 20 );
-    	add_action( 'clear_auth_cookie', array( $this, 'destroy_session' ) );
+    	add_action( 'wp_logout', array( $this, 'destroy_session' ) );
     	if ( ! is_user_logged_in() ) {
     		add_action( 'woocommerce_thankyou', array( $this, 'destroy_session' ) );
+    		add_filter( 'nonce_user_logged_out', array( $this, 'nonce_user_logged_out' ) );
     	}
     }
 
@@ -174,6 +175,8 @@ class WC_Session_Handler extends WC_Session {
 	    	} else {
 		    	update_option( $session_option, $this->_data );
 	    	}
+	    	// Mark session clean after saving
+	    	$this->_dirty = false;
 	    }
     }
 
@@ -198,6 +201,14 @@ class WC_Session_Handler extends WC_Session {
 		$this->_data        = array();
 		$this->_dirty       = false;
 		$this->_customer_id = $this->generate_customer_id();
+	}
+
+	/**
+	 * When a user is logged out, ensure they have a unique nonce by using the customer/session ID.
+	 * @return string
+	 */
+	public function nonce_user_logged_out( $uid ) {
+		return $this->has_session() && $this->_customer_id ? $this->_customer_id : $uid;
 	}
 
     /**

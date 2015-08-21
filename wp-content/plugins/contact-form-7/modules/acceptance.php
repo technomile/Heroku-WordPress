@@ -123,46 +123,68 @@ function wpcf7_acceptance_as_validation() {
 
 /* Tag generator */
 
-add_action( 'admin_init', 'wpcf7_add_tag_generator_acceptance', 35 );
-
-function wpcf7_add_tag_generator_acceptance() {
-	if ( ! function_exists( 'wpcf7_add_tag_generator' ) )
-		return;
-
-	wpcf7_add_tag_generator( 'acceptance', __( 'Acceptance', 'contact-form-7' ),
-		'wpcf7-tg-pane-acceptance', 'wpcf7_tg_pane_acceptance' );
+if ( is_admin() ) {
+	add_action( 'admin_init', 'wpcf7_add_tag_generator_acceptance', 35 );
 }
 
-function wpcf7_tg_pane_acceptance( $contact_form ) {
+function wpcf7_add_tag_generator_acceptance() {
+	$tag_generator = WPCF7_TagGenerator::get_instance();
+	$tag_generator->add( 'acceptance', __( 'acceptance', 'contact-form-7' ),
+		'wpcf7_tag_generator_acceptance' );
+}
+
+function wpcf7_tag_generator_acceptance( $contact_form, $args = '' ) {
+	$args = wp_parse_args( $args, array() );
+	$type = 'acceptance';
+
+	$description = __( "Generate a form-tag for an acceptance checkbox. For more details, see %s.", 'contact-form-7' );
+
+	$desc_link = wpcf7_link( __( 'http://contactform7.com/acceptance-checkbox/', 'contact-form-7' ), __( 'Acceptance Checkbox', 'contact-form-7' ) );
+
 ?>
-<div id="wpcf7-tg-pane-acceptance" class="hidden">
-<form action="">
-<table>
-<tr><td><?php echo esc_html( __( 'Name', 'contact-form-7' ) ); ?><br /><input type="text" name="name" class="tg-name oneline" /></td><td></td></tr>
+<div class="control-box">
+<fieldset>
+<legend><?php echo sprintf( esc_html( $description ), $desc_link ); ?></legend>
+
+<table class="form-table">
+<tbody>
+	<tr>
+	<th scope="row"><label for="<?php echo esc_attr( $args['content'] . '-name' ); ?>"><?php echo esc_html( __( 'Name', 'contact-form-7' ) ); ?></label></th>
+	<td><input type="text" name="name" class="tg-name oneline" id="<?php echo esc_attr( $args['content'] . '-name' ); ?>" /></td>
+	</tr>
+
+	<tr>
+	<th scope="row"><?php echo esc_html( __( 'Options', 'contact-form-7' ) ); ?></th>
+	<td>
+		<fieldset>
+		<legend class="screen-reader-text"><?php echo esc_html( __( 'Options', 'contact-form-7' ) ); ?></legend>
+		<label><input type="checkbox" name="default:on" class="option" /> <?php echo esc_html( __( 'Make this checkbox checked by default', 'contact-form-7' ) ); ?></label><br />
+		<label><input type="checkbox" name="invert" class="option" /> <?php echo esc_html( __( 'Make this work inversely', 'contact-form-7' ) ); ?></label>
+		</fieldset>
+	</td>
+	</tr>
+
+	<tr>
+	<th scope="row"><label for="<?php echo esc_attr( $args['content'] . '-id' ); ?>"><?php echo esc_html( __( 'Id attribute', 'contact-form-7' ) ); ?></label></th>
+	<td><input type="text" name="id" class="idvalue oneline option" id="<?php echo esc_attr( $args['content'] . '-id' ); ?>" /></td>
+	</tr>
+
+	<tr>
+	<th scope="row"><label for="<?php echo esc_attr( $args['content'] . '-class' ); ?>"><?php echo esc_html( __( 'Class attribute', 'contact-form-7' ) ); ?></label></th>
+	<td><input type="text" name="class" class="classvalue oneline option" id="<?php echo esc_attr( $args['content'] . '-class' ); ?>" /></td>
+	</tr>
+
+</tbody>
 </table>
+</fieldset>
+</div>
 
-<table>
-<tr>
-<td><code>id</code> (<?php echo esc_html( __( 'optional', 'contact-form-7' ) ); ?>)<br />
-<input type="text" name="id" class="idvalue oneline option" /></td>
+<div class="insert-box">
+	<input type="text" name="<?php echo $type; ?>" class="tag code" readonly="readonly" onfocus="this.select()" />
 
-<td><code>class</code> (<?php echo esc_html( __( 'optional', 'contact-form-7' ) ); ?>)<br />
-<input type="text" name="class" class="classvalue oneline option" /></td>
-</tr>
-
-<tr>
-<td colspan="2">
-<br /><input type="checkbox" name="default:on" class="option" />&nbsp;<?php echo esc_html( __( "Make this checkbox checked by default?", 'contact-form-7' ) ); ?>
-<br /><input type="checkbox" name="invert" class="option" />&nbsp;<?php echo esc_html( __( "Make this checkbox work inversely?", 'contact-form-7' ) ); ?>
-<br /><span style="font-size: smaller;"><?php echo esc_html( __( "* That means visitor who accepts the term unchecks it.", 'contact-form-7' ) ); ?></span>
-</td>
-</tr>
-</table>
-
-<div class="tg-tag"><?php echo esc_html( __( "Copy this code and paste it into the form left.", 'contact-form-7' ) ); ?><br /><input type="text" name="acceptance" class="tag wp-ui-text-highlight code" readonly="readonly" onfocus="this.select()" /></div>
-</form>
+	<div class="submitbox">
+	<input type="button" class="button button-primary insert-tag" value="<?php echo esc_attr( __( 'Insert Tag', 'contact-form-7' ) ); ?>" />
+	</div>
 </div>
 <?php
 }
-
-?>

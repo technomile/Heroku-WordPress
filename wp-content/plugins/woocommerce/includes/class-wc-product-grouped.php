@@ -71,7 +71,7 @@ class WC_Product_Grouped extends WC_Product {
 					}
 				}
 
-				set_transient( $transient_name, $this->total_stock, YEAR_IN_SECONDS );
+				set_transient( $transient_name, $this->total_stock, DAY_IN_SECONDS * 30 );
 			}
 		}
 
@@ -86,7 +86,7 @@ class WC_Product_Grouped extends WC_Product {
 	 */
 	public function get_children() {
 		if ( ! is_array( $this->children ) || empty( $this->children ) ) {
-        	$transient_name = 'wc_product_children_ids_' . $this->id . WC_Cache_Helper::get_transient_version( 'product' );
+        	$transient_name = 'wc_product_children_' . $this->id;
 			$this->children = get_transient( $transient_name );
 
         	if ( empty( $this->children ) ) {
@@ -103,7 +103,7 @@ class WC_Product_Grouped extends WC_Product {
 
 		        $this->children = get_posts( $args );
 
-				set_transient( $transient_name, $this->children, YEAR_IN_SECONDS );
+				set_transient( $transient_name, $this->children, DAY_IN_SECONDS * 30 );
 			}
 		}
 		return (array) $this->children;
@@ -127,6 +127,7 @@ class WC_Product_Grouped extends WC_Product {
 	 */
 	public function is_on_sale() {
 		$is_on_sale = false;
+
 		if ( $this->has_child() ) {
 
 			foreach ( $this->get_children() as $child_id ) {
@@ -143,7 +144,8 @@ class WC_Product_Grouped extends WC_Product {
 			}
 
 		}
-		return apply_filters( 'woocommerce_product_is_on_sale', $is_on_sale );
+
+		return apply_filters( 'woocommerce_product_is_on_sale', $is_on_sale, $this );
 	}
 
 

@@ -70,7 +70,9 @@ class WPCF7_Submission {
 	}
 
 	private function setup_posted_data() {
-		$posted_data = $this->sanitize_posted_data( $_POST );
+		$posted_data = (array) $_POST;
+		$posted_data = array_diff_key( $posted_data, array( '_wpnonce' => '' ) );
+		$posted_data = $this->sanitize_posted_data( $posted_data );
 
 		$tags = $this->contact_form->form_scan_shortcode();
 
@@ -291,5 +293,3 @@ class WPCF7_Submission {
 		}
 	}
 }
-
-?>

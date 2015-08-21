@@ -9,13 +9,19 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Provides a PayPal Standard Payment Gateway.
  *
- * @class 		WC_Paypal
- * @extends		WC_Gateway_Paypal
+ * @class 		WC_Gateway_Paypal
+ * @extends		WC_Payment_Gateway
  * @version		2.3.0
  * @package		WooCommerce/Classes/Payment
  * @author 		WooThemes
  */
 class WC_Gateway_Paypal extends WC_Payment_Gateway {
+
+	/** @var boolean Whether or not logging is enabled */
+	public static $log_enabled = false;
+
+	/** @var WC_Logger Logger instance */
+	public static $log = false;
 
 	/**
 	 * Constructor for the gateway.
@@ -25,7 +31,7 @@ class WC_Gateway_Paypal extends WC_Payment_Gateway {
 		$this->has_fields         = false;
 		$this->order_button_text  = __( 'Proceed to PayPal', 'woocommerce' );
 		$this->method_title       = __( 'PayPal', 'woocommerce' );
-		$this->method_description = __( 'PayPal standard works by sending customers to PayPal where they can enter their payment information.', 'woocommerce' );
+		$this->method_description = sprintf( __( 'PayPal standard sends customers to PayPal to enter their payment information. PayPal IPN requires fsockopen/cURL support to update order statuses after payment. Check the %ssystem status%s page for more details.', 'woocommerce' ), '<a href="' . admin_url( 'admin.php?page=wc-status' ) . '">', '</a>' );
 		$this->supports           = array(
 			'products',
 			'refunds'
@@ -36,12 +42,15 @@ class WC_Gateway_Paypal extends WC_Payment_Gateway {
 		$this->init_settings();
 
 		// Define user set variables
-		$this->title                        = $this->get_option( 'title' );
-		$this->description                  = $this->get_option( 'description' );
-		$this->testmode                     = 'yes' === $this->get_option( 'testmode', 'no' );
-		$this->email                        = $this->get_option( 'email' );
-		$this->receiver_email               = $this->get_option( 'receiver_email', $this->email );
-		$this->identity_token               = $this->get_option( 'identity_token' );
+		$this->title          = $this->get_option( 'title' );
+		$this->description    = $this->get_option( 'description' );
+		$this->testmode       = 'yes' === $this->get_option( 'testmode', 'no' );
+		$this->debug          = 'yes' === $this->get_option( 'debug', 'no' );
+		$this->email          = $this->get_option( 'email' );
+		$this->receiver_email = $this->get_option( 'receiver_email', $this->email );
+		$this->identity_token = $this->get_option( 'identity_token' );
+
+		self::$log_enabled    = $this->debug;
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
@@ -62,12 +71,12 @@ class WC_Gateway_Paypal extends WC_Payment_Gateway {
 	 * Logging method
 	 * @param  string $message
 	 */
-	public function log( $message ) {
-		if ( $this->testmode ) {
-			if ( empty( $this->log ) ) {
-				$this->log = new WC_Logger();
+	public static function log( $message ) {
+		if ( self::$log_enabled ) {
+			if ( empty( self::$log ) ) {
+				self::$log = new WC_Logger();
 			}
-			$this->log->add( 'paypal', $message );
+			self::$log->add( 'paypal', $message );
 		}
 	}
 
@@ -81,7 +90,7 @@ class WC_Gateway_Paypal extends WC_Payment_Gateway {
 		$icon      = (array) $this->get_icon_image( WC()->countries->get_base_country() );
 
 		foreach ( $icon as $i ) {
-			$icon_html .= '<img src="' . esc_attr( $i ) . '" alt="' . __( 'PayPal Acceptance Mark', 'woocommerce' ) . '" />';
+			$icon_html .= '<img src="' . esc_attr( $i ) . '" alt="' . esc_attr__( 'PayPal Acceptance Mark', 'woocommerce' ) . '" />';
 		}
 
 		$icon_html .= sprintf( '<a href="%1$s" class="about_paypal" onclick="javascript:window.open(\'%1$s\',\'WIPaypal\',\'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=1060, height=700\'); return false;" title="' . esc_attr__( 'What is PayPal?', 'woocommerce' ) . '">' . esc_attr__( 'What is PayPal?', 'woocommerce' ) . '</a>', esc_url( $this->get_icon_url( WC()->countries->get_base_country() ) ) );
@@ -94,18 +103,14 @@ class WC_Gateway_Paypal extends WC_Payment_Gateway {
 	 * @param  string $country
 	 * @return string
 	 */
-	private function get_icon_url( $country ) {
-		switch ( $country ) {
-			case 'MX' :
-			case 'ZA' :
-				$link = 'https://www.paypal.com/' . strtolower( $country ) . '/cgi-bin/webscr?cmd=xpt/Marketing/general/WIPaypal-outside';
-			break;
-			default :
-				$link = 'https://www.paypal.com/' . strtolower( $country ) . '/webapps/mpp/paypal-popup';
-			break;
+	protected function get_icon_url( $country ) {
+		$countries = array( 'DZ', 'AU', 'BH', 'BE', 'BQ', 'BW', 'CA', 'CN', 'CW', 'CZ', 'DK', 'FI', 'FR', 'DE', 'GR', 'HK', 'HU', 'IN', 'ID', 'IT', 'JO', 'KE', 'KW', 'LU', 'MY', 'MA', 'NL', 'NO', 'OM', 'PH', 'PL', 'PT', 'QA', 'IE', 'RU', 'BL', 'SX', 'MF', 'SA', 'SG', 'SK', 'KR', 'SS', 'ES', 'SE', 'TW', 'TH', 'TR', 'AE', 'GB', 'US', 'VN' );
+
+		if ( in_array( $country, $countries ) ) {
+			return 'https://www.paypal.com/' . strtolower( $country ) . '/webapps/mpp/paypal-popup';
 		}
 
-		return $link;
+		return 'https://www.paypal.com/' . strtolower( $country ) . '/cgi-bin/webscr?cmd=xpt/Marketing/general/WIPaypal-outside';
 	}
 
 	/**
@@ -113,7 +118,7 @@ class WC_Gateway_Paypal extends WC_Payment_Gateway {
 	 * @param  string $country
 	 * @return array of image URLs
 	 */
-	private function get_icon_image( $country ) {
+	protected function get_icon_image( $country ) {
 		switch ( $country ) {
 			case 'US' :
 			case 'NZ' :
@@ -164,6 +169,9 @@ class WC_Gateway_Paypal extends WC_Payment_Gateway {
 			case 'TH' :
 				$icon = 'https://www.paypalobjects.com/webstatic/en_TH/mktg/Logos/AM_mc_vs_dc_ae.jpg';
 			break;
+			case 'JP' :
+				$icon = 'https://www.paypal.com/ja_JP/JP/i/bnr/horizontal_solution_4_jcb.gif';
+				break;
 			default :
 				$icon = WC_HTTPS::force_https_url( WC()->plugin_url() . '/includes/gateways/paypal/assets/images/paypal.png' );
 			break;
@@ -238,7 +246,7 @@ class WC_Gateway_Paypal extends WC_Payment_Gateway {
 	}
 
 	/**
-	 * Can the order be refunded via paypal?
+	 * Can the order be refunded via PayPal?
 	 * @param  WC_Order $order
 	 * @return bool
 	 */

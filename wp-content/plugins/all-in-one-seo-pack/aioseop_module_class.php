@@ -128,7 +128,7 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Module' ) ) {
 		function convert_case( $str, $mode = 'upper' ) {
 			static $charset = null;
 			if ( $charset == null ) $charset = get_bloginfo( 'charset' );
-
+			$str = (string)$str;
 			if ( $mode == 'title' ) {
 				if ( function_exists( 'mb_convert_case' ) )
 					return mb_convert_case( $str, MB_CASE_TITLE, $charset );
@@ -337,6 +337,259 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Module' ) ) {
 			return in_array( AIOSEOP_PLUGIN_BASENAME, (array) get_blog_option( $bid, 'active_plugins', array() ) );
 		}
 		
+		function quote_list_for_regex( $list, $quote = '/' ) {
+			$regex = '';
+			$cont = 0;
+			foreach( $list as $l ) {
+			        if ( $cont ) {
+			                $regex .= '|';
+			        }
+			        $cont = 1;
+			        $regex .= preg_quote( trim( $l ), $quote );
+			}
+			return $regex;
+		}
+		
+		// original code thanks to Sean M. Brown -- http://smbrown.wordpress.com/2009/04/29/verify-googlebot-forward-reverse-dns/
+		function is_good_bot() {
+			$botlist = Array(
+				"Yahoo! Slurp" => "crawl.yahoo.net",
+				"googlebot" => ".googlebot.com",
+				"msnbot" => "search.msn.com"
+			);
+			$botlist = apply_filters( $this->prefix . "botlist", $botlist );
+			if ( !empty( $botlist ) ) {
+			    $ua = $_SERVER['HTTP_USER_AGENT'];
+				$uas = $this->quote_list_for_regex( $botlist );
+			    if ( preg_match( '/' . $uas . '/i', $ua ) ) {
+					$ip = $_SERVER['REMOTE_ADDR'];
+					$hostname = gethostbyaddr( $ip );
+					$ip_by_hostname = gethostbyname( $hostname );
+			        if ( $ip_by_hostname == $ip ) {
+						$hosts = array_values( $botlist );
+						foreach( $hosts as $k => $h )
+							$hosts[$k] = preg_quote( $h ) . '$';
+						$hosts = join( '|', $hosts );
+						if ( preg_match( '/' . $hosts . '/i', $hostname ) )
+							return true;
+					}
+				}
+				return false;
+			}
+		}
+		
+		function default_bad_bots() {
+			$botlist = Array(
+				"Abonti",
+				"aggregator",
+				"AhrefsBot",
+				"asterias",
+				"BDCbot",
+				"BLEXBot",
+				"BuiltBotTough",
+				"Bullseye",
+				"BunnySlippers",
+				"ca-crawler",
+				"CCBot",
+				"Cegbfeieh",
+				"CheeseBot",
+				"CherryPicker",
+				"CopyRightCheck",
+				"cosmos",
+				"Crescent",
+				"discobot",
+				"DittoSpyder",
+				"DOC",
+				"DotBot",
+				"Download Ninja",
+				"EasouSpider",
+				"EmailCollector",
+				"EmailSiphon",
+				"EmailWolf",
+				"EroCrawler",
+				"Exabot",
+				"ExtractorPro",
+				"Fasterfox",
+				"FeedBooster",
+				"Foobot",
+				"Genieo",
+				"grub-client",
+				"Harvest",
+				"hloader",
+				"httplib",
+				"HTTrack",
+				"humanlinks",
+				"ieautodiscovery",
+				"InfoNaviRobot",
+				"IstellaBot",
+				"Java/1.",
+				"JennyBot",
+				"k2spider",
+				"Kenjin Spider",
+				"Keyword Density/0.9",
+				"larbin",
+				"LexiBot",
+				"libWeb",
+				"libwww",
+				"LinkextractorPro",
+				"linko",
+				"LinkScan/8.1a Unix",
+				"LinkWalker",
+				"LNSpiderguy",
+				"lwp-trivial",
+				"magpie",
+				"Mata Hari",
+				'MaxPointCrawler',
+				'MegaIndex',
+				"Microsoft URL Control",
+				"MIIxpc",
+				"Mippin",
+				"Missigua Locator",
+				"Mister PiX",
+				"MJ12bot",
+				"moget",
+				"MSIECrawler",
+				"NetAnts",
+				"NICErsPRO",
+				"Niki-Bot",
+				"NPBot",
+				"Nutch",
+				"Offline Explorer",
+				"Openfind",
+				'panscient.com',
+				"PHP/5.{",
+				"ProPowerBot/2.14",
+				"ProWebWalker",
+				"Python-urllib",
+				"QueryN Metasearch",
+				"RepoMonkey",
+				"RMA",
+				'SemrushBot',
+				"SeznamBot",
+				"SISTRIX",
+				"sitecheck.Internetseer.com",
+				"SiteSnagger",
+				"SnapPreviewBot",
+				"Sogou",
+				"SpankBot",
+				"spanner",
+				"spbot",
+				"Spinn3r",
+				"suzuran",
+				"Szukacz/1.4",
+				"Teleport",
+				"Telesoft",
+				"The Intraformant",
+				"TheNomad",
+				"TightTwatBot",
+				"Titan",
+				"toCrawl/UrlDispatcher",
+				"True_Robot",
+				"turingos",
+				"TurnitinBot",
+				"UbiCrawler",
+				"UnisterBot",
+				"URLy Warning",
+				"VCI",
+				"WBSearchBot",
+				"Web Downloader/6.9",
+				"Web Image Collector",
+				"WebAuto",
+				"WebBandit",
+				"WebCopier",
+				"WebEnhancer",
+				"WebmasterWorldForumBot",
+				"WebReaper",
+				"WebSauger",
+				"Website Quester",
+				"Webster Pro",
+				"WebStripper",
+				"WebZip",
+				"Wotbox",
+				"wsr-agent",
+				"WWW-Collector-E",
+				"Xenu",
+				"yandex",
+				"Zao",
+				"Zeus",
+				"ZyBORG",
+				'coccoc',
+				'Incutio',
+				'lmspider',
+				'memoryBot',
+				'SemrushBot',
+				'serf',
+				'Unknown',
+				'uptime files'
+			);
+			return $botlist;
+		}
+		
+		function is_bad_bot() {
+			$botlist = $this->default_bad_bots();
+			$botlist = apply_filters( $this->prefix . "badbotlist", $botlist );
+			if ( !empty( $botlist ) ) {
+			    $ua = $_SERVER['HTTP_USER_AGENT'];
+				$uas = $this->quote_list_for_regex( $botlist );
+			    if ( preg_match( '/' . $uas . '/i', $ua ) ) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		function default_bad_referers() {
+			$referlist = Array(
+				'semalt.com',
+				'kambasoft.com',
+				'savetubevideo.com',
+				'buttons-for-website.com',
+				'sharebutton.net',
+				'soundfrost.org',
+				'srecorder.com',
+				'softomix.com',
+				'softomix.net',
+				'myprintscreen.com',
+				'joinandplay.me',
+				'fbfreegifts.com',
+				'openmediasoft.com',
+				'zazagames.org',
+				'extener.org',
+				'openfrost.com',
+				'openfrost.net',
+				'googlsucks.com',
+				'best-seo-offer.com',
+				'buttons-for-your-website.com',
+				'www.Get-Free-Traffic-Now.com',
+				'best-seo-solution.com',
+				'buy-cheap-online.info',
+				'site3.free-share-buttons.com',
+				'webmaster-traffic.com'
+			);
+			return $referlist;
+		}
+		
+		function is_bad_referer() {
+			$referlist = $this->default_bad_referers();
+			$referlist = apply_filters( $this->prefix . "badreferlist", $referlist );
+
+			if ( !empty( $referlist ) && !empty( $_SERVER ) && !empty( $_SERVER['HTTP_REFERER'] ) ) {
+			    $ref = $_SERVER['HTTP_REFERER'];
+				$regex = $this->quote_list_for_regex( $referlist );
+			    if ( preg_match( '/' . $regex . '/i', $ref ) ) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		function allow_bot() {
+			$allow_bot = true;
+			if ( ( !$this->is_good_bot() ) && ( $this->is_bad_bot() ) && !is_user_logged_in() )
+				$allow_bot = false;
+			return apply_filters( $this->prefix . "allow_bot", $allow_bot );
+		}
+				
 		/**
 		 * Displays tabs for tabbed locations on a settings page.
 		 */
@@ -350,7 +603,7 @@ if ( !class_exists( 'All_in_One_SEO_Pack_Module' ) ) {
 					<?php
 					foreach ( $tabs as $k => $v ) {
 					?>
-						<a class="aioseop_head_nav_tab aioseop_head_nav_<?php if ( $this->current_tab != $k ) echo "in"; ?>active" href="<?php echo add_query_arg( 'tab', $k ); ?>"><?php echo $v['name']; ?></a>
+						<a class="aioseop_head_nav_tab aioseop_head_nav_<?php if ( $this->current_tab != $k ) echo "in"; ?>active" href="<?php echo esc_url( add_query_arg( 'tab', $k ) ); ?>"><?php echo $v['name']; ?></a>
 					<?php
 					}
 					?>

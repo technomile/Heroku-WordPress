@@ -1,15 +1,17 @@
-=== Amazon S3 and Cloudfront ===
+=== WP Offload S3 ===
 Contributors: bradt
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5VPMGLLK94XJC
 Tags: uploads, amazon, s3, mirror, admin, media, cdn, cloudfront
-Requires at least: 3.5
-Tested up to: 4.1
-Stable tag: 0.8.2
+Requires at least: 3.7
+Tested up to: 4.3
+Stable tag: 0.9.3
 License: GPLv3
 
 Copies files to Amazon S3 as they are uploaded to the Media Library. Optionally configure Amazon CloudFront for faster delivery.
 
 == Description ==
+
+https://www.youtube.com/watch?v=_PVybEGaRXc
 
 This plugin automatically copies images, videos, documents, and any other media added through WordPress' media uploader to [Amazon Simple Storage Service](http://aws.amazon.com/s3/) (S3). It then automatically replaces the URL to each media file with their respective S3 URL or, if you have configured [Amazon CloudFront](http://aws.amazon.com/cloudfront/), the respective CloudFront URL. Image thumbnails are also copied to S3 and delivered through S3/CloudFront.
 
@@ -17,18 +19,19 @@ Uploading files *directly* to your S3 account is not currently supported by this
 
 If you're adding this plugin to a site that's been around for a while, your existing media files will not be copied or served from S3. Only newly uploaded files will be copied and served from S3.
 
-**Pro Version**
+**PRO Upgrade with Email Support and More Features**
 
-We’re working on a pro version that will include the following features:
+* Upload existing Media Library to S3
+* Find & replace file URLs in content
+* Control S3 files from the Media Library
+* [Assets addon](https://deliciousbrains.com/wp-offload-s3/?utm_source=wordpress.org&utm_medium=web&utm_content=desc&utm_campaign=freeplugin#assets-addon) - Serve your CSS & JS from S3/CloudFront
+* [WooCommerce addon](https://deliciousbrains.com/wp-offload-s3/?utm_source=wordpress.org&utm_medium=web&utm_content=desc&utm_campaign=freeplugin#woocommerce-addon)
+* [Easy Digital Downloads addon](https://deliciousbrains.com/wp-offload-s3/?utm_source=wordpress.org&utm_medium=web&utm_content=desc&utm_campaign=freeplugin#edd-addon)
+* PriorityExpert&trade; email support
 
-* Copy existing Media Library to S3
-* Serve theme JS & CSS from S3/CloudFront
-* WooCommerce & EDD integration
-* Awesome email support
+See the video below or [visit the web site](http://deliciousbrains.com/wp-offload-s3/?utm_source=wordpress.org&utm_medium=web&utm_content=desc&utm_campaign=freeplugin) to learn more about the pro version.
 
-[Sign up for news about the pro version](https://confirmsubscription.com/h/t/295CA85AEB94E879)
-
-[Request features, report bugs, and submit pull requests on Github](https://github.com/deliciousbrains/wp-amazon-s3-and-cloudfront/issues)
+https://www.youtube.com/watch?v=55xNGnbJ_CY
 
 *This plugin has been completely rewritten, but was originally a fork of
 [Amazon S3 for WordPress with CloudFront](http://wordpress.org/extend/plugins/tantan-s3-cloudfront/)
@@ -58,6 +61,57 @@ This version requires PHP 5.3.3+ and the Amazon Web Services plugin
 This version requires PHP 5.3.3+ and the Amazon Web Services plugin
 
 == Changelog ==
+
+= 0.9.3 - 2015-08-17 =
+* New: Pro upgrade sidebar
+* Bug fix: Create buckets in US standard region causing S3 URLs to 404 errors
+
+= 0.9.2 - 2015-07-29 =
+* Bug fix: Accidentally released the sidebar for after we launch the pro version
+
+= 0.9.1 - 2015-07-29 =
+* Improvement: Access denied sample IAM policy replaced with link to [Quick Start Guide](https://deliciousbrains.com/wp-offload-s3/doc/quick-start-guide/)
+* Improvement: Access denied messages on bucket selection or bucket creation now link to [Quick Start Guide](https://deliciousbrains.com/wp-offload-s3/doc/quick-start-guide/)
+* Improvement: Object expires time can now be filtered using the `as3cf_object_meta` filter
+* Bug fix: Error not always shown when S3 bucket inaccessible due to incorrect permissions
+* Bug fix: Permission checks fail when S3 bucket is in a non-default region and defined by `AS3CF_BUCKET` constant
+* Bug fix: Restore `as3cf_get_attached_file_copy_back_to_local` filter
+* Bug fix: Image versions not uploaded to S3 when an edited image is restored
+* Bug fix: Original image version not deleted from server when _Remove Files From Server_ option enabled
+* Bug fix: Media library items with non-ascii characters in the file name are not removed from S3
+* Bug fix: Compatibility notices shown on plugin install pages
+* Bug fix: WordPress footer overlaps WP Offload S3 sidebar
+* Bug fix: Upon initial setup the settings changed alert shows when no settings have changed
+
+= 0.9 - 2015-07-08 =
+* New: Plugin rebranded to WP Offload S3
+* New: Support tab added to _Offload S3_ screen containing diagnostic information
+* New: Compatibility with the [Media Replace](https://wordpress.org/plugins/enable-media-replace/) plugin
+* New: Select bucket region when creating a new bucket
+* New: Toggle switches redesigned
+* Improvement: Compatibility with release candidate of Pro plugin
+* Improvement: Example IAM policy more secure
+* Improvement: Set default bucket region using the `AS3CF_REGION` constant
+* Improvement: Added `as3cf_object_meta` filter for developers
+* Improvement: Bucket selection moved to modal window
+* Improvement: Don't allow bucket names to contain invalid characters on creation
+* Improvement: More verbose error messages on bucket selection
+* Improvement: Settings link added to plugin row on _Plugins_ screen
+* Improvement: Object versioning enabled by default
+* Improvement: Uninstall routines added
+* Improvement: JavaScript coding standards
+* Improvement: Cache result when checking S3 bucket permissions
+* Bug fix: Bucket region errors result in blank WP Offload S3 screen
+* Bug fix: Editing an image when _Remove Files From Server_ option is enabled results in error
+* Bug fix: Metadata upgrade procedure triggered on new installs
+* Bug fix: File URLs when uploaded to a subdirectory result in incorrect S3 URLs
+* Bug fix: Errors logged when trying to delete non-existent HiDPI images
+* Bug fix: SignatureDoesNotMatch errors on regions with v4 authentication
+* Bug fix: Customizer background image not editable
+* Bug fix: Error when creating buckets with US Standard region
+* Bug fix: Notices appearing incorrectly on some admin screens
+* Bug fix: Subsite upload paths repeated on multisite installs
+* Bug fix: Handle multisite installs where `BLOG_ID_CURRENT_SITE` is not 1
 
 = 0.8.2 - 2015-01-31 =
 * New: Input bucket in settings to avoid listing all buckets

@@ -50,7 +50,7 @@ class Woothemes_Widget_Testimonials extends WP_Widget {
 		$control_ops = array( 'width' => 250, 'height' => 350, 'id_base' => $this->woothemes_widget_idbase );
 
 		/* Create the widget. */
-		$this->WP_Widget( $this->woothemes_widget_idbase, $this->woothemes_widget_title, $widget_ops, $control_ops );
+		parent::__construct( $this->woothemes_widget_idbase, $this->woothemes_widget_title, $widget_ops, $control_ops );
 	} // End __construct()
 
 	/**

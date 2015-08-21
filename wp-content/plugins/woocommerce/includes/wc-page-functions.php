@@ -16,15 +16,21 @@
  * @return string
  */
 function wc_page_endpoint_title( $title ) {
-	if ( is_main_query() && in_the_loop() && is_page() && is_wc_endpoint_url() ) {
+	global $wp_query;
+
+	if ( ! is_null( $wp_query ) && ! is_admin() && is_main_query() && in_the_loop() && is_page() && is_wc_endpoint_url() ) {
 		$endpoint = WC()->query->get_current_endpoint();
+
 		if ( $endpoint_title = WC()->query->get_endpoint_title( $endpoint ) ) {
 			$title = $endpoint_title;
 		}
+
 		remove_filter( 'the_title', 'wc_page_endpoint_title' );
 	}
+
 	return $title;
 }
+
 add_filter( 'the_title', 'wc_page_endpoint_title' );
 
 /**
@@ -58,8 +64,8 @@ function wc_get_page_id( $page ) {
  * @return string
  */
 function wc_get_page_permalink( $page ) {
-	$permalink = get_permalink( wc_get_page_id( $page ) );
-
+	$page_id   = wc_get_page_id( $page );
+	$permalink = $page_id ? get_permalink( $page_id ) : '';
 	return apply_filters( 'woocommerce_get_' . $page . '_page_permalink', $permalink );
 }
 
@@ -122,13 +128,19 @@ function wc_edit_address_i18n( $id, $flip = false ) {
  * Returns the url to the lost password endpoint url
  *
  * @access public
+ * @param  string $default_url
  * @return string
  */
-function wc_lostpassword_url() {
-    return wc_get_endpoint_url( 'lost-password', '', wc_get_page_permalink( 'myaccount' ) );
-}
-add_filter( 'lostpassword_url',  'wc_lostpassword_url', 10, 0 );
+function wc_lostpassword_url( $default_url = '' ) {
+	$wc_password_reset_url = wc_get_page_permalink( 'myaccount' );
 
+	if ( false !== $wc_password_reset_url ) {
+    	return wc_get_endpoint_url( 'lost-password', '', $wc_password_reset_url );
+	} else {
+		return $default_url;
+	}
+}
+add_filter( 'lostpassword_url',  'wc_lostpassword_url', 10, 1 );
 
 /**
  * Get the link to the edit account details page

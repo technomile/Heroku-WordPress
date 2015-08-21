@@ -4,9 +4,9 @@
  *
  * Shows recent orders on the account page
  *
- * @author 		WooThemes
- * @package 	WooCommerce/Templates
- * @version     2.2.0
+ * @author  WooThemes
+ * @package WooCommerce/Templates
+ * @version 2.3.10
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -39,23 +39,23 @@ if ( $customer_orders ) : ?>
 
 		<tbody><?php
 			foreach ( $customer_orders as $customer_order ) {
-				$order      = wc_get_order();
+				$order = wc_get_order( $customer_order );
 				$order->populate( $customer_order );
 				$item_count = $order->get_item_count();
 
 				?><tr class="order">
-					<td class="order-number" data-title="<?php _e( 'Order Number', 'woocommerce' ); ?>">
-						<a href="<?php echo $order->get_view_order_url(); ?>">
-							#<?php echo $order->get_order_number(); ?>
+					<td class="order-number" data-title="<?php esc_attr_e( 'Order Number', 'woocommerce' ); ?>">
+						<a href="<?php echo esc_url( $order->get_view_order_url() ); ?>">
+							<?php echo _x( '#', 'hash before order number', 'woocommerce' ) . $order->get_order_number(); ?>
 						</a>
 					</td>
-					<td class="order-date" data-title="<?php _e( 'Date', 'woocommerce' ); ?>">
+					<td class="order-date" data-title="<?php esc_attr_e( 'Date', 'woocommerce' ); ?>">
 						<time datetime="<?php echo date( 'Y-m-d', strtotime( $order->order_date ) ); ?>" title="<?php echo esc_attr( strtotime( $order->order_date ) ); ?>"><?php echo date_i18n( get_option( 'date_format' ), strtotime( $order->order_date ) ); ?></time>
 					</td>
-					<td class="order-status" data-title="<?php _e( 'Status', 'woocommerce' ); ?>" style="text-align:left; white-space:nowrap;">
+					<td class="order-status" data-title="<?php esc_attr_e( 'Status', 'woocommerce' ); ?>" style="text-align:left; white-space:nowrap;">
 						<?php echo wc_get_order_status_name( $order->get_status() ); ?>
 					</td>
-					<td class="order-total" data-title="<?php _e( 'Total', 'woocommerce' ); ?>">
+					<td class="order-total" data-title="<?php esc_attr_e( 'Total', 'woocommerce' ); ?>">
 						<?php echo sprintf( _n( '%s for %s item', '%s for %s items', $item_count, 'woocommerce' ), $order->get_formatted_order_total(), $item_count ); ?>
 					</td>
 					<td class="order-actions">
@@ -83,7 +83,7 @@ if ( $customer_orders ) : ?>
 
 							$actions = apply_filters( 'woocommerce_my_account_my_orders_actions', $actions, $order );
 
-							if ($actions) {
+							if ( $actions ) {
 								foreach ( $actions as $key => $action ) {
 									echo '<a href="' . esc_url( $action['url'] ) . '" class="button ' . sanitize_html_class( $key ) . '">' . esc_html( $action['name'] ) . '</a>';
 								}
