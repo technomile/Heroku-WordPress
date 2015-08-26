@@ -86,6 +86,7 @@ define('WPLANG', 'en');
  * in their development environments.
  */
 define('WP_DEBUG', false);
+define( 'WP_AUTO_UPDATE_CORE', false );
 
 /* That's all, stop editing! Happy blogging. */
 
