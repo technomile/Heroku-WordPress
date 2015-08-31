@@ -17,6 +17,11 @@
  *
  * @package WordPress
  */
+
+// S3 Config Info - read the S3 Access Keys from the config //
+define( ‘AWS_ACCESS_KEY_ID’, $_ENV[“AWS_ACCESS_KEY_ID”]);
+define( ‘AWS_SECRET_ACCESS_KEY’, $_ENV[“AWS_SECRET_ACCESS_KEY”]);
+
  
 // ** Heroku Postgres settings - from Heroku Environment ** //
 $db = parse_url($_ENV["CLEARDB_DATABASE_URL"]); 
