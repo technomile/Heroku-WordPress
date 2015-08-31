@@ -18,7 +18,7 @@
  * @package WordPress
  */
  
-// ** Heroku Postgres settings - from Heroku Environment ** //
+// ** ClearDB settings - from Heroku Environment ** //
 $db = parse_url($_ENV["CLEARDB_DATABASE_URL"]); 
 
 // ** MySQL settings - You can get this info from your web host ** //
