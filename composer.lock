@@ -1,0 +1,36 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "This file is @generated automatically"
+    ],
+    "packages": [
+        {
+            "name": "technomile/Heroku-WordPress",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technomile/Heroku-WordPress.git"
+            },
+			"type": "heroku-buildpack",
+			"license": [
+                "OSL 3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Inderjeet Sohal",
+                    "email": "inderjeets@technomile.com",
+                    "homepage": "http://technomile.github.io/wordpress/"
+                }
+            ],
+            "description": "Deploy your favorite CMS on Heroku using our WordPress buildpacks.",
+            "keywords": [
+                "heroku", 
+				"wordpress", 
+				"php", 
+				"apache", 
+				"apache2", 
+				"nginx",
+				"mysql"
+            ]
+        }
+    ]
+}
