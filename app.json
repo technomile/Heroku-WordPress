@@ -4,5 +4,48 @@
 	"repository": "https://github.com/technomile/Heroku-WordPress",
 	"logo": "http://technomile.github.io/img/cms_buildpack_github.png",
 	"keywords": ["wordpress", "heroku", "php", "mysql", "apache", "apache2", "nginx"],
-	"addons": ["cleardb:ignite","newrelic:wayne","sendgrid:starter"]
+	"addons": ["cleardb:ignite","newrelic:wayne","sendgrid:starter","papertrail"],
+    "env": {
+		"AWS_ACCESS_KEY_ID": {
+			"description": "Your AWS Access key to grant this application access to a S3 bucket.",
+			"value":"AWS Access Key"
+		},
+       "AWS_SECRET_ACCESS_KEY": {
+         "description": "The secret part of your AWS access key.",
+         "value": "Secret Access Key"
+       },
+	   "AUTH_KEY": {
+		   "description": "Salt for your app",
+		      "generator": "secret"
+			  },
+	   "SECURE_AUTH_KEY": {		   
+		   "description": "Salt for your app",
+		    "generator": "secret"
+		  },
+	   "LOGGED_IN_KEY": {		   
+		   "description": "Salt for your app",
+		    "generator": "secret"
+		  },
+	   "NONCE_KEY": {		   
+		   "description": "Salt for your app",
+		    "generator": "secret"
+		  },
+	   "AUTH_SALT": {		   
+		   "description": "Salt for your app",
+		    "generator": "secret"
+		  },
+	   "SECURE_AUTH_SALT": {		   
+		   "description": "Salt for your app",
+		    "generator": "secret"
+		  },
+	   "LOGGED_IN_SALT": {		   
+		   "description": "Salt for your app",
+		    "generator": "secret"
+		  },
+	   "NONCE_SALT": {		   
+		   "description": "Salt for your app",
+		    "generator": "secret"
+		  }
+   }	   
+>>>>>>> ddaf276... adding in papertrail for logging
 }
