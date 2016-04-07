@@ -30,7 +30,7 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 		protected $plugin_slug;
 
 		/**
-		 * @var string The name of the plugin, e.g. WP Offload S3 - Pro Upgrade
+		 * @var string The name of the plugin, e.g. WP Offload S3
 		 */
 		protected $plugin_name;
 
@@ -40,12 +40,17 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 		protected $plugin_file_path;
 
 		/**
+		 * @var null|string The name of the required parent plugin
+		 */
+		protected $parent_plugin_name;
+
+		/**
 		 * @var null|string The key of the required parent plugin, e.g. amazon-web-services
 		 */
 		protected $parent_plugin_slug;
 
 		/**
-		 * @var null|int The required version of the parent plugin
+		 * @var null|string The required version of the parent plugin
 		 */
 		protected $parent_plugin_required_version;
 
@@ -74,6 +79,22 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 		 */
 		protected $notice_class = 'error';
 
+		/**
+		 * @var bool Used to store if we are installing or updating plugins once per page request
+		 */
+		protected static $is_installing_or_updating_plugins;
+
+		/**
+		 * @param string      $plugin_name
+		 * @param  string     $plugin_slug
+		 * @param string      $plugin_file_path
+		 * @param string|null $parent_plugin_name
+		 * @param string|null $parent_plugin_slug
+		 * @param string|null $parent_plugin_required_version
+		 * @param string|null $parent_plugin_filename
+		 * @param bool|false  $deactivate_if_not_compatible
+		 * @param string|null $parent_plugin_url
+		 */
 		function __construct( $plugin_name, $plugin_slug, $plugin_file_path, $parent_plugin_name = null, $parent_plugin_slug = null, $parent_plugin_required_version = null, $parent_plugin_filename = null, $deactivate_if_not_compatible = false, $parent_plugin_url = null ) {
 			$this->plugin_name                    = $plugin_name;
 			$this->plugin_slug                    = $plugin_slug;
@@ -103,6 +124,19 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 		}
 
 		/**
+		 * Is a plugin active
+		 *
+		 * @param string $plugin_base
+		 *
+		 * @return bool
+		 */
+		function is_plugin_active( $plugin_base ) {
+			include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+
+			return is_plugin_active( $plugin_base );
+		}
+
+		/**
 		 * Get the basename for the plugin
 		 *
 		 * @return string
@@ -117,7 +151,7 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 		 * @return string
 		 */
 		function get_parent_plugin_name() {
-			if ( $this->parent_plugin_name ) {
+			if ( ! is_null( $this->parent_plugin_name ) ) {
 				return $this->parent_plugin_name;
 			}
 
@@ -127,10 +161,10 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 		/**
 		 * Get the class of the parent plugin
 		 *
-		 * @return mixed|string
+		 * @return string
 		 */
 		function get_parent_plugin_class() {
-			if ( $this->parent_plugin_slug ) {
+			if ( ! is_null( $this->parent_plugin_slug ) ) {
 				$class = ucwords( str_replace( '-', ' ', $this->parent_plugin_slug ) );
 
 				return str_replace( ' ', '_', $class );
@@ -175,7 +209,7 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 		/**
 		 * Get the URL for the parent plugin. Defaults to a wordpress.org URL.
 		 *
-		 * @return null|string
+		 * @return string
 		 */
 		function get_parent_plugin_url() {
 			if ( ! is_null( $this->parent_plugin_slug ) ) {
@@ -286,26 +320,26 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 			$parent_plugin_link_html = sprintf( '<a style="text-decoration:none;" href="%s">%s</a>', $this->get_parent_plugin_url(), $this->get_parent_plugin_name() );
 
 			$deactivate_url  = $this->get_plugin_action_url( 'deactivate', $plugin_basename );
-			$deactivate_link = sprintf( '<a style="text-decoration:none;" href="%s">%s</a>', $deactivate_url, __( 'deactivate', 'as3cf' ) );
-			$hide_notice_msg = '<br><em>' . sprintf( __( 'You can %s the %s plugin to get rid of this notice.', 'as3cf' ), $deactivate_link, $this->plugin_name ) . '</em>';
+			$deactivate_link = sprintf( '<a style="text-decoration:none;" href="%s">%s</a>', $deactivate_url, __( 'deactivate', 'amazon-s3-and-cloudfront' ) );
+			$hide_notice_msg = '<br><em>' . sprintf( __( 'You can %s the %s plugin to get rid of this notice.', 'amazon-s3-and-cloudfront' ), $deactivate_link, $this->plugin_name ) . '</em>';
 
 			if ( ! $this->is_parent_plugin_enabled() ) {
-				$msg = sprintf( __( '%s has been disabled as it requires the %s plugin.', 'as3cf' ), $this->plugin_name, $parent_plugin_link_html );
+				$msg = sprintf( __( '%s has been disabled as it requires the %s plugin.', 'amazon-s3-and-cloudfront' ), $this->plugin_name, $parent_plugin_link_html );
 
 				if ( file_exists( WP_PLUGIN_DIR . '/' . $parent_basename ) ) {
 					if ( isset( $GLOBALS['aws_meta'][ $this->parent_plugin_slug ]['compatible'] ) && ! $GLOBALS['aws_meta'][ $this->parent_plugin_slug ]['compatible'] ) {
-						$msg = rtrim( $msg, '.' ) . ', ' . __( 'which is currently disabled.', 'as3cf' );
+						$msg = rtrim( $msg, '.' ) . ', ' . __( 'which is currently disabled.', 'amazon-s3-and-cloudfront' );
 					} else {
-						$msg .= ' ' . __( 'It appears to be installed already.', 'as3cf' );
+						$msg .= ' ' . __( 'It appears to be installed already.', 'amazon-s3-and-cloudfront' );
 						$activate_url = $this->get_plugin_action_url( 'activate', $parent_basename );
-						$msg .= ' <a style="font-weight:bold;text-decoration:none;" href="' . $activate_url . '">' . _x( 'Activate it now.', 'Activate plugin', 'as3cf' ) . '</a>';
+						$msg .= ' <a style="font-weight:bold;text-decoration:none;" href="' . $activate_url . '">' . _x( 'Activate it now.', 'Activate plugin', 'amazon-s3-and-cloudfront' ) . '</a>';
 					}
 				} else {
 					$install_url = 'https://deliciousbrains.com/my-account/';
 					if ( is_null( $this->parent_plugin_url ) ) {
 						$install_url = $this->get_plugin_action_url( 'install', $this->parent_plugin_slug );
 					}
-					$msg .= ' ' . sprintf( __( '<a href="%s">Install</a> and activate it.', 'as3cf' ), $install_url );
+					$msg .= ' ' . sprintf( __( '<a href="%s">Install</a> and activate it.', 'amazon-s3-and-cloudfront' ), $install_url );
 				}
 
 				$msg .= $hide_notice_msg;
@@ -316,17 +350,17 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 			$current_parent_plugin_version = isset( $GLOBALS['aws_meta'][ $this->parent_plugin_slug ]['version'] ) ? $GLOBALS['aws_meta'][ $this->parent_plugin_slug ]['version'] : 0;
 
 			if ( ! version_compare( $current_parent_plugin_version, $this->parent_plugin_required_version, '>=' ) ) {
-				$msg = sprintf( __( '%s has been disabled as it requires version %s or later of the %s plugin.', 'as3cf' ), $this->plugin_name, $this->parent_plugin_required_version, $parent_plugin_link_html );
+				$msg = sprintf( __( '%s has been disabled as it requires version %s or later of the %s plugin.', 'amazon-s3-and-cloudfront' ), $this->plugin_name, $this->parent_plugin_required_version, $parent_plugin_link_html );
 
 				if ( $current_parent_plugin_version ) {
-					$msg .= ' ' . sprintf( __( 'You currently have version %s installed.', 'as3cf' ), $current_parent_plugin_version );
+					$msg .= ' ' . sprintf( __( 'You currently have version %s installed.', 'amazon-s3-and-cloudfront' ), $current_parent_plugin_version );
 				}
 
 				global $as3cfpro;
-				if ( ! empty( $as3cfpro ) && $as3cfpro->get_plugin_slug() === $this->parent_plugin_slug ) {
+				if ( ! empty( $as3cfpro ) && $as3cfpro->get_plugin_slug( true ) === $this->parent_plugin_slug ) {
 					// Don't show update link for addons of a licensed plugin where the license is invalid
 					if ( ! $as3cfpro->is_valid_licence() ) {
-						$msg .= ' ' . sprintf( __( 'A valid license for %s is required to update.', 'as3cf' ), $this->get_parent_plugin_name() );
+						$msg .= ' ' . sprintf( __( 'A valid license for %s is required to update.', 'amazon-s3-and-cloudfront' ), $this->get_parent_plugin_name() );
 						$msg .= $hide_notice_msg;
 
 						return $this->set_error_msg( $msg );
@@ -334,7 +368,7 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 				}
 
 				$update_url = $this->get_plugin_action_url( 'upgrade', $parent_basename );
-				$msg .= ' <a style="font-weight:bold;text-decoration:none;white-space:nowrap;" href="' . $update_url . '">' . __( 'Update to the latest version', 'as3cf' ) . '</a>';
+				$msg .= ' <a style="font-weight:bold;text-decoration:none;white-space:nowrap;" href="' . $update_url . '">' . __( 'Update to the latest version', 'amazon-s3-and-cloudfront' ) . '</a>';
 
 				$msg .= $hide_notice_msg;
 
@@ -346,7 +380,7 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 			}
 
 			if ( ! isset( $GLOBALS['aws_meta'][ $this->parent_plugin_slug ]['supported_addon_versions'][ $this->plugin_slug ] ) ) {
-				$msg = sprintf( __( '%1$s has been disabled because it is not a supported addon of the %2$s plugin.', 'as3cf' ), $this->plugin_name, $this->get_parent_plugin_name() );
+				$msg = sprintf( __( '%1$s has been disabled because it is not a supported addon of the %2$s plugin.', 'amazon-s3-and-cloudfront' ), $this->plugin_name, $this->get_parent_plugin_name() );
 
 				return $this->set_error_msg( $msg );
 			}
@@ -355,11 +389,20 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 			$this_plugin_version          = $GLOBALS['aws_meta'][ $this->plugin_slug ]['version'];
 
 			if ( ! version_compare( $this_plugin_version, $this_plugin_version_required, '>=' ) ) {
-				$msg = sprintf( __( '%1$s has been disabled because it will not work with the version of the %2$s plugin installed. %1$s %3$s or later is required.', 'as3cf' ), $this->plugin_name, $this->get_parent_plugin_name(), $this_plugin_version_required );
+				$msg = sprintf( __( '%1$s has been disabled because it will not work with the version of the %2$s plugin installed. %1$s %3$s or later is required.', 'amazon-s3-and-cloudfront' ), $this->plugin_name, $this->get_parent_plugin_name(), $this_plugin_version_required );
 
-				$update_url = $this->get_plugin_action_url( 'upgrade', $plugin_basename );
-				$msg .= ' <a style="font-weight:bold;text-decoration:none;white-space:nowrap;" href="' . $update_url . '">' . sprintf( __( 'Update %s to the latest version', 'as3cf' ), $this->plugin_name ) . '</a>';
+				$update_url  = $this->get_plugin_action_url( 'upgrade', $plugin_basename );
+				$upgrade_msg = ' <a style="font-weight:bold;text-decoration:none;white-space:nowrap;" href="' . $update_url . '">' . sprintf( __( 'Update %s to the latest version', 'amazon-s3-and-cloudfront' ), $this->plugin_name ) . '</a>';
 
+				global $as3cfpro;
+				if ( ! empty( $as3cfpro ) && $as3cfpro->get_plugin_slug( true ) === $this->parent_plugin_slug ) {
+					// Don't show update link for addons of a licensed plugin where the license is invalid
+					if ( ! $as3cfpro->is_valid_licence() ) {
+						$upgrade_msg = ' ' . sprintf( __( 'A valid license for %s is required to update.', 'amazon-s3-and-cloudfront' ), $this->get_parent_plugin_name() );
+					}
+				}
+
+				$msg .= $upgrade_msg;
 				$msg .= $hide_notice_msg;
 
 				return $this->set_error_msg( $msg );
@@ -399,10 +442,8 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 				return;
 			}
 
-			global $pagenow;
-
-			if ( 'update.php' === $pagenow && isset( $_GET['action'] ) && 'install-plugin' === $_GET['action'] ) {
-				// Don't show notice when installing plugins
+			if ( self::is_installing_or_updating_plugins() ) {
+				// Don't show notice when installing or updating plugins
 				return;
 			}
 
@@ -415,12 +456,12 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 		function get_admin_notice() {
 			$error_msg = $this->get_error_msg();
 
-			if ( ! $error_msg ) {
+			if ( false === $error_msg || '' === $error_msg ) {
 				return;
 			}
 
 			if ( $this->deactivate_if_not_compatible ) {
-				$deactivated_msg = sprintf( __( 'The %s plugin has been deactivated.', 'as3cf' ), $this->plugin_name );
+				$deactivated_msg = sprintf( __( 'The %s plugin has been deactivated.', 'amazon-s3-and-cloudfront' ), $this->plugin_name );
 
 				$error_msg = $deactivated_msg . ' ' . $error_msg;
 				$this->render_notice( $error_msg );
@@ -447,24 +488,37 @@ if ( ! class_exists( 'WP_AWS_Compatibility_Check' ) ) {
 		 * @return bool
 		 */
 		public static function is_installing_or_updating_plugins() {
+			if ( ! is_null( self::$is_installing_or_updating_plugins ) ) {
+				return self::$is_installing_or_updating_plugins;
+			}
+
+			self::$is_installing_or_updating_plugins = false;
+
 			global $pagenow;
 
 			if ( 'update.php' === $pagenow && isset( $_GET['action'] ) && 'install-plugin' === $_GET['action'] ) {
 				// We are installing a plugin
-				return true;
+				self::$is_installing_or_updating_plugins = true;
 			}
 
-			if ( 'plugins.php' === $pagenow && isset( $_POST['action'] ) && 'update-selected' === $_POST['action'] ) {
-				// We are updating plugins from the plugin page
-				return true;
+			if ( 'plugins.php' === $pagenow && isset( $_POST['action'] ) ) {
+				$action = $_POST['action'];
+				if ( isset( $_POST['action2'] ) && '-1' !== $_POST['action2'] ) {
+					$action = $_POST['action2'];
+				}
+
+				if ( 'update-selected' === $action ) {
+					// We are updating plugins from the plugin page
+					self::$is_installing_or_updating_plugins = true;
+				}
 			}
 
 			if ( 'update-core.php' === $pagenow && isset( $_GET['action'] ) && 'do-plugin-upgrade' === $_GET['action'] ) {
 				// We are updating plugins from the updates page
-				return true;
+				self::$is_installing_or_updating_plugins = true;
 			}
 
-			return false;
+			return self::$is_installing_or_updating_plugins;
 		}
 	}
 }

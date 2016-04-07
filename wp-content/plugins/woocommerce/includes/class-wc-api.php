@@ -2,7 +2,7 @@
 /**
  * WooCommerce API
  *
- * Handles WC-API endpoint requests
+ * Handles WC-API endpoint requests.
  *
  * @author   WooThemes
  * @category API
@@ -18,19 +18,30 @@ if ( ! class_exists( 'WC_API' ) ) :
 
 class WC_API {
 
-	/** This is the major version for the REST API and takes
-	 * first-order position in endpoint URLs
+	/**
+	 * This is the major version for the REST API and takes
+	 * first-order position in endpoint URLs.
+	 *
+	 * @var string
 	 */
-	const VERSION = '3.0.0';
+	const VERSION = '3.1.0';
 
-	/** @var WC_API_Server the REST API server */
+	/**
+	 * The REST API server.
+	 *
+	 * @var WC_API_Server
+	 */
 	public $server;
 
-	/** @var WC_API_Authentication REST API authentication class instance */
+	/**
+	 * REST API authentication class instance.
+	 *
+	 * @var WC_API_Authentication
+	 */
 	public $authentication;
 
 	/**
-	 * Setup class
+	 * Setup class.
 	 *
 	 * @since 2.0
 	 * @return WC_API
@@ -56,7 +67,7 @@ class WC_API {
 	 * Add new query vars.
 	 *
 	 * @since 2.0
-	 * @param $vars
+	 * @param array $vars
 	 * @return string[]
 	 */
 	public function add_query_vars( $vars ) {
@@ -83,7 +94,7 @@ class WC_API {
 
 
 	/**
-	 * Handle REST API requests
+	 * Handle REST API requests.
 	 *
 	 * @since 2.2
 	 */
@@ -126,7 +137,7 @@ class WC_API {
 	}
 
 	/**
-	 * Include required files for REST API request
+	 * Include required files for REST API request.
 	 *
 	 * @since 2.1
 	 */
@@ -143,11 +154,12 @@ class WC_API {
 		$this->authentication = new WC_API_Authentication();
 
 		include_once( 'api/class-wc-api-resource.php' );
-		include_once( 'api/class-wc-api-orders.php' );
-		include_once( 'api/class-wc-api-products.php' );
 		include_once( 'api/class-wc-api-coupons.php' );
 		include_once( 'api/class-wc-api-customers.php' );
+		include_once( 'api/class-wc-api-orders.php' );
+		include_once( 'api/class-wc-api-products.php' );
 		include_once( 'api/class-wc-api-reports.php' );
+		include_once( 'api/class-wc-api-taxes.php' );
 		include_once( 'api/class-wc-api-webhooks.php' );
 
 		// allow plugins to load other response handlers or resource classes
@@ -155,7 +167,7 @@ class WC_API {
 	}
 
 	/**
-	 * Register available API resources
+	 * Register available API resources.
 	 *
 	 * @since 2.1
 	 * @param WC_API_Server $server the REST server
@@ -164,11 +176,12 @@ class WC_API {
 
 		$api_classes = apply_filters( 'woocommerce_api_classes',
 			array(
+				'WC_API_Coupons',
 				'WC_API_Customers',
 				'WC_API_Orders',
 				'WC_API_Products',
-				'WC_API_Coupons',
 				'WC_API_Reports',
+				'WC_API_Taxes',
 				'WC_API_Webhooks',
 			)
 		);
@@ -196,10 +209,10 @@ class WC_API {
 		$this->authentication = new WC_API_Authentication();
 
 		include_once( 'api/v1/class-wc-api-resource.php' );
-		include_once( 'api/v1/class-wc-api-orders.php' );
-		include_once( 'api/v1/class-wc-api-products.php' );
 		include_once( 'api/v1/class-wc-api-coupons.php' );
 		include_once( 'api/v1/class-wc-api-customers.php' );
+		include_once( 'api/v1/class-wc-api-orders.php' );
+		include_once( 'api/v1/class-wc-api-products.php' );
 		include_once( 'api/v1/class-wc-api-reports.php' );
 
 		// allow plugins to load other response handlers or resource classes
@@ -241,12 +254,12 @@ class WC_API {
 		$this->authentication = new WC_API_Authentication();
 
 		include_once( 'api/v2/class-wc-api-resource.php' );
-		include_once( 'api/v2/class-wc-api-orders.php' );
-		include_once( 'api/v2/class-wc-api-products.php' );
 		include_once( 'api/v2/class-wc-api-coupons.php' );
 		include_once( 'api/v2/class-wc-api-customers.php' );
+		include_once( 'api/v2/class-wc-api-orders.php' );
+		include_once( 'api/v2/class-wc-api-products.php' );
 		include_once( 'api/v2/class-wc-api-reports.php' );
-		include_once( 'api/class-wc-api-webhooks.php' );
+		include_once( 'api/v2/class-wc-api-webhooks.php' );
 
 		// allow plugins to load other response handlers or resource classes
 		do_action( 'woocommerce_api_loaded' );

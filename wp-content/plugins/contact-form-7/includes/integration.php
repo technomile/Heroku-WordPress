@@ -81,7 +81,7 @@ class WPCF7_Integration {
 ?>
 <div class="card<?php echo $service->is_active() ? ' active' : ''; ?>" id="<?php echo esc_attr( $name ); ?>">
 <?php $service->icon(); ?>
-<h3 class="title"><?php echo esc_html( $service->get_title() ); ?></h3>
+<h2 class="title"><?php echo esc_html( $service->get_title() ); ?></h2>
 <div class="infobox">
 <?php echo esc_html( implode( ', ', $cats ) ); ?>
 <br />
@@ -107,19 +107,19 @@ class WPCF7_Integration {
 
 abstract class WPCF7_Service {
 
-	public function get_title() {
-	}
-
-	public function is_active() {
-	}
+	abstract public function get_title();
+	abstract public function is_active();
 
 	public function get_categories() {
+		return array();
 	}
 
 	public function icon() {
+		return '';
 	}
 
 	public function link() {
+		return '';
 	}
 
 	public function load( $action = '' ) {

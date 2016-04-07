@@ -447,19 +447,20 @@ class WC_API_Server {
 			'description' => get_option( 'blogdescription' ),
 			'URL'         => get_option( 'siteurl' ),
 			'wc_version'  => WC()->version,
+			'version'     => WC_API::VERSION,
 			'routes'      => array(),
 			'meta'        => array(
 				'timezone'           => wc_timezone_string(),
 				'currency'           => get_woocommerce_currency(),
 				'currency_format'    => get_woocommerce_currency_symbol(),
 				'currency_position'  => get_option( 'woocommerce_currency_pos' ),
-				'thousand_separator' => get_option( 'woocommerce_price_decimal_sep' ),
-				'decimal_separator'  => get_option( 'woocommerce_price_thousand_sep' ),
+				'thousand_separator' => get_option( 'woocommerce_price_thousand_sep' ),
+				'decimal_separator'  => get_option( 'woocommerce_price_decimal_sep' ),
 				'price_num_decimals' => wc_get_price_decimals(),
 				'tax_included'       => wc_prices_include_tax(),
 				'weight_unit'        => get_option( 'woocommerce_weight_unit' ),
 				'dimension_unit'     => get_option( 'woocommerce_dimension_unit' ),
-				'ssl_enabled'        => ( 'yes' === get_option( 'woocommerce_force_ssl_checkout' ) ),
+				'ssl_enabled'        => ( 'yes' === get_option( 'woocommerce_force_ssl_checkout' ) || wc_site_is_https() ),
 				'permalinks_enabled' => ( '' !== get_option( 'permalink_structure' ) ),
 				'generate_password'  => ( 'yes' === get_option( 'woocommerce_registration_generate_password' ) ),
 				'links'              => array(
@@ -560,7 +561,7 @@ class WC_API_Server {
 	 * Send pagination headers for resources
 	 *
 	 * @since 2.1
-	 * @param WP_Query|WP_User_Query $query
+	 * @param WP_Query|WP_User_Query|stdClass $query
 	 */
 	public function add_pagination_headers( $query ) {
 
@@ -577,6 +578,11 @@ class WC_API_Server {
 				$page = 1;
 				$total_pages = 1;
 			}
+		} else if ( is_a( $query, 'stdClass' ) ) {
+			$page        = $query->page;
+			$single      = $query->is_single;
+			$total       = $query->total;
+			$total_pages = $query->total_pages;
 
 		// WP_Query
 		} else {

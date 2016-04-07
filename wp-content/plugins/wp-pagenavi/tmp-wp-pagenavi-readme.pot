@@ -1,0 +1,466 @@
+msgid ""
+msgstr "MIME-Version: 1.0\n"
+
+#. Name.
+msgid "WP-PageNavi"
+msgstr ""
+
+#. Short description.
+msgid "Adds a more advanced paging navigation interface."
+msgstr ""
+
+#. Screenshot description.
+msgid "With Custom Styling"
+msgstr ""
+
+#. Screenshot description.
+msgid "Admin - Options Page"
+msgstr ""
+
+#. Found in description header.
+msgid "Build Status"
+msgstr ""
+
+#. Found in description header.
+msgid "Development"
+msgstr ""
+
+#. Found in description header.
+msgid "Credits"
+msgstr ""
+
+#. Found in description header.
+msgid "Donations"
+msgstr ""
+
+#. Found in description list item.
+msgid "<a href=\"https://github.com/lesterchan/wp-pagenavi\" title=\"https://github.com/lesterchan/wp-pagenavi\">https://github.com/lesterchan/wp-pagenavi</a>"
+msgstr ""
+
+#. Found in description list item.
+msgid "Plugin icon by <a href=\"http://www.simpleicon.com\">SimpleIcon</a> from <a href=\"http://www.flaticon.com\">Flaticon</a>"
+msgstr ""
+
+#. Found in description paragraph.
+msgid "Want to replace the old <em>&larr; Older posts | Newer posts &rarr;</em> links with some page links?"
+msgstr ""
+
+#. Found in description paragraph.
+msgid "This plugin provides the <code>wp_pagenavi()</code> template tag which generates fancy pagination links. See the <a href=\"http://wordpress.org/extend/plugins/wp-pagenavi/installation/\">installation instructions</a> for using it in your theme."
+msgstr ""
+
+#. Found in description paragraph.
+msgid "Help to translate at <a href=\"https://translate.foe-services.de/projects/wp-pagenavi\">https://translate.foe-services.de/projects/wp-pagenavi</a>."
+msgstr ""
+
+#. Found in description paragraph.
+msgid "<a href=\"https://travis-ci.org/lesterchan/wp-pagenavi\"></a>"
+msgstr ""
+
+#. Found in description paragraph.
+msgid "I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appreciate it. If not feel free to use it without any obligations."
+msgstr ""
+
+#. Found in installation header.
+msgid "Usage"
+msgstr ""
+
+#. Found in installation header.
+msgid "Changing the CSS"
+msgstr ""
+
+#. Found in installation header.
+msgid "Changing Class Names"
+msgstr ""
+
+#. Found in installation header.
+msgid "Filters"
+msgstr ""
+
+#. Found in installation header.
+msgid "Filter Usage"
+msgstr ""
+
+#. Found in installation list item.
+msgid "Unzip the archive and put the <code>wp-pagenavi</code> folder into your plugins folder (/wp-content/plugins/)."
+msgstr ""
+
+#. Found in installation list item.
+msgid "Activate the plugin from the Plugins menu."
+msgstr ""
+
+#. Found in installation list item.
+msgid "<code>wp_pagenavi_class_pages</code>"
+msgstr ""
+
+#. Found in installation list item.
+msgid "<code>wp_pagenavi_class_first</code>"
+msgstr ""
+
+#. Found in installation list item.
+msgid "<code>wp_pagenavi_class_previouspostslink</code>"
+msgstr ""
+
+#. Found in installation list item.
+msgid "<code>wp_pagenavi_class_extend</code>"
+msgstr ""
+
+#. Found in installation list item.
+msgid "<code>wp_pagenavi_class_smaller</code>"
+msgstr ""
+
+#. Found in installation list item.
+msgid "<code>wp_pagenavi_class_page</code>"
+msgstr ""
+
+#. Found in installation list item.
+msgid "<code>wp_pagenavi_class_current</code>"
+msgstr ""
+
+#. Found in installation list item.
+msgid "<code>wp_pagenavi_class_larger</code>"
+msgstr ""
+
+#. Found in installation list item.
+msgid "<code>wp_pagenavi_class_nextpostslink</code>"
+msgstr ""
+
+#. Found in installation list item.
+msgid "<code>wp_pagenavi_class_last</code>"
+msgstr ""
+
+#. Found in installation paragraph.
+msgid "You can either install it automatically from the WordPress admin, or do it manually:"
+msgstr ""
+
+#. Found in installation paragraph.
+msgid "In your theme, you need to find calls to next_posts_link() and previous_posts_link() and replace them."
+msgstr ""
+
+#. Found in installation paragraph.
+msgid "In the Twentyten theme, it looks like this:"
+msgstr ""
+
+#. Found in installation paragraph.
+msgid "You would replace those two lines with this:"
+msgstr ""
+
+#. Found in installation paragraph.
+msgid "For multipart pages, you would look for code like this:"
+msgstr ""
+
+#. Found in installation paragraph.
+msgid "and replace it with this:"
+msgstr ""
+
+#. Found in installation paragraph.
+msgid "Go to <em>WP-Admin -&gt; Settings -&gt; PageNavi</em> for configuration."
+msgstr ""
+
+#. Found in installation paragraph.
+msgid "If you need to configure the CSS style of WP-PageNavi, you can copy the <code>pagenavi-css.css</code> file from the plugin directory to your theme's directory and make your modifications there. This way, you won't lose your changes when you update the plugin."
+msgstr ""
+
+#. Found in installation paragraph.
+msgid "Alternatively, you can uncheck the \"Use pagenavi.css?\" option from the settings page and add the styles to your theme's style.css file directly."
+msgstr ""
+
+#. Found in installation paragraph.
+msgid "There are <a href=\"http://codex.wordpress.org/Glossary#Filter\">filters</a> that can be used to change the default class names that are assigned to page navigation elements."
+msgstr ""
+
+#. Found in changelog list item.
+msgid "FIXED: before and after args"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "NEW: wrapper_tag option to allow other HTML tag besides DIV and wrapper_class option to allow other class name besides wp-pagenavi. Props @Mahjouba91."
+msgstr ""
+
+#. Found in changelog list item.
+msgid "NEW: Added filters for altering class names. Props @bookwyrm"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "NEW: Uses WordPress native uninstall.php"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "NEW: Bump to 4.0"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "NEW: Added rel=next and rel=previous"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "FIXED: \"Use pagenavi-css.css\" &amp; \"Always Show Page Navigation\" in the options are not being saved"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "FIXED: Updated scb framework to fix scbAdminPage incompatible error"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "added 'echo' parameter"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "added Estonian and Bengali translations"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "updated scbFramework"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "fixed prev/next links not appearing in some conditions"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "added Hebrew, Georgian and Azerbaijani translations"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "require an explicit type; fixes bugs with multipart pages"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "support for multi-part pages and user queries"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "moved prev/next links before/after first/last links"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "<a href=\"http://scribu.net/wordpress/wp-pagenavi/wpn-2-80.html\">more info</a>"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "added 'smaller' and 'larger' classes"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "added $query arg to wp_pagenavi()"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "updated translations"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "<a href=\"http://scribu.net/wordpress/wp-pagenavi/wpn-2-74.html\">more info</a>"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "added $options arg to wp_pagenavi()"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "3 new translations: AL, JA, BR"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "fixed first link"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "remove conflicting .left and .right from .extend elements"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "bundle language files"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "better default CSS"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "fixed issue with slashed quotes in settings"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "let WordPress handle uninstallation"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "<a href=\"http://scribu.net/wordpress/wp-pagenavi/wp-2-70.html\">more info</a>"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "fixed: memory limit error"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Compatible With WordPress 2.9"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Added \"previouspostslink\" and \"nextpostslink\" CSS classes for styling next/previous posts link by Joost de Valk"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Added option to include pagenavi-css.css In WP-Admin -&gt; Settings -&gt; PageNavi"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "fixed: check for pagenavi-css.css in the child theme, first"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "fixed: cleaner options page"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Compatible With WordPress 2.8"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Added Larger Page Number Pagination"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Added \"first\", \"page\" and \"last\" CSS Name To Link"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "fixed: Removed \"&#8201;\" Entity"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "fixed: Uses $_SERVER['PHP_SELF'] With plugin_basename(<strong>FILE</strong>) Instead Of Just $_SERVER['REQUEST_URI']"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Compatible With WordPress 2.7 Only"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Right To Left Language Support by Kambiz R. Khojasteh"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Called pagenavi_textdomain() In pagenavi_init() by Kambiz R. Khojasteh"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Compatible With WordPress 2.6"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: WP-PageNavi Will Load 'pagenavi-css.css' Inside Your Theme Directory If It Exists. If Not, It Will Just Load The Default 'pagenavi-css.css' By WP-PageNavi"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Uses /wp-pagenavi/ Folder Instead Of /pagenavi/"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Uses wp-pagenavi.php Instead Of pagenavi.php"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Added \"wp-pagenavi a:visited\" Style In pagenavi-css.css"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Added $before And $after Function Arguments To wp_pagenavi();"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "fixed: Rearranged CSS Classes In pagenavi-css.css"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "fixed: \"First\" Text Does Not Always Appear If Page 1 Is Not Shown"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Supports query_posts(); Variables"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Ability To Uninstall WP-PageNavi"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Page Navigation Now Is Customizable Via 'WP-Admin -&gt; Options -&gt; PageNavi' And pagenavi-css.css"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Default Style Navigation Is Now Boxed Navigation (Similar To Digg.com)"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "fixed: Fix For Ultimate Tag Warrior By Oliver Kastler &amp; Stephan (Netconcepts)"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Compatible With WordPress 2.1 Only"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Move pagenavi.php To pagenavi Folder"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "fixed: Now Compatible With WordPress 2.1"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Added Drop Down Menu Style Of Page Navigation"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "fixed: Paging Show If There Is Only 1 Page"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "new: Compatible With WordPress 2.0"
+msgstr ""
+
+#. Found in changelog list item.
+msgid "fixed: Space Issues"
+msgstr ""
+
+#. Found in faq header.
+msgid "Error on activation: \"Parse error: syntax error, unexpected...\""
+msgstr ""
+
+#. Found in faq header.
+msgid "When I go to page 2, I see the same posts as on page 1!"
+msgstr ""
+
+#. Found in faq header.
+msgid "Does PageNavi work with secondary WP_Query instances?"
+msgstr ""
+
+#. Found in faq header.
+msgid "How do I ignore the options page?"
+msgstr ""
+
+#. Found in faq paragraph.
+msgid "Make sure your host is running PHP 5. The only foolproof way to do this is to add this line to wp-config.php (after the opening <code>&lt;?php</code> tag):"
+msgstr ""
+
+#. Found in faq paragraph.
+msgid "<br />"
+msgstr ""
+
+#. Found in faq paragraph.
+msgid "You're using <code>query_posts()</code> wrong. See <a href=\"http://scribu.net/wordpress/wp-pagenavi/right-way-to-use-query_posts.html\">The Right Way To use query_posts()</a>"
+msgstr ""
+
+#. Found in faq paragraph.
+msgid "Yes; read <a href=\"http://scribu.net/wordpress/wp-pagenavi/wpn-2-74.html\">this tutorial</a>"
+msgstr ""
+
+#. Found in faq paragraph.
+msgid "If you are running a multi-language plugin, you will probably want to ignore the strings in the options page."
+msgstr ""
+
+#. Found in faq paragraph.
+msgid "You can do that like so:"
+msgstr ""

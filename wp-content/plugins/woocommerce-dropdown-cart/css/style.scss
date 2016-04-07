@@ -1,0 +1,136 @@
+.dropdown-cart-button{
+  font-weight: normal;
+  min-height: 35px;
+  border: 1px solid #ccc;
+  text-align: left;
+  padding: 0 0 0 36px;
+  margin: 0;
+  position: relative;
+  z-index: 10 !important;
+  overflow: visible;
+  background: url('../images/cart.png') no-repeat top left #ffffff;
+  display: inline-block;
+
+  .dropdown-total{
+    display: block;
+    line-height: 25px;
+    padding: 5px 36px 5px 0;
+    background: url('../images/cart.png') no-repeat right -70px #ffffff;
+    outline: 0;
+  }
+
+  .dropdown{
+    display: none;
+    position: absolute;
+    background-color: #FFFFFF;
+    border: 1px solid #ccc;
+    padding: 10px 6px 8px;
+    width: 300px;
+
+    &.dropdown-left{
+      right: auto;
+      left: -1px;
+    }
+
+    &.dropdown-right{
+      right: -1px;
+      left: auto;
+    }
+
+    &.drop-left{
+      right: auto !important;
+      left: -1px !important;
+    }
+
+    @media (min-width: 768px) {
+
+      &.drop-bottom{
+        top: auto !important;
+        bottom: 0;
+      }
+    }
+
+    .cart_list {
+      font-size: 12px;
+      padding: 0 0 8px 0;
+      margin: 0;
+
+      li {
+        clear: both;
+        min-height: 40px;
+        margin: 0;
+        padding: 4px 0px;
+        border-bottom: 1px solid #ccc;
+        list-style: none;
+        position: relative;
+
+        &:after{
+          content: '.';
+          visibility: hidden;
+          display: block;
+          clear: both;
+          height: 0;
+        }
+      }
+
+      img{
+        width: 40px;
+        height: auto !important;
+        min-width: 0;
+        max-width: none;
+        margin-right: 4px;
+        float: left;
+      }
+
+      a{
+        float: left;
+        font-weight: normal !important;
+        width: 75%;
+
+        &.remove{
+          display: none;
+        }
+      }
+
+      .quantity{
+        display: inline-block;
+        width: 22%;
+      }
+
+      .variation{
+        clear: left;
+        float: left;
+        width: 75%;
+        dt,dd{
+          display: inline-block !important;
+          p{
+            margin: 0;
+          }
+        }
+      }
+    }
+
+    .total {
+      clear: both;
+      text-align: right;
+      margin: 0;
+      padding: 5px 0;
+    }
+
+    .buttons {
+      text-align: right;
+      margin: 0;
+      padding: 5px 0;
+
+      .button {
+        margin-left: 4px;
+        background-color: #60646c;
+        border-color: #60646c;
+        color: #ffffff;
+        padding: 5px 8px;
+      }
+
+    }
+  }
+
+}

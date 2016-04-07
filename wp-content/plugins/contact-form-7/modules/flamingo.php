@@ -12,7 +12,8 @@ function wpcf7_flamingo_submit( $contactform, $result ) {
 		return;
 	}
 
-	if ( $contactform->in_demo_mode() ) {
+	if ( $contactform->in_demo_mode()
+	|| $contactform->is_true( 'do_not_store' ) ) {
 		return;
 	}
 
@@ -38,6 +39,8 @@ function wpcf7_flamingo_submit( $contactform, $result ) {
 	foreach ( $fields_senseless as $tag ) {
 		$exclude_names[] = $tag['name'];
 	}
+
+	$exclude_names[] = 'g-recaptcha-response';
 
 	foreach ( $posted_data as $key => $value ) {
 		if ( '_' == substr( $key, 0, 1 ) || in_array( $key, $exclude_names ) ) {
@@ -167,5 +170,3 @@ function wpcf7_flamingo_add_channel( $slug, $name = '' ) {
 
 	return (int) $channel['term_id'];
 }
-
-?>

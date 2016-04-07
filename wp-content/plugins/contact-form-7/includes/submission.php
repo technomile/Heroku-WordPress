@@ -131,9 +131,11 @@ class WPCF7_Submission {
 		}
 
 		$this->meta = array(
-			'remote_ip' => preg_replace( '/[^0-9a-f.:, ]/', '',
-				$_SERVER['REMOTE_ADDR'] ),
-			'user_agent' => substr( $_SERVER['HTTP_USER_AGENT'], 0, 254 ),
+			'remote_ip' => isset( $_SERVER['REMOTE_ADDR'] )
+				? preg_replace( '/[^0-9a-f.:, ]/', '', $_SERVER['REMOTE_ADDR'] )
+				: '',
+			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] )
+				? substr( $_SERVER['HTTP_USER_AGENT'], 0, 254 ) : '',
 			'url' => preg_replace( '%(?<!:|/)/.*$%', '',
 				untrailingslashit( home_url() ) ) . wpcf7_get_request_uri(),
 			'timestamp' => current_time( 'timestamp' ),

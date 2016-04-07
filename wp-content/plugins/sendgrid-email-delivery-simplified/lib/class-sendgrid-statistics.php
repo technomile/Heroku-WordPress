@@ -1,5 +1,7 @@
 <?php
 
+require_once plugin_dir_path( __FILE__ ) . 'class-sendgrid-tools.php';
+
 class Sendgrid_Statistics
 {
   public function __construct()
@@ -25,8 +27,18 @@ class Sendgrid_Statistics
    */
   public static function add_dashboard_widget()
   {
-    if ( ! Sendgrid_Tools::check_username_password( Sendgrid_Tools::get_username(), Sendgrid_Tools::get_password() ) ) {
-      return;
+    switch ( Sendgrid_Tools::get_auth_method() )
+    {
+      case "apikey":
+        $apikey = Sendgrid_Tools::get_api_key();
+        if ( ! Sendgrid_Tools::check_api_key( $apikey ) or ! Sendgrid_Tools::check_api_key_stats( $apikey ) )
+          return;
+      break;
+
+      case "credentials":
+        if ( ! Sendgrid_Tools::check_username_password( Sendgrid_Tools::get_username(), Sendgrid_Tools::get_password() ) )
+          return;
+      break;
     }
 
     add_meta_box( 'sendgrid_statistics_widget', 'SendGrid Wordpress Statistics', array( __CLASS__, 'show_dashboard_widget' ),
@@ -50,8 +62,18 @@ class Sendgrid_Statistics
    */
   public static function add_statistics_menu()
   {
-    if ( ! Sendgrid_Tools::check_username_password( Sendgrid_Tools::get_username(), Sendgrid_Tools::get_password() ) ) {
-      return;
+    switch ( Sendgrid_Tools::get_auth_method() )
+    {
+      case "apikey":
+        $apikey = Sendgrid_Tools::get_api_key();
+        if ( ! Sendgrid_Tools::check_api_key( $apikey ) )
+          return;
+      break;
+
+      case "credentials":
+        if ( ! Sendgrid_Tools::check_username_password( Sendgrid_Tools::get_username(), Sendgrid_Tools::get_password() ) )
+          return;
+      break;
     }
 
     add_dashboard_page( "SendGrid Statistics", "SendGrid Statistics", "manage_options", "sendgrid-statistics",
@@ -65,6 +87,13 @@ class Sendgrid_Statistics
    */
   public static function show_statistics_page()
   {
+    $apikey = Sendgrid_Tools::get_api_key();
+    if ( ( "apikey" == Sendgrid_Tools::get_auth_method() ) and isset( $apikey ) and ( $apikey != '' ) and ! Sendgrid_Tools::check_api_key_stats( $apikey, true ) )
+    {
+      $message = 'Your Api key does not have statistics permissions';
+      $status  = 'error';
+    }
+
     require plugin_dir_path( __FILE__ ) . '../view/sendgrid_stats.php';
   }
 
@@ -80,7 +109,7 @@ class Sendgrid_Statistics
     }
 
     // Javascript
-    wp_enqueue_script( 'sendgrid-stats', plugin_dir_url( __FILE__ ) . '../view/js/sendgrid.stats.js', array('jquery') );
+    wp_enqueue_script( 'sendgrid-stats', plugin_dir_url( __FILE__ ) . '../view/js/sendgrid.stats-v1.7.3.js', array('jquery') );
     wp_enqueue_script( 'jquery-flot', plugin_dir_url( __FILE__ ) . '../view/js/jquery.flot.js', array('jquery') );
     wp_enqueue_script( 'jquery-flot-time', plugin_dir_url( __FILE__ ) . '../view/js/jquery.flot.time.js', array('jquery') );
     wp_enqueue_script( 'jquery-flot-tofflelegend', plugin_dir_url( __FILE__ ) . '../view/js/jquery.flot.togglelegend.js', array('jquery') );
@@ -111,10 +140,13 @@ class Sendgrid_Statistics
     }
 
     $parameters = array();
-    $parameters['api_user']  = Sendgrid_Tools::get_username();
-    $parameters['api_key']   = Sendgrid_Tools::get_password();
+
+    $parameters['auth_method'] = Sendgrid_Tools::get_auth_method();
+    $parameters['api_username'] = Sendgrid_Tools::get_username();
+    $parameters['api_password']  = Sendgrid_Tools::get_password();
+    $parameters['apikey']   = Sendgrid_Tools::get_api_key();
+
     $parameters['data_type'] = 'global';
-    $parameters['metric']    = 'all';
 
     if ( array_key_exists( 'days', $_POST ) ) {
       $parameters['days'] = $_POST['days'];
@@ -123,15 +155,17 @@ class Sendgrid_Statistics
       $parameters['end_date']   = $_POST['end_date'];
     }
 
-    if ( $_POST['type'] && 'general' != $_POST['type'] ) {
+    $endpoint = 'v3/stats';
+    
+    if ( isset( $_POST['type'] ) && 'general' != $_POST['type'] ) {
       if( 'wordpress' == $_POST['type'] ) {
-        $parameters['category'] = 'wp_sendgrid_plugin';
+        $parameters['categories'] = 'wp_sendgrid_plugin';
       } else {
-        $parameters['category'] = urlencode( $_POST['type'] );
+        $parameters['categories'] = urlencode( $_POST['type'] );
       }
+      $endpoint = 'v3/categories/stats';
     }
-
-    echo Sendgrid_Tools::curl_request( 'api/stats.get.json', $parameters );
+    echo Sendgrid_Tools::do_request( $endpoint, $parameters );
 
     die();
   }

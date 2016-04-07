@@ -42,7 +42,7 @@ class WPCF7_Editor {
 
 function wpcf7_editor_panel_form( $post ) {
 ?>
-<h3><?php echo esc_html( __( 'Form', 'contact-form-7' ) ); ?></h3>
+<h2><?php echo esc_html( __( 'Form', 'contact-form-7' ) ); ?></h2>
 
 <?php
 	$tag_generator = WPCF7_TagGenerator::get_instance();
@@ -79,9 +79,11 @@ function wpcf7_editor_box_mail( $post, $args = '' ) {
 		'subject' => '', 'body' => '', 'additional_headers' => '',
 		'attachments' => '', 'use_html' => false, 'exclude_blank' => false ) );
 
+	$do_validate = wpcf7_validate_configuration();
+
 ?>
 <div class="contact-form-editor-box-mail" id="<?php echo $id; ?>">
-<h3><?php echo esc_html( $args['title'] ); ?></h3>
+<h2><?php echo esc_html( $args['title'] ); ?></h2>
 
 <?php
 	if ( ! empty( $args['use'] ) ) :
@@ -102,7 +104,12 @@ function wpcf7_editor_box_mail( $post, $args = '' ) {
 		<label for="<?php echo $id; ?>-recipient"><?php echo esc_html( __( 'To', 'contact-form-7' ) ); ?></label>
 	</th>
 	<td>
-		<input type="text" id="<?php echo $id; ?>-recipient" name="<?php echo $id; ?>-recipient" class="large-text code" size="70" value="<?php echo esc_attr( $mail['recipient'] ); ?>" />
+		<?php $config_error = $post->config_error(
+			sprintf( '%s.recipient', $args['name'] ) ); ?>
+		<input type="text" id="<?php echo $id; ?>-recipient" name="<?php echo $id; ?>-recipient" class="large-text code" size="70" value="<?php echo esc_attr( $mail['recipient'] ); ?>"<?php if ( $do_validate && $config_error ) { echo ' aria-invalid="true"'; } ?> />
+		<?php if ( $do_validate && $config_error ) {
+			echo sprintf( '<br /><span role="alert" class="config-error">%s</span>', $config_error );
+		} ?>
 	</td>
 	</tr>
 
@@ -111,7 +118,12 @@ function wpcf7_editor_box_mail( $post, $args = '' ) {
 		<label for="<?php echo $id; ?>-sender"><?php echo esc_html( __( 'From', 'contact-form-7' ) ); ?></label>
 	</th>
 	<td>
-		<input type="text" id="<?php echo $id; ?>-sender" name="<?php echo $id; ?>-sender" class="large-text code" size="70" value="<?php echo esc_attr( $mail['sender'] ); ?>" />
+		<?php $config_error = $post->config_error(
+			sprintf( '%s.sender', $args['name'] ) ); ?>
+		<input type="text" id="<?php echo $id; ?>-sender" name="<?php echo $id; ?>-sender" class="large-text code" size="70" value="<?php echo esc_attr( $mail['sender'] ); ?>"<?php if ( $do_validate && $config_error ) { echo ' aria-invalid="true"'; } ?> />
+		<?php if ( $do_validate && $config_error ) {
+			echo sprintf( '<br /><span role="alert" class="config-error">%s</span>', $config_error );
+		} ?>
 	</td>
 	</tr>
 
@@ -120,7 +132,12 @@ function wpcf7_editor_box_mail( $post, $args = '' ) {
 		<label for="<?php echo $id; ?>-subject"><?php echo esc_html( __( 'Subject', 'contact-form-7' ) ); ?></label>
 	</th>
 	<td>
-		<input type="text" id="<?php echo $id; ?>-subject" name="<?php echo $id; ?>-subject" class="large-text code" size="70" value="<?php echo esc_attr( $mail['subject'] ); ?>" />
+		<?php $config_error = $post->config_error(
+			sprintf( '%s.subject', $args['name'] ) ); ?>
+		<input type="text" id="<?php echo $id; ?>-subject" name="<?php echo $id; ?>-subject" class="large-text code" size="70" value="<?php echo esc_attr( $mail['subject'] ); ?>"<?php if ( $do_validate && $config_error ) { echo ' aria-invalid="true"'; } ?> />
+		<?php if ( $do_validate && $config_error ) {
+			echo sprintf( '<br /><span role="alert" class="config-error">%s</span>', $config_error );
+		} ?>
 	</td>
 	</tr>
 
@@ -129,7 +146,12 @@ function wpcf7_editor_box_mail( $post, $args = '' ) {
 		<label for="<?php echo $id; ?>-additional-headers"><?php echo esc_html( __( 'Additional Headers', 'contact-form-7' ) ); ?></label>
 	</th>
 	<td>
-		<textarea id="<?php echo $id; ?>-additional-headers" name="<?php echo $id; ?>-additional-headers" cols="100" rows="4" class="large-text code"><?php echo esc_textarea( $mail['additional_headers'] ); ?></textarea>
+		<?php $config_error = $post->config_error(
+			sprintf( '%s.additional_headers', $args['name'] ) ); ?>
+		<textarea id="<?php echo $id; ?>-additional-headers" name="<?php echo $id; ?>-additional-headers" cols="100" rows="4" class="large-text code"<?php if ( $do_validate && $config_error ) { echo ' aria-invalid="true"'; } ?>><?php echo esc_textarea( $mail['additional_headers'] ); ?></textarea>
+		<?php if ( $do_validate && $config_error ) {
+			echo sprintf( '<br /><span role="alert" class="config-error">%s</span>', $config_error );
+		} ?>
 	</td>
 	</tr>
 
@@ -138,7 +160,12 @@ function wpcf7_editor_box_mail( $post, $args = '' ) {
 		<label for="<?php echo $id; ?>-body"><?php echo esc_html( __( 'Message Body', 'contact-form-7' ) ); ?></label>
 	</th>
 	<td>
-		<textarea id="<?php echo $id; ?>-body" name="<?php echo $id; ?>-body" cols="100" rows="18" class="large-text code"><?php echo esc_textarea( $mail['body'] ); ?></textarea>
+		<?php $config_error = $post->config_error(
+			sprintf( '%s.body', $args['name'] ) ); ?>
+		<textarea id="<?php echo $id; ?>-body" name="<?php echo $id; ?>-body" cols="100" rows="18" class="large-text code"<?php if ( $do_validate && $config_error ) { echo ' aria-invalid="true"'; } ?>><?php echo esc_textarea( $mail['body'] ); ?></textarea>
+		<?php if ( $do_validate && $config_error ) {
+			echo sprintf( '<br /><span role="alert" class="config-error">%s</span>', $config_error );
+		} ?>
 
 		<p><label for="<?php echo $id; ?>-exclude-blank"><input type="checkbox" id="<?php echo $id; ?>-exclude-blank" name="<?php echo $id; ?>-exclude-blank" value="1"<?php echo ( ! empty( $mail['exclude_blank'] ) ) ? ' checked="checked"' : ''; ?> /> <?php echo esc_html( __( 'Exclude lines with blank mail-tags from output', 'contact-form-7' ) ); ?></label></p>
 
@@ -163,18 +190,35 @@ function wpcf7_editor_box_mail( $post, $args = '' ) {
 
 function wpcf7_editor_panel_messages( $post ) {
 	$messages = wpcf7_messages();
+
+	if ( isset( $messages['captcha_not_match'] )
+	&& ! wpcf7_use_really_simple_captcha() ) {
+		unset( $messages['captcha_not_match'] );
+	}
+
+	$do_validate = wpcf7_validate_configuration();
+
 ?>
-<h3><?php echo esc_html( __( 'Messages', 'contact-form-7' ) ); ?></h3>
+<h2><?php echo esc_html( __( 'Messages', 'contact-form-7' ) ); ?></h2>
 <fieldset>
 <legend><?php echo esc_html( __( 'Edit messages used in the following situations.', 'contact-form-7' ) ); ?></legend>
 <?php
 
 	foreach ( $messages as $key => $arr ) {
 		$field_name = 'wpcf7-message-' . strtr( $key, '_', '-' );
+
+		$config_error = $do_validate
+			? $post->config_error( sprintf( 'messages.%s', $key ) ) : '';
+
 ?>
 <p class="description">
 <label for="<?php echo $field_name; ?>"><?php echo esc_html( $arr['description'] ); ?><br />
-<input type="text" id="<?php echo $field_name; ?>" name="<?php echo $field_name; ?>" class="large-text" size="70" value="<?php echo esc_attr( $post->message( $key, false ) ); ?>" />
+<input type="text" id="<?php echo $field_name; ?>" name="<?php echo $field_name; ?>" class="large-text" size="70" value="<?php echo esc_attr( $post->message( $key, false ) ); ?>"<?php echo $config_error ? ' aria-invalid="true"' : ''; ?> />
+<?php
+	if ( $config_error ) {
+		echo sprintf( '<br /><span role="alert" class="config-error">%s</span>', $config_error );
+	}
+?>
 </label>
 </p>
 <?php
@@ -192,7 +236,7 @@ function wpcf7_editor_panel_additional_settings( $post ) {
 	$description = sprintf( esc_html( $description ), $desc_link );
 
 ?>
-<h3><?php echo esc_html( __( 'Additional Settings', 'contact-form-7' ) ); ?></h3>
+<h2><?php echo esc_html( __( 'Additional Settings', 'contact-form-7' ) ); ?></h2>
 <fieldset>
 <legend><?php echo $description; ?></legend>
 <textarea id="wpcf7-additional-settings" name="wpcf7-additional-settings" cols="100" rows="8" class="large-text"><?php echo esc_textarea( $post->prop( 'additional_settings' ) ); ?></textarea>

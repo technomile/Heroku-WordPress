@@ -101,7 +101,7 @@ function wpcf7_textarea_validation_filter( $result, $tag ) {
 			$maxlength = $minlength = null;
 		}
 
-		$code_units = wpcf7_count_code_units( $value );
+		$code_units = wpcf7_count_code_units( stripslashes( $value ) );
 
 		if ( false !== $code_units ) {
 			if ( $maxlength && $maxlength < $code_units ) {
@@ -118,9 +118,7 @@ function wpcf7_textarea_validation_filter( $result, $tag ) {
 
 /* Tag generator */
 
-if ( is_admin() ) {
-	add_action( 'admin_init', 'wpcf7_add_tag_generator_textarea', 20 );
-}
+add_action( 'wpcf7_admin_init', 'wpcf7_add_tag_generator_textarea', 20 );
 
 function wpcf7_add_tag_generator_textarea() {
 	$tag_generator = WPCF7_TagGenerator::get_instance();

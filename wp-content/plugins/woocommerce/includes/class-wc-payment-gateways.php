@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly
+}
+
 /**
  * WooCommerce Payment Gateways class
  *
@@ -22,7 +27,7 @@ class WC_Payment_Gateways {
 	protected static $_instance = null;
 
 	/**
-	 * Main WC_Payment_Gateways Instance
+	 * Main WC_Payment_Gateways Instance.
 	 *
 	 * Ensures only one instance of WC_Payment_Gateways is loaded or can be loaded.
 	 *
@@ -73,7 +78,9 @@ class WC_Payment_Gateways {
 			'WC_Gateway_Paypal',
 		);
 
-		if ( 'US' === WC()->countries->get_base_country() ) {
+		$simplify_countries = (array) apply_filters( 'woocommerce_gateway_simplify_commerce_supported_countries', array( 'US', 'IE' ) );
+
+		if ( in_array( WC()->countries->get_base_country(), $simplify_countries ) ) {
 			if ( class_exists( 'WC_Subscriptions_Order' ) || class_exists( 'WC_Pre_Orders_Order' ) ) {
 				if ( ! function_exists( 'wcs_create_renewal_order' ) ) { // Subscriptions < 2.0
 					$load_gateways[] = 'WC_Addons_Gateway_Simplify_Commerce_Deprecated';
@@ -130,7 +137,6 @@ class WC_Payment_Gateways {
 	/**
 	 * Get available gateways.
 	 *
-	 * @access public
 	 * @return array
 	 */
 	public function get_available_payment_gateways() {
@@ -150,16 +156,28 @@ class WC_Payment_Gateways {
 	}
 
 	/**
-	 * Set the current, active gateway
+	 * Set the current, active gateway.
+	 *
+	 * @param array $gateway Available payment gateways.
 	 */
 	public function set_current_gateway( $gateways ) {
-		$default = get_option( 'woocommerce_default_gateway', current( array_keys( $gateways ) ) );
-		$current = WC()->session->get( 'chosen_payment_method', $default );
+		// Be on the defensive
+		if ( ! is_array( $gateways ) || empty( $gateways ) ) {
+			return;
+		}
 
-		if ( isset( $gateways[ $current ] ) ) {
-			$gateways[ $current ]->set_current();
-		} elseif ( isset( $gateways[ $default ] ) ) {
-			$gateways[ $default ]->set_current();
+		$current = WC()->session->get( 'chosen_payment_method' );
+
+		if ( $current && isset( $gateways[ $current ] ) ) {
+			$current_gateway = $gateways[ $current ];
+
+		} else {
+			$current_gateway = current( $gateways );
+		}
+
+		// Ensure we can make a call to set_current() without triggering an error
+		if ( $current_gateway && is_callable( array( $current_gateway, 'set_current' ) ) ) {
+			$current_gateway->set_current();
 		}
 	}
 
@@ -167,11 +185,8 @@ class WC_Payment_Gateways {
 	 * Save options in admin.
 	 */
 	public function process_admin_options() {
-
-		$default_gateway = ( isset( $_POST['default_gateway'] ) ) ? esc_attr( $_POST['default_gateway'] ) : '';
-		$gateway_order = ( isset( $_POST['gateway_order'] ) ) ? $_POST['gateway_order'] : '';
-
-		$order = array();
+		$gateway_order = isset( $_POST['gateway_order'] ) ? $_POST['gateway_order'] : '';
+		$order         = array();
 
 		if ( is_array( $gateway_order ) && sizeof( $gateway_order ) > 0 ) {
 			$loop = 0;
@@ -181,7 +196,6 @@ class WC_Payment_Gateways {
 			}
 		}
 
-		update_option( 'woocommerce_default_gateway', $default_gateway );
 		update_option( 'woocommerce_gateway_order', $order );
 	}
 }

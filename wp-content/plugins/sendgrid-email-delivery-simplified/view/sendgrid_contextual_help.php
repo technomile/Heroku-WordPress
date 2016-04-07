@@ -46,6 +46,12 @@
     <br />
     $headers[] = 'Bcc: address5@sendgrid.com';
     <br />
+    $headers[] = 'unique-args:customer=mycustomer;location=mylocation'
+    <br />
+    $headers[] = 'categories: category1, category2'
+    <br />
+    $headers[] = 'template: templateID'
+    <br />
     <br />
     $attachments = array('/tmp/img1.jpg', '/tmp/img2.jpg');
     <br />

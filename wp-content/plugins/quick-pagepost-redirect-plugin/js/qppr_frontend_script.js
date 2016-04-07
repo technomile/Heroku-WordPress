@@ -14,6 +14,7 @@
 				var doNF = false;
 				var rURL = '';
 				var hChk = href;
+				
 				if( linkFound == '1' ){
 					doNW = newWindowArr[ href ][0];
 					doNF = newWindowArr[ href ][1];

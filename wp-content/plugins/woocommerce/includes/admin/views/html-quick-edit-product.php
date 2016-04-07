@@ -32,61 +32,63 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<label>
 				<span class="title"><?php _e( 'Price', 'woocommerce' ); ?></span>
 				<span class="input-text-wrap">
-					<input type="text" name="_regular_price" class="text regular_price" placeholder="<?php esc_attr_e( 'Regular Price', 'woocommerce' ); ?>" value="">
+					<input type="text" name="_regular_price" class="text wc_input_price regular_price" placeholder="<?php esc_attr_e( 'Regular Price', 'woocommerce' ); ?>" value="">
 				</span>
 			</label>
 			<br class="clear" />
 			<label>
 				<span class="title"><?php _e( 'Sale', 'woocommerce' ); ?></span>
 				<span class="input-text-wrap">
-					<input type="text" name="_sale_price" class="text sale_price" placeholder="<?php esc_attr_e( 'Sale Price', 'woocommerce' ); ?>" value="">
+					<input type="text" name="_sale_price" class="text wc_input_price sale_price" placeholder="<?php esc_attr_e( 'Sale Price', 'woocommerce' ); ?>" value="">
 				</span>
 			</label>
 			<br class="clear" />
 		</div>
 
-		<label class="alignleft">
-			<span class="title"><?php _e( 'Tax Status', 'woocommerce' ); ?></span>
-			<span class="input-text-wrap">
-				<select class="tax_status" name="_tax_status">
-				<?php
-					$options = array(
-						'taxable'  => __( 'Taxable', 'woocommerce' ),
-						'shipping' => __( 'Shipping only', 'woocommerce' ),
-						'none'     => _x( 'None', 'Tax status', 'woocommerce' )
-					);
-					foreach ( $options as $key => $value ) {
-						echo '<option value="' . esc_attr( $key ) . '">' . $value . '</option>';
-					}
-				?>
-				</select>
-			</span>
-		</label>
-		<br class="clear" />
-		<label class="alignleft">
-			<span class="title"><?php _e( 'Tax Class', 'woocommerce' ); ?></span>
-			<span class="input-text-wrap">
-				<select class="tax_class" name="_tax_class">
-				<?php
-					$options = array(
-						'' => __( 'Standard', 'woocommerce' )
-					);
-
-					$tax_classes = WC_Tax::get_tax_classes();
-
-					if ( $tax_classes )
-						foreach ( $tax_classes as $class ) {
-							$options[ sanitize_title( $class ) ] = esc_html( $class );
+		<?php if ( wc_tax_enabled() ) : ?>
+			<label class="alignleft">
+				<span class="title"><?php _e( 'Tax Status', 'woocommerce' ); ?></span>
+				<span class="input-text-wrap">
+					<select class="tax_status" name="_tax_status">
+					<?php
+						$options = array(
+							'taxable'  => __( 'Taxable', 'woocommerce' ),
+							'shipping' => __( 'Shipping only', 'woocommerce' ),
+							'none'     => _x( 'None', 'Tax status', 'woocommerce' )
+						);
+						foreach ( $options as $key => $value ) {
+							echo '<option value="' . esc_attr( $key ) . '">' . $value . '</option>';
 						}
+					?>
+					</select>
+				</span>
+			</label>
+			<br class="clear" />
+			<label class="alignleft">
+				<span class="title"><?php _e( 'Tax Class', 'woocommerce' ); ?></span>
+				<span class="input-text-wrap">
+					<select class="tax_class" name="_tax_class">
+					<?php
+						$options = array(
+							'' => __( 'Standard', 'woocommerce' )
+						);
 
-					foreach ( $options as $key => $value ) {
-						echo '<option value="' . esc_attr( $key ) . '">' . $value . '</option>';
-					}
-				?>
-				</select>
-			</span>
-		</label>
-		<br class="clear" />
+						$tax_classes = WC_Tax::get_tax_classes();
+
+						if ( $tax_classes )
+							foreach ( $tax_classes as $class ) {
+								$options[ sanitize_title( $class ) ] = esc_html( $class );
+							}
+
+						foreach ( $options as $key => $value ) {
+							echo '<option value="' . esc_attr( $key ) . '">' . $value . '</option>';
+						}
+					?>
+					</select>
+				</span>
+			</label>
+			<br class="clear" />
+		<?php endif; ?>
 
 		<?php if ( wc_product_weight_enabled() || wc_product_dimensions_enabled() ) : ?>
 		<div class="dimension_fields">
@@ -106,9 +108,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<div>
 						<span class="title"><?php _e( 'L/W/H', 'woocommerce' ); ?></span>
 						<span class="input-text-wrap">
-							<input type="text" name="_length" class="text length" placeholder="<?php esc_attr_e( 'Length', 'woocommerce' ); ?>" value="">
-							<input type="text" name="_width" class="text width" placeholder="<?php esc_attr_e( 'Width', 'woocommerce' ); ?>" value="">
-							<input type="text" name="_height" class="text height" placeholder="<?php esc_attr_e( 'Height', 'woocommerce' ); ?>" value="">
+							<input type="text" name="_length" class="text wc_input_decimal length" placeholder="<?php esc_attr_e( 'Length', 'woocommerce' ); ?>" value="">
+							<input type="text" name="_width" class="text wc_input_decimal width" placeholder="<?php esc_attr_e( 'Width', 'woocommerce' ); ?>" value="">
+							<input type="text" name="_height" class="text wc_input_decimal height" placeholder="<?php esc_attr_e( 'Height', 'woocommerce' ); ?>" value="">
 						</span>
 					</div>
 				</div>

@@ -15,12 +15,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WC_Meta_Box_Order_Actions Class
+ * WC_Meta_Box_Order_Actions Class.
  */
 class WC_Meta_Box_Order_Actions {
 
 	/**
-	 * Output the metabox
+	 * Output the metabox.
+	 *
+	 * @param WP_Post $post
 	 */
 	public static function output( $post ) {
 		global $theorder;
@@ -89,7 +91,10 @@ class WC_Meta_Box_Order_Actions {
 	}
 
 	/**
-	 * Save meta box data
+	 * Save meta box data.
+	 *
+	 * @param int $post_id
+	 * @param WP_Post $post
 	 */
 	public static function save( $post_id, $post ) {
 
@@ -120,6 +125,7 @@ class WC_Meta_Box_Order_Actions {
 					foreach ( $mails as $mail ) {
 						if ( $mail->id == $email_to_send ) {
 							$mail->trigger( $order->id );
+							$order->add_order_note( sprintf( __( '%s email notification manually sent.', 'woocommerce' ), $mail->title ), false, true );
 						}
 					}
 				}
@@ -144,9 +150,9 @@ class WC_Meta_Box_Order_Actions {
 	}
 
 	/**
-	 * Set the correct message ID
+	 * Set the correct message ID.
 	 *
-	 * @param $location
+	 * @param string $location
 	 *
 	 * @since  2.3.0
 	 *

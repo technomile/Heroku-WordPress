@@ -1,6 +1,6 @@
-/* version 5.1.2 */
+/* version 5.1.3 */
 #toplevel_page_redirect-updates .dashicons-external, #toplevel_page_redirect-options .dashicons-external { -webkit-transform: rotate(45deg); -moz-transform: rotate(45deg); -ms-transform: rotate(45deg); -o-transform: rotate(45deg); }
-span.qppr_meta_help { display: none; font-size: .95em; font-style: italic; background-color: #FCFFD1; }
+span.qppr_meta_help { display: none; font-size: .95em; font-style: italic; background-color: #FCFFD1; line-height: 1em;}
 .qppr_meta_help_icon { background: transparent; color: #4F8CBE; }
 .qppr_meta_help_icon:hover { color: #BEBFC5; cursor: help; }
 .qppr_meta_help_wrap { }

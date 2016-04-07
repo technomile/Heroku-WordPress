@@ -15,15 +15,17 @@ function wpcf7_add_shortcode_file() {
 function wpcf7_file_shortcode_handler( $tag ) {
 	$tag = new WPCF7_Shortcode( $tag );
 
-	if ( empty( $tag->name ) )
+	if ( empty( $tag->name ) ) {
 		return '';
+	}
 
 	$validation_error = wpcf7_get_validation_error( $tag->name );
 
 	$class = wpcf7_form_controls_class( $tag->type );
 
-	if ( $validation_error )
+	if ( $validation_error ) {
 		$class .= ' wpcf7-not-valid';
+	}
 
 	$atts = array();
 
@@ -32,14 +34,14 @@ function wpcf7_file_shortcode_handler( $tag ) {
 	$atts['id'] = $tag->get_id_option();
 	$atts['tabindex'] = $tag->get_option( 'tabindex', 'int', true );
 
-	if ( $tag->is_required() )
+	if ( $tag->is_required() ) {
 		$atts['aria-required'] = 'true';
+	}
 
 	$atts['aria-invalid'] = $validation_error ? 'true' : 'false';
 
 	$atts['type'] = 'file';
 	$atts['name'] = $tag->name;
-	$atts['value'] = '1';
 
 	$atts = wpcf7_format_atts( $atts );
 
@@ -191,22 +193,22 @@ function wpcf7_file_messages( $messages ) {
 	return array_merge( $messages, array(
 		'upload_failed' => array(
 			'description' => __( "Uploading a file fails for any reason", 'contact-form-7' ),
-			'default' => __( 'Failed to upload file.', 'contact-form-7' )
+			'default' => __( "There was an unknown error uploading the file.", 'contact-form-7' )
 		),
 
 		'upload_file_type_invalid' => array(
-			'description' => __( "Uploaded file is not allowed file type", 'contact-form-7' ),
-			'default' => __( 'This file type is not allowed.', 'contact-form-7' )
+			'description' => __( "Uploaded file is not allowed for file type", 'contact-form-7' ),
+			'default' => __( "You are not allowed to upload files of this type.", 'contact-form-7' )
 		),
 
 		'upload_file_too_large' => array(
 			'description' => __( "Uploaded file is too large", 'contact-form-7' ),
-			'default' => __( 'This file is too large.', 'contact-form-7' )
+			'default' => __( "The file is too big.", 'contact-form-7' )
 		),
 
 		'upload_failed_php_error' => array(
 			'description' => __( "Uploading a file fails for PHP error", 'contact-form-7' ),
-			'default' => __( 'Failed to upload file. Error occurred.', 'contact-form-7' )
+			'default' => __( "There was an error uploading the file.", 'contact-form-7' )
 		)
 	) );
 }
@@ -214,9 +216,7 @@ function wpcf7_file_messages( $messages ) {
 
 /* Tag generator */
 
-if ( is_admin() ) {
-	add_action( 'admin_init', 'wpcf7_add_tag_generator_file', 50 );
-}
+add_action( 'wpcf7_admin_init', 'wpcf7_add_tag_generator_file', 50 );
 
 function wpcf7_add_tag_generator_file() {
 	$tag_generator = WPCF7_TagGenerator::get_instance();
@@ -306,8 +306,9 @@ function wpcf7_file_display_warning_message() {
 	$has_tags = (bool) $contact_form->form_scan_shortcode(
 		array( 'type' => array( 'file', 'file*' ) ) );
 
-	if ( ! $has_tags )
+	if ( ! $has_tags ) {
 		return;
+	}
 
 	$uploads_dir = wpcf7_upload_tmp_dir();
 	wpcf7_init_uploads();
@@ -315,7 +316,7 @@ function wpcf7_file_display_warning_message() {
 	if ( ! is_dir( $uploads_dir ) || ! wp_is_writable( $uploads_dir ) ) {
 		$message = sprintf( __( 'This contact form contains file uploading fields, but the temporary folder for the files (%s) does not exist or is not writable. You can create the folder or change its permission manually.', 'contact-form-7' ), $uploads_dir );
 
-		echo '<div class="error"><p>' . esc_html( $message ) . '</p></div>';
+		echo '<div class="notice notice-error is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
 	}
 }
 

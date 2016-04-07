@@ -115,26 +115,24 @@ function wpcf7_date_messages( $messages ) {
 	return array_merge( $messages, array(
 		'invalid_date' => array(
 			'description' => __( "Date format that the sender entered is invalid", 'contact-form-7' ),
-			'default' => __( 'Date format seems invalid.', 'contact-form-7' )
+			'default' => __( "The date format is incorrect.", 'contact-form-7' )
 		),
 
 		'date_too_early' => array(
 			'description' => __( "Date is earlier than minimum limit", 'contact-form-7' ),
-			'default' => __( 'This date is too early.', 'contact-form-7' )
+			'default' => __( "The date is before the earliest one allowed.", 'contact-form-7' )
 		),
 
 		'date_too_late' => array(
 			'description' => __( "Date is later than maximum limit", 'contact-form-7' ),
-			'default' => __( 'This date is too late.', 'contact-form-7' )
+			'default' => __( "The date is after the latest one allowed.", 'contact-form-7' )
 		) ) );
 }
 
 
 /* Tag generator */
 
-if ( is_admin() ) {
-	add_action( 'admin_init', 'wpcf7_add_tag_generator_date', 19 );
-}
+add_action( 'wpcf7_admin_init', 'wpcf7_add_tag_generator_date', 19 );
 
 function wpcf7_add_tag_generator_date() {
 	$tag_generator = WPCF7_TagGenerator::get_instance();

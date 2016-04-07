@@ -118,26 +118,24 @@ function wpcf7_number_messages( $messages ) {
 	return array_merge( $messages, array(
 		'invalid_number' => array(
 			'description' => __( "Number format that the sender entered is invalid", 'contact-form-7' ),
-			'default' => __( 'Number format seems invalid.', 'contact-form-7' )
+			'default' => __( "The number format is invalid.", 'contact-form-7' )
 		),
 
 		'number_too_small' => array(
 			'description' => __( "Number is smaller than minimum limit", 'contact-form-7' ),
-			'default' => __( 'This number is too small.', 'contact-form-7' )
+			'default' => __( "The number is smaller than the minimum allowed.", 'contact-form-7' )
 		),
 
 		'number_too_large' => array(
 			'description' => __( "Number is larger than maximum limit", 'contact-form-7' ),
-			'default' => __( 'This number is too large.', 'contact-form-7' )
+			'default' => __( "The number is larger than the maximum allowed.", 'contact-form-7' )
 		) ) );
 }
 
 
 /* Tag generator */
 
-if ( is_admin() ) {
-	add_action( 'admin_init', 'wpcf7_add_tag_generator_number', 18 );
-}
+add_action( 'wpcf7_admin_init', 'wpcf7_add_tag_generator_number', 18 );
 
 function wpcf7_add_tag_generator_number() {
 	$tag_generator = WPCF7_TagGenerator::get_instance();

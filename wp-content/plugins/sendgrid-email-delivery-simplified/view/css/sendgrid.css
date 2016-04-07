@@ -375,3 +375,11 @@
     width: 95.4%;
   }
 }
+
+.creds {
+  display: none;
+}
+
+#sendgrid-statistics-page .error {
+  width: 1660px;
+}

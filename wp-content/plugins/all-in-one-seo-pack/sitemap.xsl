@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0" 
                 xmlns:html="http://www.w3.org/TR/REC-html40"
+				xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"
 				xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
                 xmlns:sitemap="http://www.sitemaps.org/schemas/sitemap/0.9"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -111,6 +112,15 @@ tr.stripe { background-color:#f7f7f7; }
 										<a href="{$itemURL}">
 											<xsl:value-of select="sitemap:loc"/>
 										</a>
+										<xsl:variable name="thumbURL">
+												<xsl:value-of select="video:video/video:thumbnail_loc"/>
+										</xsl:variable>
+										<xsl:variable name="playURL">
+												<xsl:value-of select="video:video/video:player_loc"/>
+										</xsl:variable>
+										<xsl:if test="$thumbURL != ''">
+											<a href="{$playURL}"><img src="{$thumbURL}" style="max-width:60px;float:right;"/></a>
+										</xsl:if>
 									</td>
 									<td>
 										<xsl:if test="string(number(sitemap:priority))!='NaN'">
@@ -122,6 +132,11 @@ tr.stripe { background-color:#f7f7f7; }
 									</td>
 									<td>
 										<xsl:value-of select="concat(substring(sitemap:lastmod,0,11),concat(' ', substring(sitemap:lastmod,12,5)))"/>
+									</td>
+									<td>
+
+																		
+										
 									</td>
 								</tr>
 							</xsl:for-each>

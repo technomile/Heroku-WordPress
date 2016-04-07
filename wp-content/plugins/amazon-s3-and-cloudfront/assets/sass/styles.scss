@@ -3,12 +3,11 @@
  * AWS wrap
  */
 .aws-main.wrap {
-	&> h2 {
+	& > h1 {
 		float: left;
 	}
 
 	.as3cf-notice, .as3cf-updated, .as3cf-error {
-		margin-bottom: 0;
 		-webkit-box-sizing: border-box;
 		-moz-box-sizing: border-box;
 		box-sizing: border-box;
@@ -21,11 +20,10 @@
 
 	h2.nav-tab-wrapper {
 		float: none;
-		margin-bottom: 0;
+		margin-bottom: 15px;
 		width: 650px;
 		margin-top: 10px;
-		padding-left: 5px;
-		padding-right: 0;
+		padding: 9px 0 0 5px;
 
 		a.nav-tab-active {
 			color: #464646;
@@ -36,6 +34,10 @@
 			-webkit-box-shadow: none;
 			box-shadow: none;
 		}
+	}
+
+	.more-info {
+		white-space: nowrap;
 	}
 
   .error {
@@ -144,12 +146,13 @@
 		}
 	}
 
-  .as3cf-ssl {
-	p.info {
-	  margin-top: 10px;
-	  padding: 0;
+	.as3cf-ssl {
+		margin-top: 10px;
+		p.info {
+			margin-top: 10px;
+			padding: 0;
+		}
 	}
-  }
 
   .as3cf-radio-group {
 	label {
@@ -247,6 +250,7 @@
 
 	.form-table {
 		margin: 0;
+
 		tr {
 			&.as3cf-border-bottom td {
 				border-bottom: 1px solid #ddd;
@@ -264,8 +268,27 @@
 					vertical-align: top;
 					min-width: 120px;
 				}
+
+				.as3cf-notice:last-child {
+					margin-bottom: 0;
+				}
+
+				& > p:first-child {
+					margin-top: 0;
+				}
+			}
+
+			&:first-of-type {
+				td {
+					padding-top: 5px;
+				}
 			}
 		}
+
+		tr.as3cf-bucket-setting .as3cf-defined-in-config {
+			float: none;
+		}
+		
 		h3 {
 			padding: 0;
 			margin: 0;
@@ -275,10 +298,24 @@
 		}
 	}
 
-  .as3cf-active-bucket {
-	font-weight: bold;
-	margin-right: 10px;
-  }
+	.as3cf-active-bucket {
+		font-weight: bold;
+		margin-right: 10px;
+	}
+	.as3cf-view-bucket {
+		color: #444;
+		text-decoration: none;
+		margin-right: 10px;
+		&:hover, &:active {
+			color: #00a0d2;
+		}
+		&:focus {
+			box-shadow: none;
+		}
+		.dashicons-external {
+			margin-top: -2px;
+		}
+	}
 
   .tooltip {
 	position: relative;
@@ -340,6 +377,34 @@
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
 	filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
 	opacity: 1;
+  }
+
+  .as3cf-defined-in-config {
+	background: #ccc;
+	color: #fff;
+	padding: 2px 5px;
+	margin: 0 0 5px 5px;
+	float: right;
+  }
+
+  .as3cf-defined-setting {
+  	color: #bbb;
+
+	label {
+		cursor: default;
+	}
+
+	p .more-info a {
+		color: #bbb;
+	}
+
+	.as3cf-radio-group p {
+		color: #bbb;
+	}
+
+	.as3cf-notice {
+		display: none !important;
+	}
   }
 }
 
@@ -403,11 +468,6 @@
 				vertical-align: top;
 			}
 		}
-	}
-
-	.as3cf-invalid-bucket-name {
-		font-size: 12px;
-		color: #a00;
 	}
 
 	.bucket-actions {
@@ -713,5 +773,25 @@
 .as3cf-bucket-error {
 	span.title {
 		font-weight: bold;
+	}
+}
+
+.as3cf-invalid-bucket-name,
+.as3cf-validation-error {
+	display: block;
+	margin-top: 2px;
+	font-size: 12px;
+	color: #a00;
+}
+
+.as3cf-notice-toggle-content {
+	max-height: 100px;
+	overflow-y: scroll;
+
+	.as3cf-notice-toggle-list {
+		margin-top: 0;
+		margin-left: 0;
+		padding-left: 26px;
+		color: #dc3232;
 	}
 }

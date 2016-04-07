@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Post Data
+ * Post Data.
  *
  * Standardises certain post data on save.
  *
@@ -17,10 +17,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Post_Data {
 
+	/**
+	 * Editing term.
+	 *
+	 * @var object
+	 */
 	private static $editing_term = null;
 
 	/**
-	 * Hook in methods
+	 * Hook in methods.
 	 */
 	public static function init() {
 		add_action( 'set_object_terms', array( __CLASS__, 'set_object_terms' ), 10, 6 );
@@ -39,7 +44,7 @@ class WC_Post_Data {
 	}
 
 	/**
-	 * Delete transients when terms are set
+	 * Delete transients when terms are set.
 	 */
 	public static function set_object_terms( $object_id, $terms, $tt_ids, $taxonomy, $append, $old_tt_ids ) {
 		foreach ( array_merge( $tt_ids, $old_tt_ids ) as $id ) {
@@ -48,7 +53,7 @@ class WC_Post_Data {
 	}
 
 	/**
-	 * When a post status changes
+	 * When a post status changes.
 	 */
 	public static function transition_post_status( $new_status, $old_status, $post ) {
 		if ( ( 'publish' === $new_status || 'publish' === $old_status ) && in_array( $post->post_type, array( 'product', 'product_variation' ) ) ) {
@@ -78,7 +83,7 @@ class WC_Post_Data {
 	}
 
 	/**
-	 * When editing a term, check for product attributes
+	 * When editing a term, check for product attributes.
 	 * @param  id $term_id
 	 * @param  id $tt_id
 	 * @param  string $taxonomy
@@ -92,7 +97,7 @@ class WC_Post_Data {
 	}
 
 	/**
-	 * When a term is edited, check for product attributes and update variations
+	 * When a term is edited, check for product attributes and update variations.
 	 * @param  id $term_id
 	 * @param  id $tt_id
 	 * @param  string $taxonomy
@@ -112,7 +117,7 @@ class WC_Post_Data {
 	}
 
 	/**
-	 * Ensure floats are correctly converted to strings based on PHP locale
+	 * Ensure floats are correctly converted to strings based on PHP locale.
 	 *
 	 * @param  null $check
 	 * @param  int $object_id
@@ -137,7 +142,7 @@ class WC_Post_Data {
 	}
 
 	/**
-	 * Ensure floats are correctly converted to strings based on PHP locale
+	 * Ensure floats are correctly converted to strings based on PHP locale.
 	 *
 	 * @param  null $check
 	 * @param  int $object_id
@@ -162,7 +167,7 @@ class WC_Post_Data {
 	}
 
 	/**
-	 * When setting stock level, ensure the stock status is kept in sync
+	 * When setting stock level, ensure the stock status is kept in sync.
 	 * @param  int $meta_id
 	 * @param  int $object_id
 	 * @param  string $meta_key
@@ -210,12 +215,14 @@ class WC_Post_Data {
 	 * @param int $post_id
 	 */
 	public static function pre_post_update( $post_id ) {
+		$product_type = empty( $_POST['product-type'] ) ? 'simple' : sanitize_title( stripslashes( $_POST['product-type'] ) );
+
 		if ( isset( $_POST['_visibility'] ) ) {
 			if ( update_post_meta( $post_id, '_visibility', wc_clean( $_POST['_visibility'] ) ) ) {
 				do_action( 'woocommerce_product_set_visibility', $post_id, wc_clean( $_POST['_visibility'] ) );
 			}
 		}
-		if ( isset( $_POST['_stock_status'] ) ) {
+		if ( isset( $_POST['_stock_status'] ) && 'variable' !== $product_type ) {
 			wc_update_product_stock_status( $post_id, wc_clean( $_POST['_stock_status'] ) );
 		}
 	}

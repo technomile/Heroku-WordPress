@@ -37,7 +37,9 @@ class WPCF7_ContactFormTemplate {
 
 	public static function mail() {
 		$template = array(
-			'subject' => '[your-subject]',
+			'subject' => sprintf(
+				_x( '%1$s "%2$s"', 'mail subject', 'contact-form-7' ),
+				get_bloginfo( 'name' ), '[your-subject]' ),
 			'sender' => sprintf( '[your-name] <%s>', self::from_email() ),
 			'body' =>
 				sprintf( __( 'From: %s', 'contact-form-7' ),
@@ -61,7 +63,9 @@ class WPCF7_ContactFormTemplate {
 	public static function mail_2() {
 		$template = array(
 			'active' => false,
-			'subject' => '[your-subject]',
+			'subject' => sprintf(
+				_x( '%1$s "%2$s"', 'mail subject', 'contact-form-7' ),
+				get_bloginfo( 'name' ), '[your-subject]' ),
 			'sender' => sprintf( '%s <%s>',
 				get_bloginfo( 'name' ), self::from_email() ),
 			'body' =>
@@ -116,56 +120,56 @@ function wpcf7_messages() {
 			'description'
 				=> __( "Sender's message was sent successfully", 'contact-form-7' ),
 			'default'
-				=> __( 'Your message was sent successfully. Thanks.', 'contact-form-7' )
+				=> __( "Thank you for your message. It has been sent.", 'contact-form-7' )
 		),
 
 		'mail_sent_ng' => array(
 			'description'
-				=> __( "Sender's message was failed to send", 'contact-form-7' ),
+				=> __( "Sender's message failed to send", 'contact-form-7' ),
 			'default'
-				=> __( 'Failed to send your message. Please try later or contact the administrator by another method.', 'contact-form-7' )
+				=> __( "There was an error trying to send your message. Please try again later.", 'contact-form-7' )
 		),
 
 		'validation_error' => array(
 			'description'
 				=> __( "Validation errors occurred", 'contact-form-7' ),
 			'default'
-				=> __( 'Validation errors occurred. Please confirm the fields and submit it again.', 'contact-form-7' )
+				=> __( "One or more fields have an error. Please check and try again.", 'contact-form-7' )
 		),
 
 		'spam' => array(
 			'description'
 				=> __( "Submission was referred to as spam", 'contact-form-7' ),
 			'default'
-				=> __( 'Failed to send your message. Please try later or contact the administrator by another method.', 'contact-form-7' )
+				=> __( "There was an error trying to send your message. Please try again later.", 'contact-form-7' )
 		),
 
 		'accept_terms' => array(
 			'description'
 				=> __( "There are terms that the sender must accept", 'contact-form-7' ),
 			'default'
-				=> __( 'Please accept the terms to proceed.', 'contact-form-7' )
+				=> __( "You must accept the terms and conditions before sending your message.", 'contact-form-7' )
 		),
 
 		'invalid_required' => array(
 			'description'
 				=> __( "There is a field that the sender must fill in", 'contact-form-7' ),
 			'default'
-				=> __( 'Please fill in the required field.', 'contact-form-7' )
+				=> __( "The field is required.", 'contact-form-7' )
 		),
 
 		'invalid_too_long' => array(
 			'description'
-				=> __( "There is a field that the user input is longer than the maximum allowed length", 'contact-form-7' ),
+				=> __( "There is a field with input that is longer than the maximum allowed length", 'contact-form-7' ),
 			'default'
-				=> __( 'This input is too long.', 'contact-form-7' )
+				=> __( "The field is too long.", 'contact-form-7' )
 		),
 
 		'invalid_too_short' => array(
 			'description'
-				=> __( "There is a field that the user input is shorter than the minimum allowed length", 'contact-form-7' ),
+				=> __( "There is a field with input that is shorter than the minimum allowed length", 'contact-form-7' ),
 			'default'
-				=> __( 'This input is too short.', 'contact-form-7' )
+				=> __( "The field is too short.", 'contact-form-7' )
 		)
 	);
 

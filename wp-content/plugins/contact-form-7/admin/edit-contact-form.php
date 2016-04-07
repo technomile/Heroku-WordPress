@@ -31,7 +31,7 @@ function wpcf7_admin_save_button( $post_id ) {
 
 ?><div class="wrap">
 
-<h2><?php
+<h1><?php
 	if ( $post->initial() ) {
 		echo esc_html( __( 'Add New Contact Form', 'contact-form-7' ) );
 	} else {
@@ -41,7 +41,7 @@ function wpcf7_admin_save_button( $post_id ) {
 			echo ' <a href="' . esc_url( menu_page_url( 'wpcf7-new', false ) ) . '" class="add-new-h2">' . esc_html( __( 'Add New', 'contact-form-7' ) ) . '</a>';
 		}
 	}
-?></h2>
+?></h1>
 
 <?php do_action( 'wpcf7_admin_notices' ); ?>
 
@@ -143,9 +143,11 @@ if ( $post ) :
 </div><!-- #delete-action -->
 <?php endif; ?>
 
-<div class="save-contact-form textright">
+<div id="publishing-action">
+	<span class="spinner"></span>
 	<?php wpcf7_admin_save_button( $post_id ); ?>
 </div>
+<div class="clear"></div>
 </div><!-- #major-publishing-actions -->
 </div><!-- #submitpost -->
 </div>

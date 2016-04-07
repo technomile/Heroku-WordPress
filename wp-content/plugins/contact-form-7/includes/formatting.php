@@ -13,8 +13,9 @@ function wpcf7_autop( $pee, $br = 1 ) {
 	$pee = preg_replace( '!(<' . $allblocks . '[^>]*>)!', "\n$1", $pee );
 	$pee = preg_replace( '!(</' . $allblocks . '>)!', "$1\n\n", $pee );
 
-	/* wpcf7: take care of [response] tag */
-	$pee = preg_replace( '!(\[response[^]]*\])!', "\n$1\n\n", $pee );
+	/* wpcf7: take care of [response] and [recaptcha] tag */
+	$pee = preg_replace( '!(\[(?:response|recaptcha)[^]]*\])!',
+		"\n$1\n\n", $pee );
 
 	$pee = str_replace( array( "\r\n", "\r" ), "\n", $pee ); // cross-platform newlines
 
@@ -41,9 +42,11 @@ function wpcf7_autop( $pee, $br = 1 ) {
 	$pee = preg_replace( '!<p>\s*(</?' . $allblocks . '[^>]*>)!', "$1", $pee );
 	$pee = preg_replace( '!(</?' . $allblocks . '[^>]*>)\s*</p>!', "$1", $pee );
 
-	/* wpcf7: take care of [response] tag */
-	$pee = preg_replace( '!<p>\s*(\[response[^]]*\])!', "$1", $pee );
-	$pee = preg_replace( '!(\[response[^]]*\])\s*</p>!', "$1", $pee );
+	/* wpcf7: take care of [response] and [recaptcha] tag */
+	$pee = preg_replace( '!<p>\s*(\[(?:response|recaptcha)[^]]*\])!',
+		"$1", $pee );
+	$pee = preg_replace( '!(\[(?:response|recaptcha)[^]]*\])\s*</p>!',
+		"$1", $pee );
 
 	if ( $br ) {
 		/* wpcf7: add textarea */
@@ -190,6 +193,86 @@ function wpcf7_is_date( $date ) {
 		$result = checkdate( $matches[2], $matches[3], $matches[1] );
 
 	return apply_filters( 'wpcf7_is_date', $result, $date );
+}
+
+function wpcf7_is_mailbox_list( $mailbox_list ) {
+	if ( ! is_array( $mailbox_list ) ) {
+		$mailbox_list = explode( ',', (string) $mailbox_list );
+	}
+
+	$addresses = array();
+
+	foreach ( $mailbox_list as $mailbox ) {
+		if ( ! is_string( $mailbox ) ) {
+			return false;
+		}
+
+		$mailbox = trim( $mailbox );
+
+		if ( preg_match( '/<(.+)>$/', $mailbox, $matches ) ) {
+			$addr_spec = $matches[1];
+		} else {
+			$addr_spec = $mailbox;
+		}
+
+		if ( ! wpcf7_is_email( $addr_spec ) ) {
+			return false;
+		}
+
+		$addresses[] = $addr_spec;
+	}
+
+	return $addresses;
+}
+
+function wpcf7_is_email_in_domain( $email, $domain ) {
+	$email_list = wpcf7_is_mailbox_list( $email );
+
+	foreach ( $email_list as $email ) {
+		$email_domain = substr( $email, strrpos( $email, '@' ) + 1 );
+		$domain_parts = explode( '.', $domain );
+
+		do {
+			$site_domain = implode( '.', $domain_parts );
+
+			if ( $site_domain == $email_domain ) {
+				continue 2;
+			}
+
+			array_shift( $domain_parts );
+		} while ( $domain_parts );
+
+		return false;
+	}
+
+	return true;
+}
+
+function wpcf7_is_email_in_site_domain( $email ) {
+	if ( wpcf7_is_localhost() ) {
+		return true;
+	}
+
+	$site_domain = strtolower( $_SERVER['SERVER_NAME'] );
+
+	if ( preg_match( '/^[0-9.]+$/', $site_domain ) ) { // 123.456.789.012
+		return true;
+	}
+
+	if ( wpcf7_is_email_in_domain( $email, $site_domain ) ) {
+		return true;
+	}
+
+	if ( preg_match( '%^https?://([^/]+)%', home_url(), $matches ) ) {
+		$site_domain = strtolower( $matches[1] );
+
+		if ( $site_domain != strtolower( $_SERVER['SERVER_NAME'] )
+		&& wpcf7_is_email_in_domain( $email, $site_domain ) ) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 function wpcf7_antiscript_file_name( $filename ) {

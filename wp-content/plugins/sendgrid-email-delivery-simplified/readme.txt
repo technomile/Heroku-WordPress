@@ -3,8 +3,8 @@ Contributors: team-rs
 Donate link: http://sendgrid.com/
 Tags: email, email reliability, email templates, sendgrid, smtp, transactional email, wp_mail,email infrastructure, email marketing, marketing email, deliverability, email deliverability, email delivery, email server, mail server, email integration, cloud email
 Requires at least: 3.3
-Tested up to: 4.1.1
-Stable tag: 1.5.1
+Tested up to: 4.4
+Stable tag: 1.7.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,11 +16,15 @@ SendGrid's cloud-based email infrastructure relieves businesses of the cost and 
 
 The SendGrid plugin uses SMTP or API integration to send outgoing emails from your WordPress installation. It replaces the wp_mail function included with WordPress. 
 
-First, you need to have PHP-curl extension enabled. To send emails through SMTP you need to install also the 'Swift Mailer' plugin. After installing 'Swift Mailer' plugin, you must have PHP-short_open_tag setting enabled in your php.ini file.
+First, you need to have PHP-curl extension enabled. To send emails through SMTP you need to install also the 'Swift Mailer' plugin. 
 
 To have the SendGrid plugin running after you have activated it, go to the plugin's settings page and set the SendGrid credentials, and how your email will be sent - either through SMTP or API.
 
 You can also set default values for the "Name", "Sending Address" and the "Reply Address", so that you don't need to set these headers every time you want to send an email from your application.
+
+You can set the template ID to be used in all your emails on the settings page or you can set it for each email in headers.
+
+You can have an individual email sent to each recipient by setting x-smtpapi-to in headers: `'x-smtpapi-to: address1@sendgrid.com,address2@sendgrid.com'`. Note: when using SMTP method you need to have also the `to` address set(this may be dummy data since will be overwritten with the addresses from x-smtpapi-to) in order to be able to send emails. 
 
 Emails are tracked and automatically tagged for statistics within the SendGrid Dashboard. You can also add general tags to every email sent, as well as particular tags based on selected emails defined by your requirements. 
 
@@ -59,6 +63,11 @@ $headers = array();
 $headers[] = 'From: Me Myself <me@example.net>';
 $headers[] = 'Cc: address4@sendgrid.com';
 $headers[] = 'Bcc: address5@sendgrid.com';
+$headers[] = 'unique-args:customer=mycustomer;location=mylocation'
+$headers[] = 'categories: category1, category2'
+$headers[] = 'template: templateID'
+$headers[] = 'substitutions:name=name1,name2;subject=subject1,subject2'
+$headers[] = 'x-smtpapi-to: address1@sendgrid.com,address2@sendgrid.com'
  
 $attachments = array('/tmp/img1.jpg', '/tmp/img2.jpg');
  
@@ -70,9 +79,10 @@ remove_filter('wp_mail_content_type', 'set_html_content_type');`
 == Installation ==
 
 Requirements:
+
 1. PHP version >= 5.3.0
-2. You need to have PHP-curl extension enabled.
-3. To send emails through SMTP you need to install also the 'Swift Mailer' plugin. After installing 'Swift Mailer' plugin, you must have PHP-short_open_tag setting enabled in your php.ini file.
+2. You need to have PHP-curl extension enabled in order to send attachments.
+3. To send emails through SMTP you need to install also the 'Swift Mailer' plugin.
 
 To upload the SendGrid Plugin .ZIP file:
 
@@ -89,11 +99,13 @@ To auto install the SendGrid Plugin from the WordPress admin:
 4. Create a SendGrid account at <a href="http://sendgrid.com/partner/wordpress" target="_blank">http://sendgrid.com/partner/wordpress</a>
 5. Navigate to "Settings" -> "SendGrid Settings" and enter your SendGrid credentials
 
-Define SendGrid settings as global variables (wp-config.php):
+SendGrid settings can optionally be defined as global variables (wp-config.php):
 
-1. Set credentials (both need to be set in order to get credentials from variables and not from the database):
+1. Set credentials (You can use credentials or Api key. If using credentials, both need to be set in order to get credentials from variables and not from the database. If using API key you need to make sure you set the Mail Send permissions to FULL ACCESS, Stats to READ ACCESS and Template Engine to READ or FULL ACCESS when you created the api key on SendGrid side, so you can send emails and see statistics on wordpress):
+    * Auth method ('apikey' or 'credentials'): define('SENDGRID_AUTH_METHOD', 'apikey');
     * Username: define('SENDGRID_USERNAME', 'sendgrid_username');
     * Password: define('SENDGRID_PASSWORD', 'sendgrid_password');
+    * API key:  define('SENDGRID_API_KEY', 'sendgrid_api_key');
 
 2. Set email related settings:
     * Send method ('api' or 'smtp'): define('SENDGRID_SEND_METHOD', 'api');
@@ -101,6 +113,8 @@ Define SendGrid settings as global variables (wp-config.php):
     * From email: define('SENDGRID_FROM_EMAIL', 'from_email@example.com');
     * Reply to email: define('SENDGRID_REPLY_TO', 'reply_to@example.com');
     * Categories: define('SENDGRID_CATEGORIES', 'category_1,category_2');
+    * Template: define('SENDGRID_TEMPLATE', 'templateID');
+    * Content-type: define('SENDGRID_CONTENT_TYPE', 'html');
 
 == Frequently asked questions ==
 
@@ -112,14 +126,75 @@ Create a SendGrid account at <a href="http://sendgrid.com/partner/wordpress" tar
 
 1. Go to Admin Panel, section Plugins and activate the SendGrid plugin. If you want to send emails through SMTP you need to install also the 'Swift Mailer' plugin. 
 2. After activation "Settings" link will appear. 
-3. Go to settings page and provide your SendGrid credentials. On this page you can set also the default "Name", "Sending Address" and "Reply Address". 
-4. If you provide valid credentials, a form which can be used to send test emails will appear. Here you can test the plugin sending some emails. 
-5. Header provided in the send test email form. 
-6. If you click in the right corner from the top of the page on the "Help" button, a popup window with more information will appear. 
-7. Select the time interval for which you want to see SendGrid statistics and charts.
+3. Go to settings page and provide your SendGrid credentials by choosing the authentication method which default is Api Key. On this page you can set also the default "Name", "Sending Address" and "Reply Address". 
+4. If you want to use your username and password for authentication, switch to Username&Password authentication method.
+5. If you provide valid credentials, a form which can be used to send test emails will appear. Here you can test the plugin sending some emails. 
+6. Header provided in the send test email form. 
+7. If you click in the right corner from the top of the page on the "Help" button, a popup window with more information will appear. 
+8. Select the time interval for which you want to see SendGrid statistics and charts.
+9. Now you are able to configure port number when using SMTP method.
+10. You are able to configure what template to use for sending emails.
+11. You are able to configure categories for which you would like to see your stats. 
+12. You can use substitutions for emails.
 
 == Changelog ==
 
+= 1.7.6 =
+* Updated validation for email addresses in the headers field of the send test email form
+* Add ability to have and individual email sent to each recipient by setting x-smtpapi-to in headers
+= 1.7.5 =
+* Fixed an issue with the reset password email from Wordpress
+* Updated validation for email addresses
+* Fixed an issue where some errors were not displayed on the settings page
+* Add substitutions functionality
+= 1.7.4 =
+* Fixed some failing requests during API Key checks
+* Fixed an error that appeared on fresh installs regarding invalid port setting
+= 1.7.3 =
+* Add global config for content-type
+* Validate send_method and port set in config file
+* Be able to define categories for which you would like to see your stats
+= 1.7.2 =
+* Check your credentials after updating, you might need to reenter your credentials
+* Fixed mcrypt library depencency issue
+= 1.7.1 =
+* BREAKING CHANGE: Don't make update if you don't have mcrypt php library enabled
+* Fixed a timeout issue from version 1.7.0
+= 1.7.0 = 
+* BREAKING CHANGE : wp_mail() now returns only true/false to mirror the return values of the original wp_mail(). If you have written something custom in your function.php that depends on the old behavior of the wp_mail() you should check your code to make sure it will still work right with boolean as return value instead of array
+* BREAKING CHANGE: Don't make update if you don't have mcrypt php library enabled
+* Added the possibility of setting the api key or username/password empty
+* Added the possibility of selecting the authentication method
+* Removed dependency on cURL, now all API requests are made through Wordpress
+* Sending mail via SMTP now supports API keys
+* Security improvements
+* Refactored old code
+= 1.6.9 =
+* Add categories in headers, add errror message on statistics page if API key is not having permissions
+= 1.6.8 =
+* Update api_key validation
+= 1.6.7 =
+* Ability to use email templates, fix category statistics, display sender test form if we only have sending errors
+= 1.6.6 =
+* Remove $plugin variable to avoid conflict with other plugins
+= 1.6.5 =
+* Add configurable port number for SMTP method, Specify full path for sendgrid php library, Fix special characters and new lines issues
+= 1.6.4 =
+* Add support for toName in API method, Add required Text Domain
+= 1.6.3 =
+* Update Smtp class name to avoid conflicts
+= 1.6.2 =
+* Add Api Keys for authentication, use the last version of Sendgrid library: https://github.com/sendgrid/sendgrid-php/releases/tag/v3.2.0
+= 1.6.1 =
+* Add unique arguments 
+= 1.6 =
+* Fix setTo method in SMTP option, update documentation, add link to SendGrid portal
+= 1.5.4 =
+* Updated the plugin to use the last version of Sendgrid library: https://github.com/sendgrid/sendgrid-php/releases/tag/v3.0.0
+= 1.5.3 =
+* Fix attachments issue
+= 1.5.2 =
+* Fix urlencoded username issue
 = 1.5.1 =
 * Fix wp_remote issue
 = 1.5.0 =
@@ -161,6 +236,62 @@ Create a SendGrid account at <a href="http://sendgrid.com/partner/wordpress" tar
 
 == Upgrade notice ==
 
+= 1.7.6 =
+* Updated validation for email addresses in the headers field of the send test email form
+* Add ability to have and individual email sent to each recipient by setting x-smtpapi-to in headers
+= 1.7.5 =
+* Fixed an issue with the reset password email from Wordpress
+* Updated validation for email addresses
+* Fixed an issue where some errors were not displayed on the settings page
+* Add substitutions functionality
+= 1.7.4 =
+* Fixed some failing requests during API Key checks
+* Fixed an error that appeared on fresh installs regarding invalid port setting
+= 1.7.3 =
+* Add global config for content-type
+* Validate send_method and port set in config file
+* Be able to define categories for which you would like to see your stats
+= 1.7.2 =
+* Check your credentials after updating, you might need to reenter your credentials
+* Fixed mcrypt library depencency issue
+= 1.7.1 =
+* BREAKING CHANGE: Don't make update if you don't have mcrypt php library enabled
+* Fixed a timeout issue from version 1.7.0
+= 1.7.0 = 
+* BREAKING CHANGE : wp_mail() now returns only true/false to mirror the return values of the original wp_mail(). If you have written something custom in your function.php that depends on the old behavior of the wp_mail() you should check your code to make sure it will still work right with boolean as return value instead of array
+* BREAKING CHANGE: Don't make update if you don't have mcrypt php library enabled
+* Added the possibility of setting the api key or username/password empty
+* Added the possibility of selecting the authentication method
+* Removed dependency on cURL, now all API requests are made through Wordpress
+* Sending mail via SMTP now supports API keys
+* Security improvements
+* Refactored old code
+= 1.6.9 =
+* Add categories in headers, add errror message on statistics page if API key is not having permissions
+= 1.6.8 =
+* Update api_key validation
+= 1.6.7 =
+* Ability to use email templates, fix category statistics, display sender test form if we only have sending errors
+= 1.6.6 =
+* Remove $plugin variable to avoid conflict with other plugins
+= 1.6.5 =
+* Add configurable port number for SMTP method, Specify full path for sendgrid php library, Fix special characters and new lines issues
+= 1.6.4 =
+* Add support for toName in API method, Add required Text Domain
+= 1.6.3 =
+* Update Smtp class name to avoid conflicts
+= 1.6.2 =
+* Add Api Keys for authentication, use the last version of Sendgrid library: https://github.com/sendgrid/sendgrid-php/releases/tag/v3.2.0
+= 1.6.1 =
+* Add unique arguments 
+= 1.6 =
+* Fix setTo method in SMTP option, update documentation, add link to SendGrid portal
+= 1.5.4 =
+* Updated the plugin to use the last version of Sendgrid library: https://github.com/sendgrid/sendgrid-php/releases/tag/v3.0.0
+= 1.5.3 =
+* Fix attachments issue
+= 1.5.2 =
+* Fix urlencoded username issue
 = 1.5.1 =
 * Fix wp_remote issue
 = 1.5.0 =

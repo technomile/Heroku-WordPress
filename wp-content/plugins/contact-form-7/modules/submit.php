@@ -40,9 +40,7 @@ function wpcf7_submit_shortcode_handler( $tag ) {
 
 /* Tag generator */
 
-if ( is_admin() ) {
-	add_action( 'admin_init', 'wpcf7_add_tag_generator_submit', 55 );
-}
+add_action( 'wpcf7_admin_init', 'wpcf7_add_tag_generator_submit', 55 );
 
 function wpcf7_add_tag_generator_submit() {
 	$tag_generator = WPCF7_TagGenerator::get_instance();

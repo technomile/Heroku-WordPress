@@ -288,7 +288,7 @@
 }
 
 .cfs_input .cfs_loop_toggle:before {
-    content: '\f111';
+    content: '\f177';
 }
 
 .cfs_loop .loop_wrapper {
@@ -374,6 +374,10 @@
 
 .cfs-tab-content.active {
     display: block;
+}
+
+.cfs-tab-notes {
+    padding: 10px;
 }
 
 /*---------------------------------------------------------------------------------------------

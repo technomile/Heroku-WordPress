@@ -3,10 +3,32 @@ use Aws\Common\Aws;
 
 class Amazon_Web_Services extends AWS_Plugin_Base {
 
-	private $plugin_title, $plugin_menu_title, $plugin_permission, $client;
+	/**
+	 * @var string
+	 */
+	private $plugin_title;
+
+	/**
+	 * @var string
+	 */
+	private $plugin_menu_title;
+
+	/**
+	 * @var string
+	 */
+	private $plugin_permission;
+
+	/**
+	 * @var
+	 */
+	private $client;
 
 	const SETTINGS_KEY = 'aws_settings';
+	const SETTINGS_CONSTANT = 'AWS_SETTINGS';
 
+	/**
+	 * @param string $plugin_file_path
+	 */
 	function __construct( $plugin_file_path ) {
 		$this->plugin_slug = 'amazon-web-services';
 
@@ -75,13 +97,13 @@ class Amazon_Web_Services extends AWS_Plugin_Base {
 	/**
 	 * Add sub page to the AWS menu item
 	 *
-	 * @param        $page_title
-	 * @param        $menu_title
-	 * @param        $capability
-	 * @param        $menu_slug
-	 * @param string $function
+	 * @param string       $page_title
+	 * @param string       $menu_title
+	 * @param string       $capability
+	 * @param string       $menu_slug
+	 * @param string|array $function
 	 *
-	 * @return bool|string
+	 * @return string|false
 	 */
 	function add_page( $page_title, $menu_title, $capability, $menu_slug, $function = '' ) {
 		return add_submenu_page( $this->plugin_slug, $page_title, $menu_title, $capability, $menu_slug, $function );
@@ -91,21 +113,19 @@ class Amazon_Web_Services extends AWS_Plugin_Base {
 	 * Load styles for the AWS menu item
 	 */
 	function enqueue_menu_styles() {
-		$version = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? time() : $this->plugin_version;
-		$src     = plugins_url( 'assets/css/global.css', $this->plugin_file_path );
-		wp_enqueue_style( 'aws-global-styles', $src, array(), $version );
+		$src = plugins_url( 'assets/css/global.css', $this->plugin_file_path );
+		wp_enqueue_style( 'aws-global-styles', $src, array(), $this->get_asset_version() );
 	}
 
 	/**
 	 * Plugin loading enqueue scripts and styles
 	 */
 	function plugin_load() {
-		$version = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? time() : $this->plugin_version;
+		$version = $this->get_asset_version();
+		$suffix  = $this->get_asset_suffix();
 
 		$src = plugins_url( 'assets/css/styles.css', $this->plugin_file_path );
 		wp_enqueue_style( 'aws-styles', $src, array(), $version );
-
-		$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
 
 		$src = plugins_url( 'assets/js/script' . $suffix . '.js', $this->plugin_file_path );
 		wp_enqueue_script( 'aws-script', $src, array( 'jquery' ), $version, true );
@@ -204,6 +224,15 @@ class Amazon_Web_Services extends AWS_Plugin_Base {
 	}
 
 	/**
+	 * Check if we are using the prefixed constants for the AWS access credentials
+	 *
+	 * @return bool
+	 */
+	function are_prefixed_key_constants_set() {
+		return defined( 'DBI_AWS_ACCESS_KEY_ID' ) && defined( 'DBI_AWS_SECRET_ACCESS_KEY' );
+	}
+
+	/**
 	 * Check if access keys are defined either by constants or database
 	 *
 	 * @return bool
@@ -218,8 +247,10 @@ class Amazon_Web_Services extends AWS_Plugin_Base {
 	 * @return string
 	 */
 	function get_access_key_id() {
-		if ( $this->are_key_constants_set() ) {
-			return AWS_ACCESS_KEY_ID;
+		if ( defined( 'DBI_AWS_ACCESS_KEY_ID' ) ) {
+			return DBI_AWS_ACCESS_KEY_ID;
+		} elseif ( defined( 'AWS_ACCESS_KEY_ID' ) ) {
+			return AWS_ACCESS_KEY_ID; // Deprecated
 		}
 
 		return $this->get_setting( 'access_key_id' );
@@ -231,8 +262,10 @@ class Amazon_Web_Services extends AWS_Plugin_Base {
 	 * @return string
 	 */
 	function get_secret_access_key() {
-		if ( $this->are_key_constants_set() ) {
-			return AWS_SECRET_ACCESS_KEY;
+		if ( defined( 'DBI_AWS_SECRET_ACCESS_KEY' ) ) {
+			return DBI_AWS_SECRET_ACCESS_KEY;
+		} elseif ( defined( 'AWS_SECRET_ACCESS_KEY' ) ) {
+			return AWS_SECRET_ACCESS_KEY; // Deprecated
 		}
 
 		return $this->get_setting( 'secret_access_key' );
@@ -286,7 +319,7 @@ class Amazon_Web_Services extends AWS_Plugin_Base {
 	/**
 	 * Get a nonced, network safe install URL for a plugin
 	 *
-	 * @param $slug Plugin slug
+	 * @param string $slug Plugin slug
 	 *
 	 * @return string
 	 */
@@ -297,7 +330,7 @@ class Amazon_Web_Services extends AWS_Plugin_Base {
 	/**
 	 * Get a nonced, network safe activation URL for a plugin
 	 *
-	 * @param $slug Plugin slug
+	 * @param string $slug Plugin slug
 	 *
 	 * @return string
 	 */
@@ -319,17 +352,76 @@ class Amazon_Web_Services extends AWS_Plugin_Base {
 	/**
 	 * Get all defined addons that use this plugin
 	 *
+	 * @param bool $unfiltered
+	 *
 	 * @return array
 	 */
-	function get_addons() {
+	function get_addons( $unfiltered = false ) {
 		$addons = array(
 			'amazon-s3-and-cloudfront' => array(
-				'title'   => __( 'WP Offload S3', 'amazon-web-services' ),
+				'title'   => __( 'WP Offload S3 Lite', 'amazon-web-services' ),
 				'url'     => 'https://wordpress.org/plugins/amazon-s3-and-cloudfront/',
 				'install' => true,
-				'addons'  => array(),
+			),
+			'amazon-s3-and-cloudfront-pro' => array(
+				'title'  => __( 'WP Offload S3', 'amazon-web-services' ),
+				'url'    => 'https://deliciousbrains.com/wp-offload-s3/',
+				'addons' => array(
+					'amazon-s3-and-cloudfront-assets'               => array(
+						'title' => __( 'Assets', 'amazon-web-services' ),
+						'url'   => 'https://deliciousbrains.com/wp-offload-s3/doc/assets-addon/',
+						'label' => __( 'Feature', 'amazon-web-services' ),
+						'icon'  => true,
+					),
+					'amazon-s3-and-cloudfront-woocommerce'          => array(
+						'title'                  => __( 'WooCommerce', 'amazon-web-services' ),
+						'url'                    => 'https://deliciousbrains.com/wp-offload-s3/doc/woocommerce-addon/',
+						'label'                  => __( 'Integration', 'amazon-web-services' ),
+						'parent_plugin_basename' => 'woocommerce/woocommerce.php',
+						'icon'                   => true,
+					),
+					'amazon-s3-and-cloudfront-edd'                  => array(
+						'title'                  => __( 'Easy Digital Downloads', 'amazon-web-services' ),
+						'url'                    => 'https://deliciousbrains.com/wp-offload-s3/doc/edd-addon/',
+						'label'                  => __( 'Integration', 'amazon-web-services' ),
+						'parent_plugin_basename' => 'easy-digital-downloads/easy-digital-downloads.php',
+						'icon'                   => true,
+					),
+					'amazon-s3-and-cloudfront-wpml'                 => array(
+						'title'                  => __( 'WPML', 'amazon-web-services' ),
+						'url'                    => 'https://deliciousbrains.com/wp-offload-s3/doc/wpml-addon/',
+						'label'                  => __( 'Integration', 'amazon-web-services' ),
+						'parent_plugin_basename' => 'wpml-media/plugin.php',
+						'icon'                   => true,
+					),
+					'amazon-s3-and-cloudfront-meta-slider'          => array(
+						'title'                  => __( 'Meta Slider', 'amazon-web-services' ),
+						'url'                    => 'https://deliciousbrains.com/wp-offload-s3/doc/meta-slider-addon/',
+						'label'                  => __( 'Integration', 'amazon-web-services' ),
+						'parent_plugin_basename' => 'ml-slider/ml-slider.php',
+						'icon'                   => true,
+					),
+					'amazon-s3-and-cloudfront-enable-media-replace' => array(
+						'title'                  => __( 'Enable Media Replace', 'amazon-web-services' ),
+						'url'                    => 'https://deliciousbrains.com/wp-offload-s3/doc/enable-media-replace-addon/',
+						'label'                  => __( 'Integration', 'amazon-web-services' ),
+						'parent_plugin_basename' => 'enable-media-replace/enable-media-replace.php',
+						'icon'                   => true,
+					),
+					'amazon-s3-and-cloudfront-acf-image-crop' => array(
+						'title'                  => __( 'ACF Image Crop', 'amazon-web-services' ),
+						'url'                    => 'https://deliciousbrains.com/wp-offload-s3/doc/acf-image-crop-addon/',
+						'label'                  => __( 'Integration', 'amazon-web-services' ),
+						'parent_plugin_basename' => 'acf-image-crop-add-on/acf-image-crop.php',
+						'icon'                   => true,
+					),
+				),
 			),
 		);
+
+		if ( $unfiltered ) {
+			return $addons;
+		}
 
 		$addons = apply_filters( 'aws_addons', $addons );
 
@@ -344,6 +436,10 @@ class Amazon_Web_Services extends AWS_Plugin_Base {
 	function render_addons( $addons = null ) {
 		if ( is_null( $addons ) ) {
 			$addons = $this->get_addons();
+		}
+
+		if ( class_exists( 'Amazon_S3_And_CloudFront_Pro' ) ) {
+			unset( $addons['amazon-s3-and-cloudfront'] );
 		}
 
 		foreach ( $addons as $slug => $addon ) {
@@ -381,6 +477,19 @@ class Amazon_Web_Services extends AWS_Plugin_Base {
 				echo '<li><a href="' . esc_url( $link['url'] ) . '">' . esc_html( $link['text'] ) . '</a></li>';
 			}
 		}
+	}
+
+	/**
+	 * Get the URL of the addon's icon
+	 *
+	 * @param string $slug
+	 *
+	 * @return string
+	 */
+	function get_addon_icon_url( $slug ) {
+		$filename = str_replace( 'amazon-s3-and-cloudfront-', '', $slug );
+		$filename = 'icon-' . $filename . '.svg';
+		echo plugins_url( 'assets/img/' . $filename, $this->plugin_file_path );
 	}
 
 	/**

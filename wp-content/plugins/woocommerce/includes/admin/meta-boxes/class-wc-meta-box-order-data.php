@@ -15,26 +15,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WC_Meta_Box_Order_Data Class
+ * WC_Meta_Box_Order_Data Class.
  */
 class WC_Meta_Box_Order_Data {
 
 	/**
-	 * Billing fields
+	 * Billing fields.
 	 *
 	 * @var array
 	 */
 	protected static $billing_fields = array();
 
 	/**
-	 * Shipping fields
+	 * Shipping fields.
 	 *
 	 * @var array
 	 */
 	protected static $shipping_fields = array();
 
 	/**
-	 * Init billing and shipping fields we display + save
+	 * Init billing and shipping fields we display + save.
 	 */
 	public static function init_address_fields() {
 
@@ -132,7 +132,9 @@ class WC_Meta_Box_Order_Data {
 	}
 
 	/**
-	 * Output the metabox
+	 * Output the metabox.
+	 *
+	 * @param WP_Post $post
 	 */
 	public static function output( $post ) {
 		global $theorder;
@@ -164,7 +166,7 @@ class WC_Meta_Box_Order_Data {
 			<input name="post_status" type="hidden" value="<?php echo esc_attr( $post->post_status ); ?>" />
 			<div id="order_data" class="panel">
 
-				<h2><?php echo esc_html( sprintf( __( '%s %s details', 'woocommerce' ), $order_type_object->labels->singular_name, $order->get_order_number() ) ); ?></h2>
+				<h2><?php echo esc_html( sprintf( _x( '%s #%s details', 'Order #123 details', 'woocommerce' ), $order_type_object->labels->singular_name, $order->get_order_number() ) ); ?></h2>
 				<p class="order_number"><?php
 
 					if ( $payment_method ) {
@@ -193,7 +195,14 @@ class WC_Meta_Box_Order_Data {
 							<input type="text" class="date-picker" name="order_date" id="order_date" maxlength="10" value="<?php echo date_i18n( 'Y-m-d', strtotime( $post->post_date ) ); ?>" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" />@<input type="text" class="hour" placeholder="<?php esc_attr_e( 'h', 'woocommerce' ) ?>" name="order_date_hour" id="order_date_hour" maxlength="2" size="2" value="<?php echo date_i18n( 'H', strtotime( $post->post_date ) ); ?>" pattern="\-?\d+(\.\d{0,})?" />:<input type="text" class="minute" placeholder="<?php esc_attr_e( 'm', 'woocommerce' ) ?>" name="order_date_minute" id="order_date_minute" maxlength="2" size="2" value="<?php echo date_i18n( 'i', strtotime( $post->post_date ) ); ?>" pattern="\-?\d+(\.\d{0,})?" />
 						</p>
 
-						<p class="form-field form-field-wide"><label for="order_status"><?php _e( 'Order status:', 'woocommerce' ) ?></label>
+						<p class="form-field form-field-wide wc-order-status"><label for="order_status"><?php _e( 'Order status:', 'woocommerce' ) ?> <?php
+							if ( $order->has_status( 'pending' ) ) {
+								printf( '<a href="%s">%s &rarr;</a>',
+									esc_url( $order->get_checkout_payment_url() ),
+									__( 'Customer payment page', 'woocommerce' )
+								);
+							}
+						?></label>
 						<select id="order_status" name="order_status" class="wc-enhanced-select">
 							<?php
 								$statuses = wc_get_order_statuses();
@@ -222,7 +231,7 @@ class WC_Meta_Box_Order_Data {
 							if ( ! empty( $order->customer_user ) ) {
 								$user_id     = absint( $order->customer_user );
 								$user        = get_user_by( 'id', $user_id );
-								$user_string = esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email );
+								$user_string = esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email ) . ')';
 							}
 							?>
 							<input type="hidden" class="wc-customer-search" id="customer_user" name="customer_user" data-placeholder="<?php esc_attr_e( 'Guest', 'woocommerce' ); ?>" data-selected="<?php echo htmlspecialchars( $user_string ); ?>" value="<?php echo $user_id; ?>" data-allow_clear="true" />
@@ -393,7 +402,10 @@ class WC_Meta_Box_Order_Data {
 	}
 
 	/**
-	 * Save meta box data
+	 * Save meta box data.
+	 *
+	 * @param int $post_id
+	 * @param WP_Post $post
 	 */
 	public static function save( $post_id, $post ) {
 		global $wpdb;
@@ -450,16 +462,15 @@ class WC_Meta_Box_Order_Data {
 			$date = strtotime( $_POST['order_date'] . ' ' . (int) $_POST['order_date_hour'] . ':' . (int) $_POST['order_date_minute'] . ':00' );
 		}
 
+		$date = date_i18n( 'Y-m-d H:i:s', $date );
+
+		$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", $date, get_gmt_from_date( $date ), $post_id ) );
+
 		// Order data saved, now get it so we can manipulate status
 		$order = wc_get_order( $post_id );
 
 		// Order status
 		$order->update_status( $_POST['order_status'], '', true );
-
-		// Finally, set the date
-		$date = date_i18n( 'Y-m-d H:i:s', $date );
-
-		$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", $date, get_gmt_from_date( $date ), $post_id ) );
 
 		wc_delete_shop_order_transients( $post_id );
 	}

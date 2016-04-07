@@ -144,7 +144,7 @@ function wpcf7_text_validation_filter( $result, $tag ) {
 			$maxlength = $minlength = null;
 		}
 
-		$code_units = wpcf7_count_code_units( $value );
+		$code_units = wpcf7_count_code_units( stripslashes( $value ) );
 
 		if ( false !== $code_units ) {
 			if ( $maxlength && $maxlength < $code_units ) {
@@ -167,26 +167,24 @@ function wpcf7_text_messages( $messages ) {
 	return array_merge( $messages, array(
 		'invalid_email' => array(
 			'description' => __( "Email address that the sender entered is invalid", 'contact-form-7' ),
-			'default' => __( 'Email address seems invalid.', 'contact-form-7' )
+			'default' => __( "The e-mail address entered is invalid.", 'contact-form-7' )
 		),
 
 		'invalid_url' => array(
 			'description' => __( "URL that the sender entered is invalid", 'contact-form-7' ),
-			'default' => __( 'URL seems invalid.', 'contact-form-7' )
+			'default' => __( "The URL is invalid.", 'contact-form-7' )
 		),
 
 		'invalid_tel' => array(
 			'description' => __( "Telephone number that the sender entered is invalid", 'contact-form-7' ),
-			'default' => __( 'Telephone number seems invalid.', 'contact-form-7' )
+			'default' => __( "The telephone number is invalid.", 'contact-form-7' )
 		) ) );
 }
 
 
 /* Tag generator */
 
-if ( is_admin() ) {
-	add_action( 'admin_init', 'wpcf7_add_tag_generator_text', 15 );
-}
+add_action( 'wpcf7_admin_init', 'wpcf7_add_tag_generator_text', 15 );
 
 function wpcf7_add_tag_generator_text() {
 	$tag_generator = WPCF7_TagGenerator::get_instance();

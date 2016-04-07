@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WooCommerce Shipping Rate Class
+ * WooCommerce Shipping Rate Class.
  *
  * Simple Class for storing rates.
  *
@@ -33,7 +33,7 @@ class WC_Shipping_Rate {
 	public $method_id = '';
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 *
 	 * @param string $id
 	 * @param string $label
@@ -50,7 +50,7 @@ class WC_Shipping_Rate {
 	}
 
 	/**
-	 * get_shipping_tax function.
+	 * Get shipping tax.
 	 *
 	 * @return array
 	 */
@@ -60,5 +60,14 @@ class WC_Shipping_Rate {
 			$taxes = array_sum( $this->taxes );
 		}
 		return apply_filters( 'woocommerce_get_shipping_tax', $taxes, $this );
+	}
+
+	/**
+	 * Get label.
+	 *
+	 * @return string
+	 */
+	public function get_label() {
+		return apply_filters( 'woocommerce_shipping_rate_label', $this->label );
 	}
 }

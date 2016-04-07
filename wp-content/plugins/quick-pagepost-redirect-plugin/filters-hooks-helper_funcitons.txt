@@ -14,8 +14,8 @@ You can use the following helper functions:
 * 	$attrs = array(
 * 		'request_url'		=> '/some-url/',
 * 		'destination_url'	=> '/new-url/',
-* 		'newwindow'			=> 1,
-* 		'nofollow'			=> 0,
+* 		'newwindow'		=> 1,
+* 		'nofollow'		=> 0,
 * 	);
 * 	$mytest_add = qppr_create_quick_redirect( $attrs );
 *
@@ -64,7 +64,33 @@ You can use the following helper functions:
 == Hooks & Filters ==
 You can use the following action and filter hooks with this plugin:
 Remember to change funciton names to your own custom unique names if using the examples.
-
+*******************
+* filter: 	qppr_filter_quickredirect_index
+* related:	Quick Redirects
+* desc: 	Adjust the index (redirect URL) before the final redirect happens.
+* arg1: 	index URL. 
+* arg2: 	querysting data.
+* return: 	return the final redirect URL.
+* examples:	//below example does not redirect a URL if there is Query String Data with it
+*		add_filter( 'qppr_filter_quickredirect_index', 'mycustom_qppr_filter_quickredirect_index' );
+*		function mycustom_qppr_filter_quickredirect_index( $index, $querydata ){
+*			if( $querydata != '' ){
+*				return '';
+*			}
+*			return $index;
+*		}
+*******************
+* filter: 	appip_metabox_context_filter
+* related:	Individual Redirects
+* desc: 	Adjust the context for the individual redirect metabox.
+* arg1: 	string for context. 
+* return: 	should be 'normal', 'advanced', or 'side' (plugin default is 'normal')
+*******************
+* filter: 	appip_metabox_priority_filter
+* related:	Individual Redirects
+* desc: 	Adjust the context for the individual redirect metabox.
+* arg1: 	string for priority.
+* return: 	should be 'high', 'core', 'default' or 'low' (plugin default is 'high')
 *******************
 * filter: 	qppr_allowed_protocols
 * related:	Quick Redirects and Individual Redirects

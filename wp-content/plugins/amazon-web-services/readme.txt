@@ -1,9 +1,8 @@
 === Amazon Web Services ===
-Contributors: bradt
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5VPMGLLK94XJC
+Contributors: bradt, deliciousbrains
 Tags: amazon, amazon web services
-Requires at least: 3.5
-Tested up to: 4.3
+Requires at least: 3.7
+Tested up to: 4.5
 Stable tag: trunk
 License: GPLv3
 
@@ -31,6 +30,23 @@ This plugin is required by other plugins, which uses its libraries and its setti
 1. Settings screen
 
 == Changelog ==
+
+= 0.3.5 - 2016-03-07 =
+* Improvement: Support for `DBI_` prefixed constants to avoid conflicts with other plugins
+* Improvement: Redesign of the Addons page
+* Improvement: Compatibility with WP Offload S3 Lite 1.0
+* Improvement: Compatibility with WP Offload S3 1.1
+
+= 0.3.4 - 2015-11-02 =
+* Improvement: Compatibility with WP Offload S3 Pro 1.0.3
+
+= 0.3.3 - 2015-10-26 =
+* Improvement: Updated Amazon SDK to version 2.8.18
+* Improvement: Fix inconsistent notice widths on _Access Keys_ screen
+* New: WP Offload S3 Pro addons (Enable Media Replace, Meta Slider, WPML) added to the _Addons_ screen
+
+= 0.3.2 - 2015-08-26 =
+* New: WP Offload S3 Pro upgrade and addons added to the _Addons_ screen
 
 = 0.3.1 - 2015-07-29 =
 * Bug fix: Style inconsistencies on the _Addons_ screen

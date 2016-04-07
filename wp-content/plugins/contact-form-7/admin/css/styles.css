@@ -39,6 +39,10 @@ span.shortcode > input {
 	color: #a00;
 }
 
+#submitpost input.delete:hover {
+	color: #f00;
+}
+
 #submitpost input.delete:focus {
 	outline: thin dotted;
 }
@@ -50,6 +54,12 @@ span.shortcode > input {
 .keyboard-interaction {
 	visibility: hidden;
 	color: #23282d;
+}
+
+div.config-error, span.config-error {
+	color: #d00;
+	font-style: normal;
+	font-size: 13px;
 }
 
 /*
@@ -103,7 +113,7 @@ span.shortcode > input {
 	color: #000;
 }
 
-#contact-form-editor .contact-form-editor-panel h3 {
+#contact-form-editor .contact-form-editor-panel h2 {
 	font-size: 18px;
 	font-weight: 400;
 	line-height: 24px;
@@ -254,6 +264,13 @@ span.shortcode > input {
 }
 
 /*
+ * Messages Panel
+ */
+#messages-panel p.description {
+	margin: 5px 0 10px;
+}
+
+/*
  * List Table
  */
 .fixed .column-title {
@@ -267,6 +284,13 @@ span.shortcode > input {
 /*
  * Welcome Panel
  */
+.welcome-panel h3 {
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 2.1em;
+	margin: 1.33em 0 0;
+}
+
 .welcome-panel p.message {
 	line-height: 1.4em;
 	margin-right: 25px;
@@ -304,9 +328,11 @@ span.shortcode > input {
 	margin: 8px 8px 8px -8px;
 }
 
-.card h3.title {
+.card h2.title {
 	float: left;
 	max-width: 240px;
+	font-size: 1.3em;
+	font-weight: 600;
 }
 
 .card .infobox {

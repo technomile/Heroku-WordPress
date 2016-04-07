@@ -1,6 +1,6 @@
 <?php
 
-add_action( 'init', 'wpcf7_control_init', 11 );
+add_action( 'wp_loaded', 'wpcf7_control_init' );
 
 function wpcf7_control_init() {
 	if ( ! isset( $_SERVER['REQUEST_METHOD'] ) ) {
@@ -31,7 +31,7 @@ function wpcf7_ajax_onload() {
 		$items = apply_filters( 'wpcf7_ajax_onload', $items );
 	}
 
-	$echo = json_encode( $items );
+	$echo = wp_json_encode( $items );
 
 	if ( wpcf7_is_xhr() ) {
 		@header( 'Content-Type: application/json; charset=' . get_option( 'blog_charset' ) );
@@ -94,7 +94,7 @@ function wpcf7_ajax_json_echo() {
 		}
 	}
 
-	$echo = json_encode( $items );
+	$echo = wp_json_encode( $items );
 
 	if ( wpcf7_is_xhr() ) {
 		@header( 'Content-Type: application/json; charset=' . get_option( 'blog_charset' ) );
@@ -166,13 +166,17 @@ function wpcf7_enqueue_scripts() {
 
 	$_wpcf7 = array(
 		'loaderUrl' => wpcf7_ajax_loader(),
+		'recaptchaEmpty' =>
+			__( 'Please verify that you are not a robot.', 'contact-form-7' ),
 		'sending' => __( 'Sending ...', 'contact-form-7' ) );
 
-	if ( defined( 'WP_CACHE' ) && WP_CACHE )
+	if ( defined( 'WP_CACHE' ) && WP_CACHE ) {
 		$_wpcf7['cached'] = 1;
+	}
 
-	if ( wpcf7_support_html5_fallback() )
+	if ( wpcf7_support_html5_fallback() ) {
 		$_wpcf7['jqueryUi'] = 1;
+	}
 
 	wp_localize_script( 'contact-form-7', '_wpcf7', $_wpcf7 );
 

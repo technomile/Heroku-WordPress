@@ -6,6 +6,7 @@
  * Author: WooThemes
  * Version: 1.5.4
  * Author URI: http://woothemes.com/
+ * Text Domain: testimonials-by-woothemes
  *
  * @package WordPress
  * @subpackage Woothemes_Testimonials

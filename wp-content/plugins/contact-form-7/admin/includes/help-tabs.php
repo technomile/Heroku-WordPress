@@ -24,15 +24,6 @@ class WPCF7_Help_Tabs {
 				$this->sidebar();
 
 				return;
-			case 'add_new':
-				$this->screen->add_help_tab( array(
-					'id' => 'add_new',
-					'title' => __( 'Adding A New Contact Form', 'contact-form-7' ),
-					'content' => $this->content( 'add_new' ) ) );
-
-				$this->sidebar();
-
-				return;
 			case 'edit':
 				$this->screen->add_help_tab( array(
 					'id' => 'edit_overview',
@@ -72,8 +63,6 @@ class WPCF7_Help_Tabs {
 		$content['list_available_actions'] = '<p>' . __( "Hovering over a row in the contact forms list will display action links that allow you to manage your contact form. You can perform the following actions:", 'contact-form-7' ) . '</p>';
 		$content['list_available_actions'] .= '<p>' . __( "<strong>Edit</strong> - Navigates to the editing screen for that contact form. You can also reach that screen by clicking on the contact form title.", 'contact-form-7' ) . '</p>';
 		$content['list_available_actions'] .= '<p>' . __( "<strong>Duplicate</strong> - Clones that contact form. A cloned contact form inherits all content from the original, but has a different ID.", 'contact-form-7' ) . '</p>';
-
-		$content['add_new'] = '<p>' . __( "You can add a new contact form on this screen. You can create a contact form in your language, which is set WordPress local settings, or in a language that you select from available options.", 'contact-form-7' ) . '</p>';
 
 		$content['edit_overview'] = '<p>' . __( "On this screen, you can edit a contact form. A contact form is comprised of the following components:", 'contact-form-7' ) . '</p>';
 		$content['edit_overview'] .= '<p>' . __( "<strong>Title</strong> is the title of a contact form. This title is only used for labeling a contact form, and can be edited.", 'contact-form-7' ) . '</p>';

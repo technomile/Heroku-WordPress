@@ -3,6 +3,14 @@
     <div id="icon-sendgrid" class="icon32"><br></div>
     <h2 id="sendgrid-wordpress-statistics-header" class="sendgrid-statistics-header-toggle">SendGrid Wordpress Statistics</h2>
     <h2 id="sendgrid-general-statistics-header" class="sendgrid-statistics-header-toggle" style="display: none;">SendGrid General Statistics</h2>
+    <?php if ( isset( $status ) and ( 'error' == $status ) ): ?>
+      <div id="message" class="<?php echo $status ?>">
+        <p>
+          <strong><?php echo $message ?></strong>
+        </p>
+      </div>
+    <?php endif; ?>
+    <a href="https://app.sendgrid.com/statistics" target="_blank" class="more-statistics">SendGrid Portal</a>
   </div>
   <div class="pull-right sendgrid-statistics-change-type">
     <select id="sendgrid-statistics-change-type">

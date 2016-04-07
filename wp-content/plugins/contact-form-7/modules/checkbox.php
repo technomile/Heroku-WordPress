@@ -259,9 +259,8 @@ function wpcf7_checkbox_posted_data( $posted_data ) {
 
 /* Tag generator */
 
-if ( is_admin() ) {
-	add_action( 'admin_init', 'wpcf7_add_tag_generator_checkbox_and_radio', 30 );
-}
+add_action( 'wpcf7_admin_init',
+	'wpcf7_add_tag_generator_checkbox_and_radio', 30 );
 
 function wpcf7_add_tag_generator_checkbox_and_radio() {
 	$tag_generator = WPCF7_TagGenerator::get_instance();

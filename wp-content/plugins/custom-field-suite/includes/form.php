@@ -2,6 +2,7 @@
 
 class cfs_form
 {
+
     public $used_types;
     public $assets_loaded;
     public $session;
@@ -38,7 +39,7 @@ class cfs_form
                 $session = $this->session->get();
 
                 if ( empty( $session ) ) {
-                    die('Your session has expired.');
+                    die( 'Your session has expired.' );
                 }
 
                 $field_data = isset( $_POST['cfs']['input'] ) ? $_POST['cfs']['input'] : array();
@@ -110,7 +111,7 @@ class cfs_form
                 // Redirect public forms
                 if ( true === $session['front_end'] ) {
                     $redirect_url = $_SERVER['REQUEST_URI'];
-                    if ( !empty( $session['confirmation_url'] ) ) {
+                    if ( ! empty( $session['confirmation_url'] ) ) {
                         $redirect_url = $session['confirmation_url'];
                     }
 
@@ -136,8 +137,8 @@ class cfs_form
         add_action( 'wp_head', array( $this, 'head_scripts' ) );
         add_action( 'wp_footer', array( $this, 'footer_scripts' ), 25 );
 
-        wp_enqueue_script( 'jquery-ui-core');
-        wp_enqueue_script( 'jquery-ui-sortable');
+        wp_enqueue_script( 'jquery-ui-core' );
+        wp_enqueue_script( 'jquery-ui-sortable' );
         wp_enqueue_script( 'cfs-validation', CFS_URL . '/assets/js/validation.js', array( 'jquery' ), CFS_VERSION );
         wp_enqueue_script( 'jquery-powertip', CFS_URL . '/assets/js/jquery-powertip/jquery.powertip.min.js', array( 'jquery' ), CFS_VERSION );
         wp_enqueue_style( 'jquery-powertip', CFS_URL . '/assets/js/jquery-powertip/jquery.powertip.css', array(), CFS_VERSION );
@@ -154,7 +155,6 @@ class cfs_form
 
 <script>
 var CFS = CFS || {};
-CFS['validators'] = {};
 CFS['get_field_value'] = {};
 CFS['loop_buffer'] = [];
 </script>
@@ -198,6 +198,9 @@ CFS['loop_buffer'] = [];
         $params = array_merge( $defaults, $params );
         $input_fields = array();
 
+        // Keep track of field validators
+        CFS()->validators = array();
+
         $post_id = (int) $params['post_id'];
 
         if ( 0 < $post_id ) {
@@ -212,8 +215,10 @@ CFS['loop_buffer'] = [];
             $field_groups = $params['field_groups'];
         }
 
-        if ( !empty( $field_groups ) ) {
-            $input_fields = CFS()->api->get_input_fields( array( 'group_id' => $field_groups ) );
+        if ( ! empty( $field_groups ) ) {
+            $input_fields = CFS()->api->get_input_fields( array(
+                'group_id' => $field_groups
+            ) );
         }
 
         // Hook to allow for overridden field settings
@@ -251,7 +256,7 @@ CFS['loop_buffer'] = [];
 
         <div class="field" data-validator="required">
             <label><?php echo $params['post_title']; ?></label>
-            <input type="text" name="cfs[post_title]" value="<?php echo empty($post_id) ? '' : esc_attr($post->post_title); ?>" />
+            <input type="text" name="cfs[post_title]" value="<?php echo empty( $post_id ) ? '' : esc_attr( $post->post_title ); ?>" />
         </div>
 
     <?php
@@ -262,7 +267,7 @@ CFS['loop_buffer'] = [];
 
         <div class="field">
             <label><?php echo $params['post_content']; ?></label>
-            <textarea name="cfs[post_content]"><?php echo empty($post_id) ? '' : esc_textarea($post->post_content); ?></textarea>
+            <textarea name="cfs[post_content]"><?php echo empty( $post_id ) ? '' : esc_textarea( $post->post_content ); ?></textarea>
         </div>
 
     <?php
@@ -276,16 +281,22 @@ CFS['loop_buffer'] = [];
                 $tabs[] = $field;
             }
         }
+        
+        do_action( 'cfs_form_before_fields', $params, array(
+            'group_ids'     => $all_group_ids,
+            'input_fields'  => $input_fields
+        ) );
 
         // Add any necessary head scripts
         foreach ( $input_fields as $key => $field ) {
+
             // Exclude fields 
             if ( in_array( $field->name, (array) $params['excluded_fields'] ) ) {
                 continue;
             }
 
             // Skip missing field types
-            if ( !isset( CFS()->fields[$field->type] ) ) {
+            if ( ! isset( CFS()->fields[ $field->type ] ) ) {
                 continue;
             }
 
@@ -299,61 +310,72 @@ CFS['loop_buffer'] = [];
                 $is_first_tab = false;
             }
 
-            if ( !isset( $this->used_types[$field->type] ) ) {
-                CFS()->fields[$field->type]->input_head( $field );
-                $this->used_types[$field->type] = true;
+            // Keep track of active field types
+            if ( ! isset( $this->used_types[ $field->type ] ) ) {
+                CFS()->fields[ $field->type ]->input_head( $field );
+                $this->used_types[ $field->type ] = true;
+            }
+
+            $validator = '';
+
+            if ( in_array( $field->type, array( 'relationship', 'user', 'loop' ) ) ) {
+                $min = empty( $field->options['limit_min'] ) ? 0 : (int) $field->options['limit_min'];
+                $max = empty( $field->options['limit_max'] ) ? 0 : (int) $field->options['limit_max'];
+                $validator = "limit|$min,$max";
+            }
+
+            if ( isset( $field->options['required'] ) && 0 < (int) $field->options['required'] ) {
+                if ( 'date' == $field->type ) {
+                    $validator = 'valid_date';
+                }
+                elseif ( 'color' == $field->type ) {
+                    $validator = 'valid_color';
+                }
+                else {
+                    $validator = 'required';
+                }
+            }
+
+            if ( ! empty( $validator ) ) {
+                CFS()->validators[ $field->name ] = array(
+                    'rule'  => $validator,
+                    'type'  => $field->type
+                );
             }
 
             // Ignore sub-fields
             if ( 1 > (int) $field->parent_id ) {
-                $validator = '';
-
-                if ( in_array( $field->type, array( 'relationship', 'user', 'loop' ) ) ) {
-                    $min = empty( $field->options['limit_min'] ) ? 0 : (int) $field->options['limit_min'];
-                    $max = empty( $field->options['limit_max'] ) ? 0 : (int) $field->options['limit_max'];
-                    $validator = "limit|$min,$max";
-                }
-
-                if ( isset( $field->options['required'] ) && 0 < (int) $field->options['required'] ) {
-                    if ( 'date' == $field->type ) {
-                        $validator = 'valid_date';
-                    }
-                    elseif ( 'color' == $field->type ) {
-                        $validator = 'valid_color';
-                    }
-                    else {
-                        $validator = 'required';
-                    }
-                }
 
                 // Tab handling
                 if ( 'tab' == $field->type ) {
+
                     // Close the previous tab
                     if ( $field->name != $tabs[0]->name ) {
                         echo '</div>';
                     }
                     echo '<div class="cfs-tab-content cfs-tab-content-' . $field->name . '">';
+                    echo '<div class="cfs-tab-notes">' . esc_html( $field->notes ) . '</div>';
                 }
                 else {
     ?>
 
-        <div class="field field-<?php echo $field->name; ?>" data-type="<?php echo $field->type; ?>" data-name="<?php echo $field->name; ?>" data-validator="<?php echo $validator; ?>">
+        <div class="field field-<?php echo $field->name; ?>" data-type="<?php echo $field->type; ?>" data-name="<?php echo $field->name; ?>"">
             <?php if ( 'loop' == $field->type ) : ?>
             <span class="cfs_loop_toggle" title="<?php esc_html_e( 'Toggle row visibility', 'cfs' ); ?>"></span>
             <?php endif; ?>
 
-            <?php if ( !empty( $field->label ) ) : ?>
+            <?php if ( ! empty( $field->label ) ) : ?>
             <label><?php echo $field->label; ?></label>
             <?php endif; ?>
 
-            <?php if ( !empty( $field->notes ) ) : ?>
+            <?php if ( ! empty( $field->notes ) ) : ?>
             <p class="notes"><?php echo $field->notes; ?></p>
             <?php endif; ?>
 
             <div class="cfs_<?php echo $field->type; ?>">
 
     <?php
-                CFS()->create_field(array(
+                CFS()->create_field( array(
                     'id'            => $field->id,
                     'group_id'      => $field->group_id,
                     'type'          => $field->type,
@@ -373,17 +395,23 @@ CFS['loop_buffer'] = [];
         }
 
         // Make sure to close tabs
-        if ( !empty( $tabs ) ) {
+        if ( ! empty( $tabs ) ) {
             echo '</div>';
         }
+        
+        do_action( 'cfs_form_after_fields', $params, array(
+            'group_ids'     => $all_group_ids,
+            'input_fields'  => $input_fields
+        ) );
     ?>
 
-        <input type="hidden" name="cfs[save]" value="<?php echo wp_create_nonce('cfs_save_input'); ?>" />
+        <script>CFS['field_rules'] = <?php echo json_encode( CFS()->validators ); ?>;</script>
+        <input type="hidden" name="cfs[save]" value="<?php echo wp_create_nonce( 'cfs_save_input' ); ?>" />
         <input type="hidden" name="cfs[session_id]" value="<?php echo $this->session->session_id; ?>" />
 
         <?php if ( false !== $params['front_end'] ) : ?>
 
-        <input type="submit" value="<?php echo esc_attr($params['submit_label']); ?>" />
+        <input type="submit" value="<?php echo esc_attr( $params['submit_label'] ); ?>" />
     </form>
 </div>
 

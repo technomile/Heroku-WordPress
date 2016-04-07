@@ -16,7 +16,7 @@ class cfs_relationship extends cfs_field
         $available_posts = array();
 
         $post_types = array();
-        if ( !empty( $field->options['post_types'] ) ) {
+        if ( ! empty( $field->options['post_types'] ) ) {
             foreach ( $field->options['post_types'] as $type ) {
                 $post_types[] = $type;
             }
@@ -24,9 +24,6 @@ class cfs_relationship extends cfs_field
         else {
             $post_types = get_post_types( array( 'exclude_from_search' => true ) );
         }
-
-        // Deprecated - use "cfs_field_relationship_query_args"
-        $post_types = apply_filters( 'cfs_field_relationship_post_types', $post_types );
 
         $args = array(
             'post_type'         => $post_types,
@@ -51,7 +48,7 @@ class cfs_relationship extends cfs_field
             );
         }
 
-        if ( !empty( $field->value ) ) {
+        if ( ! empty( $field->value ) ) {
             $results = $wpdb->get_results( "SELECT ID, post_status, post_title FROM $wpdb->posts WHERE ID IN ($field->value) ORDER BY FIELD(ID,$field->value)" );
             foreach ( $results as $result ) {
                 $result->post_title = ( 'private' == $result->post_status ) ? '(Private) ' . $result->post_title : $result->post_title;
@@ -132,6 +129,41 @@ class cfs_relationship extends cfs_field
                     $('.cfs_relationship:not(.ready)').init_relationship();
                 });
                 $('.cfs_relationship').init_relationship();
+
+                // add selected post
+                $(document).on('click', '.cfs_relationship .available_posts div', function() {
+                    var parent = $(this).closest('.field');
+                    var post_id = $(this).attr('rel');
+                    var html = $(this).html();
+                    $(this).addClass('used');
+                    parent.find('.selected_posts').append('<div rel="'+post_id+'"><span class="remove"></span>'+html+'</div>');
+                    update_relationship_values(parent);
+                });
+
+                // remove selected post
+                $(document).on('click', '.cfs_relationship .selected_posts .remove', function() {
+                    var div = $(this).parent();
+                    var parent = div.closest('.field');
+                    var post_id = div.attr('rel');
+                    parent.find('.available_posts div[rel='+post_id+']').removeClass('used');
+                    div.remove();
+                    update_relationship_values(parent);
+                });
+
+                // filter posts
+                $(document).on('keyup', '.cfs_relationship .cfs_filter_input', function() {
+                    var input = $(this).val();
+                    var parent = $(this).closest('.field');
+                    var regex = new RegExp(input, 'i');
+                    parent.find('.available_posts div:not(.used)').each(function() {
+                        if (-1 < $(this).html().search(regex)) {
+                            $(this).removeClass('hidden');
+                        }
+                        else {
+                            $(this).addClass('hidden');
+                        }
+                    });
+                });
             });
 
             $.fn.init_relationship = function() {
@@ -146,41 +178,6 @@ class cfs_relationship extends cfs_field
                             var parent = $(this).closest('.field');
                             update_relationship_values(parent);
                         }
-                    });
-
-                    // add selected post
-                    $this.find('.available_posts div').live('click', function() {
-                        var parent = $(this).closest('.field');
-                        var post_id = $(this).attr('rel');
-                        var html = $(this).html();
-                        $(this).addClass('used');
-                        parent.find('.selected_posts').append('<div rel="'+post_id+'"><span class="remove"></span>'+html+'</div>');
-                        update_relationship_values(parent);
-                    });
-
-                    // remove selected post
-                    $this.find('.selected_posts span.remove').live('click', function() {
-                        var div = $(this).parent();
-                        var parent = div.closest('.field');
-                        var post_id = div.attr('rel');
-                        parent.find('.available_posts div[rel='+post_id+']').removeClass('used');
-                        div.remove();
-                        update_relationship_values(parent);
-                    });
-
-                    // filter posts
-                    $this.find('.cfs_filter_input').live('keyup', function() {
-                        var input = $(this).val();
-                        var parent = $(this).closest('.field');
-                        var regex = new RegExp(input, 'i');
-                        parent.find('.available_posts div:not(.used)').each(function() {
-                            if (-1 < $(this).html().search(regex)) {
-                                $(this).removeClass('hidden');
-                            }
-                            else {
-                                $(this).addClass('hidden');
-                            }
-                        });
                     });
                 });
             }
@@ -201,7 +198,8 @@ class cfs_relationship extends cfs_field
 
 
     function pre_save( $value, $field = null ) {
-        if ( !empty( $value ) ) {
+        if ( ! empty( $value ) ) {
+
             // Inside a loop, the value is $value[0]
             $value = (array) $value;
 

@@ -2,42 +2,45 @@
 Contributors: mgibbs189
 Tags: custom fields, fields, forms, meta, postmeta, metabox, wysiwyg, relationship, repeater, upload
 Requires at least: 4.0
-Tested up to: 4.3
+Tested up to: 4.4
 Stable tag: trunk
 License: GPLv2
 
-Custom Field Suite (CFS) allows you to attach custom fields to posts types.
+A custom fields management UI
 
 == Description ==
 
-= Custom Field Suite (CFS) allows you to attach custom fields to posts types. =
+= Custom Field Suite (CFS) is a visual custom fields management plugin. =
 
-CFS lets you visually create an manage custom fields. You first create a Field Group, which contains one or more custom fields.
-You're able to easily add custom fields through the admin UI. There's over 12 field types to choose from, include text, date,
-wysiwyg, file upload, relationship, user, loop (repeatable fields), etc.
+CFS includes over 12 field types, include text, date, wysiwyg, file upload, relationship, user, and loop (repeatable fields). With CFS, creating and managing custom fields is easy, thanks to our clean and intuitive admin UI.
 
-After you've set up your field group, you simply set where the fields appear using the Placement Rules box. You can attach custom fields to
-entire post types, specific post items, pages using a specific template, etc.
+It also features an [elegant, lightweight API](http://docs.customfieldsuite.com/api.html) for loading (and saving) field values.
 
-CFS also supports the creation of custom field types by using the `cfs_field_types` filter.
+= Setting it up =
+* Browse to the "Field Groups" admin menu
+* Create a Field Group, containing one or more custom fields
+* Choose where the Field Group should appear, using Placement Rules (see screenshots)
+* Use the [get](http://docs.customfieldsuite.com/api/get.html) method in your template files to display custom fields
 
 This plugin is a free, lightweight alternative to Advanced Custom Fields.
 
 = Important Links =
-* [Documentation →](http://customfieldsuite.com/projects/cfs/documentation/)
+* [Documentation →](http://docs.customfieldsuite.com)
 * [Github →](https://github.com/mgibbs189/custom-field-suite)
 
 = Translations =
+* Catalan (ca) - thanks to Luis Bordas
+* Chinese (zh_CN) - thanks to iblackly
 * Dutch (nl_NL) - thanks to [wverhoogt](https://github.com/wverhoogt)
-* German (de_DE) - thanks to [David Decker](http://deckerweb.de/)
-* Spanish (es_ES) - thanks to [Andrew Kurtis](http://www.webhostinghub.com/)
-* Persian (fa_IR) - thanks to Vahid Masoomi
 * French (fr_FR) - thanks to Jean-Christophe Brebion
+* German (de_DE) - thanks to [David Decker](http://deckerweb.de/)
 * Italian (it_IT)
 * Japanese (ja) - thanks to Karin Suzakura
+* Persian (fa_IR) - thanks to Vahid Masoomi
 * Polish (pl_PL) - thanks to [Digital Factory](digitalfactory.pl)
 * Russian (ru_RU) - thanks to Glebcha
-* Catalan (ca) - thanks to Luis Bordas
+* Spanish (es_ES) - thanks to [Andrew Kurtis](http://www.webhostinghub.com/)
+* Turkish (tr_TR) - thanks to Ertuğrul
 
 == Installation ==
 
@@ -51,6 +54,43 @@ This plugin is a free, lightweight alternative to Advanced Custom Fields.
 4. The Tools area for migrating field groups
 
 == Changelog ==
+
+= 2.5.4 =
+* New: `cfs_form_before_fields` filter
+* New: `cfs_form_after_fields` filter
+* Fix: allow tabs in separate field groups to be active simultaneously
+
+= 2.5.3 =
+* Fix: issues with Loop field "dynamic label" functionality
+* Changed: "Field Groups" menu moved below "Settings" in the admin UI
+
+= 2.5.2 =
+* New: support for dynamic Loop labels from select field values (props @superbiche)
+* Fix: PHP notice for "Placement" column
+
+= 2.5.1 =
+* Fix: issue with $cfs variable
+
+= 2.5 =
+* New: [find_fields API method](http://docs.customfieldsuite.com/api/find_fields.html)
+* New: `CFS()->field_group->load_field_groups()` method
+* New: Turkish transation (props Ertuğrul)
+* New: Chinese translation (props iblackly)
+* Improved: [documentation overhaul](http://docs.customfieldsuite.com)
+* Improved: major code cleanup and refactoring
+* Improved: efficiency improvements for internal API methods
+* Improved: removed deprecated (< 3.5) code from File field type
+* Improved: show post titles instead of IDs for "Placement" admin column
+* Improved: now using a built-in WP dashicon
+* Changed: removed buggy Gravity Forms integration
+* Changed: removed `cfs_relationship_post_types` filter (use `cfs_field_relationship_query_args` instead)
+* Changed: removed add-ons screen (for now)
+* Changed: toggle icon for loop fields
+* Fix: field validation for loop sub-fields
+* Fix: CFS()->save gracefully handles missing fields (no errors)
+* Fix: wysiwyg fields would break when dragged
+* Fix: Remove non-existing post IDs from "Posts" placement rule
+* Updated translations
 
 = 2.4.5 =
 * Fix: WP 4.3 `wp_richedit_pre` deprecated notice (props @jchristopher)
@@ -79,70 +119,3 @@ This plugin is a free, lightweight alternative to Advanced Custom Fields.
 * Added Hyperlink field type (previously an add-on)
 * Added Revision support, just use `DEFINE( 'CFS_REVISIONS', true );`
 * Added license.txt (props @chrisvanpatten)
-
-= 2.3.11 =
-* Appended CFS version number to assets, to flush caches (props @chrisvanpatten)
-* Added Dutch translations (props @wverhoogt)
-
-= 2.3.10 =
-* New: `cfs_relationship_display` filter
-* New: `cfs_user_display` filter
-* New: `cfs_save_field_group_rules` filter
-* Improved loop field dynamic label support
-
-= 2.3.9 =
-* UI refresh and cleanup (props @chrisvanpatten)
-* New: user field min/max validation (props @chrisvanpatten)
-* New: loop field min/max validation (props @christopherdro)
-* Improved Add-ons screen (incl. new "Synchronize" add-on)
-* Replaced tooltip library
-* Updated translations
-
-= 2.3.8 =
-* Fixed validation issue with WYSIWYG fields
-* Increased toggle speed when viewing admin fields
-* Cleanup of Tools and Add-ons pages
-* Updated translations
-
-= 2.3.7 =
-* WYWISYG resize support
-* Fixed WYSIWYG issue with all editors in text mode (props @sc0ttkclark)
-* Fixed issue with partially-saved field groups
-
-= 2.3.6 =
-* Added Spanish translation (props Andrew Curtis)
-* Updated translations
-* Upgraded select2 to 3.5.1
-* Hide Gravity Forms options when disabled
-* Fixed label for "Post Formats"
-* Fixed issue with Duplicate Posts plugin (props hissy)
-* Added `cfs_disable_admin` to optionally hide group creation screens
-
-= 2.3.5 =
-* Fixed WYSIWYG "code" button from showing repeatedly
-
-= 2.3.4 =
-* Re-added WYSIWYG "code" button for WP 3.9+
-* Date picker now highlights current day
-
-= 2.3.3 =
-* Added Hi-res select2 images
-* Added Post Format placement rule (props @jchristopher)
-* Fixed array_orderby method for PHP 5.3
-* Updated translations
-
-= 2.3.2 =
-* Code refactoring
-* Corrected Add-ons page with new URL
-* Use `CFS()` instead of `$cfs` for future API usage
-* Changed CFS->form init priority to 100 (for better compatibility)
-* Fixed relationship fields not being scrollable (props @jchristopher)
-
-= 2.3.1 =
-* Refreshed field design (props @jchristopher)
-* Removed deprecated WP 3.5 code (file upload field)
-* Minor tweaks to the output of Exports
-
-= 2.3.0 =
-* Added Tab field type
-* Updated translations

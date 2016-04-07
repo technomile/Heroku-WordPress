@@ -1,0 +1,56 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2016-03-20 00:19+0700\n"
+"PO-Revision-Date: 2016-03-20 00:19+0700\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.6\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: woocommerce-dropdown-cart.php:25
+msgid "Display the cart content"
+msgstr ""
+
+#: woocommerce-dropdown-cart.php:29
+msgid "WooCommerce Dropdown Cart"
+msgstr ""
+
+#: woocommerce-dropdown-cart.php:58
+msgid "item"
+msgstr ""
+
+#: woocommerce-dropdown-cart.php:59
+msgid "items"
+msgstr ""
+
+#: woocommerce-dropdown-cart.php:118
+msgid "Title:"
+msgstr ""
+
+#: woocommerce-dropdown-cart.php:122
+msgid "Hide if cart is empty"
+msgstr ""
+
+#: woocommerce-dropdown-cart.php:125
+msgid "Show this widget on cart/checkout pages"
+msgstr ""
+
+#: woocommerce-dropdown-cart.php:127
+msgid "Popup align:"
+msgstr ""
+
+#: woocommerce-dropdown-cart.php:129
+msgid "Left"
+msgstr ""
+
+#: woocommerce-dropdown-cart.php:130
+msgid "Right"
+msgstr ""

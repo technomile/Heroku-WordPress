@@ -88,26 +88,7 @@
 
 		var options = [];
 
-		var size = scope.find(':input[name="size"]').val() || '';
-		var maxlength = scope.find(':input[name="maxlength"]').val() || '';
-		var cols = scope.find(':input[name="cols"]').val() || '';
-		var rows = scope.find(':input[name="rows"]').val() || '';
-
-		if ((cols || rows) && maxlength) {
-			options.push(cols + 'x' + rows + '/' + maxlength);
-		} else if (cols || rows) {
-			options.push(cols + 'x' + rows);
-		} else if (size || maxlength) {
-			options.push(size + '/' + maxlength);
-		}
-
 		scope.find('input.option').not(':checkbox,:radio').each(function(i) {
-			var excluded = ['size', 'maxlength', 'cols', 'rows'];
-
-			if (-1 < $.inArray($(this).attr('name'), excluded)) {
-				return;
-			}
-
 			var val = $(this).val();
 
 			if (! val) {
@@ -134,6 +115,16 @@
 				options.push($(this).attr('name'));
 			}
 		});
+
+		scope.find('input:radio.option').each(function(i) {
+			if ($(this).is(':checked') && ! $(this).hasClass('default')) {
+				options.push($(this).attr('name') + ':' + $(this).val());
+			}
+		});
+
+		if ('radio' == tagType) {
+			options.push('default:1');
+		}
 
 		options = (options.length > 0) ? options.join(' ') : '';
 
