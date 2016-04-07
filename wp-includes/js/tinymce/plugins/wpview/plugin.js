@@ -347,6 +347,15 @@ tinymce.PluginManager.add( 'wpview', function( editor ) {
 				attributeFilter: ['class']
 			} );
 		}
+
+		if ( tinymce.Env.ie ) {
+			// Prevent resize handles in newer IE
+			editor.dom.bind( editor.getBody(), 'controlselect mscontrolselect', function( event ) {
+				if ( getView( event.target ) ) {
+					event.preventDefault();
+				}
+			});
+		}
 	});
 
 	// Empty the wpview wrap and marker nodes
@@ -713,10 +722,12 @@ tinymce.PluginManager.add( 'wpview', function( editor ) {
 	} );
 
 	editor.once( 'preinit', function() {
-		toolbar = editor.wp._createToolbar( [
-			'wp_view_edit',
-			'wp_view_remove'
-		] );
+		if ( editor.wp && editor.wp._createToolbar ) {
+			toolbar = editor.wp._createToolbar( [
+				'wp_view_edit',
+				'wp_view_remove'
+			] );
+		}
 	} );
 
 	editor.on( 'wptoolbar', function( event ) {
