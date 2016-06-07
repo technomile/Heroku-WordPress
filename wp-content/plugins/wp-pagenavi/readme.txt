@@ -3,8 +3,8 @@ Contributors: GamerZ, scribu
 Donate link: http://lesterchan.net/site/donation/  
 Tags: navigation, pagination, paging, pages  
 Requires at least: 3.2  
-Tested up to: 4.4  
-Stable tag: 2.89.1  
+Tested up to: 4.5  
+Stable tag: 2.90
 License: GPLv2 or later  
 License URI: http://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -42,9 +42,10 @@ In your theme, you need to find calls to next_posts_link() and previous_posts_li
 
 In the Twentyten theme, it looks like this:
 
-`<div class="nav-previous"><?php next_posts_link( __( '<span class="meta-nav">&larr;</span> Older posts', 'twentyten' ) ); ?></div>`
-`<div class="nav-next"><?php previous_posts_link( __( 'Newer posts <span class="meta-nav">&rarr;</span>', 'twentyten' ) ); ?></div>`
-
+`
+<div class="nav-previous"><?php next_posts_link( __( '<span class="meta-nav">&larr;</span> Older posts', 'twentyten' ) ); ?></div>
+<div class="nav-next"><?php previous_posts_link( __( 'Newer posts <span class="meta-nav">&rarr;</span>', 'twentyten' ) ); ?></div>
+`
 
 You would replace those two lines with this:
 
@@ -156,6 +157,10 @@ You can do that like so:
 `<?php wp_pagenavi( array( 'options' => PageNavi_Core::$options->get_defaults() ) ); ?>`
 
 == Changelog ==
+= 2.90 =
+* Remove po/mo files from the plugin
+* Use translate.wordpress.org to translate the plugin
+
 = 2.89.1 =
 * FIXED: before and after args
 

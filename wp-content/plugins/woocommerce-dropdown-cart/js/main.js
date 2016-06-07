@@ -60,12 +60,10 @@ jQuery(function($){
         }
 
         $('.widget_shopping_mini_cart').each(function($i, $item){
-            $($item).load( this_page + ' #' + $item.id + '-content', function(){
+            $('.widget_shopping_mini_cart_content', $item).load( this_page + ' #' + $item.id + '-content', function(){
                 $($item).removeClass('loading');
             });
         });
 
     });
-
-
 });

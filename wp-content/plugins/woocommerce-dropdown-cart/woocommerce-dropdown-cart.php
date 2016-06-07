@@ -4,8 +4,8 @@ Plugin Name: Woocommerce Dropdown Cart
 Plugin URI: https://wordpress.org/plugins/woocommerce-dropdown-cart/
 Description: A widget plugin for WooCommerce to display the cart at top of page
 Author: Phuc Pham
-Version: 2.1
-Author URI: https://www.facebook.com/svincoll4
+Version: 2.1.1
+Author URI: http://www.clientsa2z.com
 */
 
 class WooCommerce_Widget_DropdownCart extends WP_Widget {

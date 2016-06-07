@@ -6,12 +6,12 @@ Requires at least: 4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Tested up to: 4.3.1
-Stable tag: 5.1.7
+Stable tag: 5.1.8
 
 Easily redirect pages/posts or custom post types to another page/post or external URL by specifying the redirect URL and type (301, 302, 307, meta).
 
 == Description ==
-**Current Version 5.1.7**
+**Current Version 5.1.8**
 
 This plugin has two redirect functionalities - **"Quick Redirects"** and **"Individual Redirects"**:
 
@@ -182,6 +182,8 @@ NO it isn't! Check the plugin FAQs/Help page for a more up to date list of Frequ
 * THIS SECTION IS JUST TO KEEP TRACK OF TODO ITEMS FOR FUTURE UPDATES.
 * Add New Window and No Follow to links where the URL has been rewritten. Currently if you rewrite the URL neither will work as they are referenced with the original URL, not the rewrite.
 
+= 5.1.8 =
+* **Bug Fix:** Used a different minified version for the qppr_frontend_script.min.js file after it received a false positive of being a Trojan. The 5.1.7 version is totally safe to use too. The false positive was caused due to the way the specific file was minified. This is a confirmation that nothing was infected or was acting as a trojan of any sort in any previous version.
 = 5.1.7 =
 * **Bug Fix:** Fixed Post redirects bug caused by 5.1.6
 

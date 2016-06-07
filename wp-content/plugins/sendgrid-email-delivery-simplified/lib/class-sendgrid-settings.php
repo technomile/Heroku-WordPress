@@ -118,12 +118,20 @@ class Sendgrid_Settings {
         $status = 'error';
       }
 
-      if ( 'apikey' == $auth_method and ! empty( $api_key ) and ! Sendgrid_Tools::check_api_key( $api_key, true ) ) {
+      if ( 'apikey' == $auth_method and ! empty( $api_key ) ) {
+        if ( ! Sendgrid_Tools::check_api_key( $api_key, true ) ) {
           $message = 'API Key is invalid or without permissions.';
           $status  = 'error';
-      } elseif ( 'credentials' == $auth_method and ! empty( $user ) and ! empty( $password ) and ! Sendgrid_Tools::check_username_password( $user, $password, true ) ) {
+        } else {
+          $status  = 'valid_auth';
+        }
+      } elseif ( 'credentials' == $auth_method and ! empty( $user ) and ! empty( $password ) ) {
+        if ( ! Sendgrid_Tools::check_username_password( $user, $password, true ) ) {
           $message = 'Username and password are invalid.';
           $status  = 'error';
+        } else {
+          $status  = 'valid_auth';
+        }
       }
 
       if ( $template and ! Sendgrid_Tools::check_template( $template ) ) {
@@ -371,7 +379,7 @@ class Sendgrid_Settings {
 
     return array(
       'message' => 'Email wasn\'t sent.',
-      'status' => 'updated',
+      'status' => 'error',
       'error_type' => 'sending'
     );
   }

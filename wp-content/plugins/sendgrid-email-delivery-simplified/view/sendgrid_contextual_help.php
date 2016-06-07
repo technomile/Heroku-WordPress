@@ -28,7 +28,34 @@
     &lt;?php wp_mail('to@address.com\', 'Email Subject', 'Email Body'); ?&gt;
   </div>
   <br />
-  If you want to use additional headers, here you have a more complex example:
+  Where:
+  <br />
+  <ul>
+    <li>$to           -  Array or comma-separated list of email addresses to send message.</li>
+    <li>$subject      -  Email subject</li>
+    <li>$message      -  Message contents></li>
+    <li>$headers      -  Array or SendGrid\Email() object. Optional.</li>
+    <li>$attachments  -  Array or "\n"/"," separated list of files to attach. Optional.</li>
+  </ul>
+  The wp_mail function is sending text emails as default. If you want to send an email with HTML content you have
+  to set the content type to 'text/html' running
+  <span class="code">
+    add_filter('wp_mail_content_type', 'set_html_content_type');
+  </span>
+  function before to wp_mail() one.
+  <br />
+  <br />
+  After wp_mail function you need to run the
+  <span class="code">
+    remove_filter('wp_mail_content_type', 'set_html_content_type');
+  </span>
+  to remove the 'text/html' filter to avoid conflicts -- http://core.trac.wordpress.org/ticket/23578
+  <br />
+  <br />
+  Example about how to send an HTML email using different headers:
+  <br />
+  <br />
+  <b>Using array for $headers:</b>
   <br />
   <div class="code">
     $subject = 'test plugin'
@@ -46,11 +73,11 @@
     <br />
     $headers[] = 'Bcc: address5@sendgrid.com';
     <br />
-    $headers[] = 'unique-args:customer=mycustomer;location=mylocation'
+    $headers[] = 'unique-args:customer=mycustomer;location=mylocation';
     <br />
-    $headers[] = 'categories: category1, category2'
+    $headers[] = 'categories: category1, category2';
     <br />
-    $headers[] = 'template: templateID'
+    $headers[] = 'template: templateID';
     <br />
     <br />
     $attachments = array('/tmp/img1.jpg', '/tmp/img2.jpg');
@@ -62,29 +89,89 @@
     <br />
     remove_filter('wp_mail_content_type', 'set_html_content_type');
   </div>
+  <br/>
+  <b>Using SendGrid\Email() for $headers:</b>
   <br />
-  Where:
-  <br />
-  <ul>
-    <li>$to           -  Array or comma-separated list of email addresses to send message.</li>
-    <li>$subject      -  Email subject'); ?></li>
-    <li>$message      -  Message contents'); ?></li>
-    <li>$headers      -  Array or "\n" separated  list of additional headers. Optional.</li>
-    <li>$attachments  -  Array or "\n"/"," separated list of files to attach. Optional.</li>
-  </ul>
-  The wp_mail function is sending text emails as default. If you want to send an email with HTML content you have
-  to set the content type to 'text/html' running
-  <span class="code">
+  <div class="code">
+    $subject = 'Test SendGrid plugin';
+    <br />
+    $message = 'testing WordPress plugin';
+    <br />
+    $to = array('address1@sendgrid.com', 'Address2 <address2@sendgrid.com>', 'address3@sendgrid.com');
+    <br />
+    <br /> 
+    $headers = new SendGrid\Email();
+    <br />
+    $headers<br />
+      ->setFromName("Me Myself")
+    <br />
+      ->setFrom("me@example.net")
+    <br />        
+      ->setCc("address4@sendgrid.com")
+    <br />        
+      ->setBcc("address5@sendgrid.com")
+    <br />        
+      ->setUniqueArgs(array('customer' => 'mycustomer', 'location' => 'mylocation'))
+    <br />        
+      ->addCategory('category1')
+    <br />        
+      ->addCategory('category2')
+    <br />        
+      ->setTemplateId('templateID');
+    <br />        
+    <br /> 
+    $attachments = array('/tmp/img1.jpg', '/tmp/img2.jpg');
+    <br /> 
     add_filter('wp_mail_content_type', 'set_html_content_type');
-  </span>
-  function before to wp_mail() one.
-  <br />
-  <br />
-  After wp_mail function you need to run the
-  <span class="code">
+    <br />
+    $mail = wp_mail($to, $subject, $message, $headers, $attachments);
+    <br />
     remove_filter('wp_mail_content_type', 'set_html_content_type');
-  </span>
-  to remove the 'text/html' filter to avoid conflicts -- http://core.trac.wordpress.org/ticket/23578
+  </div>
+  <br />
+  <b>How to use Substitution and Sections</b>
+  <br />
+  <div class="code">
+    $subject = 'Hey %name%, you work at %place%';
+    <br />
+    $message = 'testing WordPress plugin';
+    <br />
+    $to = array('address1@sendgrid.com');
+    <br />
+    <br />
+    $headers = new SendGrid\Email();
+    <br />
+    $headers
+    <br />
+      ->addSmtpapiTo("john@somewhere.com")
+    <br />    
+      ->addSmtpapiTo("harry@somewhere.com")
+    <br />    
+      ->addSmtpapiTo("Bob@somewhere.com")
+    <br />    
+      ->addSubstitution("%name%", array("John", "Harry", "Bob"))
+    <br />    
+      ->addSubstitution("%place%", array("%office%", "%office%", "%home%"))
+    <br />    
+      ->addSection("%office%", "an office")
+    <br />    
+      ->addSection("%home%", "your house");
+    <br />
+    <br />
+    $mail = wp_mail($to, $subject, $message, $headers);`
+  </div>
+  <br />
+  More examples for using SendGrid SMTPAPI header: <a href="https://github.com/sendgrid/sendgrid-php#smtpapi" target="_blank">https://github.com/sendgrid/sendgrid-php#smtpapi</a>
+  <br />
+  <br />
+  <b>Categories used for emails can be set:</b>
+  <ul>
+    <li>globally, for all emails sent, by setting the 'Categories' field in the 'Mail settings' section</li>
+    <li>per email by adding the category in the headers array: <span class="code">$headers[] = 'categories: category1, category2';</span></li>
+  </ul>
+  If you would like to configure categories for statistics, you can configure it by setting the 'Categories' field in the 'Statistics settings' section
+  <br />
+  <br />
   <p><b>Define SendGrid settings as global variables (wp-config.php):</b></p>
   <p>
     <ol>

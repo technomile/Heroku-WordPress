@@ -6,7 +6,7 @@ Description: Redirect Pages, Posts or Custom Post Types to another location quic
 Author: anadnet
 Author URI: http://www.anadnet.com/
 Donate link: 
-Version: 5.1.7
+Version: 5.1.8
 Text Domain: quick-pagepost-redirect-plugin
 Domain Path: /lang
 License: GPLv2 or later
@@ -71,7 +71,7 @@ class quick_page_post_reds {
 	public $pprptypes_ok;
 	
 	function __construct() {
-		$this->ppr_curr_version 		= '5.1.7';
+		$this->ppr_curr_version 		= '5.1.8';
 		$this->ppr_nofollow 			= array();
 		$this->ppr_newindow 			= array();
 		$this->ppr_url 					= array();

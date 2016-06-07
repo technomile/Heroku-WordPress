@@ -3,8 +3,8 @@ Contributors: takayukister
 Donate link: http://contactform7.com/donate/
 Tags: contact, form, contact form, feedback, email, ajax, captcha, akismet, multilingual
 Requires at least: 4.3
-Tested up to: 4.5
-Stable tag: 4.4.1
+Tested up to: 4.5.1
+Stable tag: 4.4.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,12 @@ Do you have questions or issues with Contact Form 7? Use these support channels 
 
 For more information, see [Releases](http://contactform7.com/category/releases/).
 
+= 4.4.2 =
+
+* Language Packs: Language files for French (fr_FR), Russian (ru_RU), Slovak (sk_SK), and Turkish (tr_TR) have been removed from the plugin package.
+* Config Validation: Interoperability support for WordPress MU Domain Mapping plugin: Treats a mapping domain as the site domain when you compare an email address with the site domain.
+* Config Validation: Made email-in-site-domain verification case-insensitive.
+
 = 4.4.1 =
 
 * Config Validation: Added a link to FAQ.
@@ -78,16 +84,3 @@ For more information, see [Releases](http://contactform7.com/category/releases/)
 * Attach a plain text version of the message when sending HTML mail.
 * Added do_not_store additional setting to tell data storage add-ons not to store data through the contact form.
 * The minimum required WordPress version has been changed from 4.2 to 4.3.
-
-= 4.3.1 =
-
-* Use wp_loaded action hook instead of init to initialize the controller process.
-* Fixed: Validation error messages for Really Simple CAPTCHA fields didn’t appear.
-* Display an alert message if there is a reCAPTCHA widget left unanswered.
-* Translations for Portuguese, Hungarian, and Turkish have been updated.
-
-= 4.3 =
-
-* reCAPTCHA module has been introduced.
-* Translations for Croatian, Danish, Persian, and Swedish have been updated.
-* WordPress 4.2 or higher is required.

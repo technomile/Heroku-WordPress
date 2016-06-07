@@ -270,8 +270,6 @@ div.aioseop_tip_icon:before {
 #wincher22 {
 	background-image: url(../../modules/images/banner22.jpg);
 }
-}
-
 .aioseop_content {
 	min-width: 760px;
 	clear: left;
@@ -1116,3 +1114,7 @@ div.sfwd_debug_error {
 	padding-top: 40%;
 }
 */
+.MRL {
+margin-left: 20px !important;
+margin-bottom: 10px !important;
+}

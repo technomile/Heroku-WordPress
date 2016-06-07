@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=QZUJY
 Tags: woocommerce, drop down cart, button cart, popup cart
 Requires at least: 3.5
 Tested up to: 4.3.1
-Stable tag: 2.1
+Stable tag: 2.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,9 @@ No questions.
 1. Dropdown cart content
 
 == Changelog ==
+
+= 2.1.1 =
+* Fix missing widget title after add_to_cart trigger (reported by Krzysztof Trynkiewicz, thank you)
 
 = 2.1 =
 * Add function to load language files

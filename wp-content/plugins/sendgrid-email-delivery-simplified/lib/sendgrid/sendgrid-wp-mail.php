@@ -38,12 +38,24 @@ require_once plugin_dir_path( __FILE__ ) . 'class-sendgrid-php.php';
  */
 function wp_mail( $to, $subject, $message, $headers = '', $attachments = array() )
 {
-  $mail     = new SendGrid\Email();
+  $header_is_object = false;
+    
+  if ( $headers instanceof SendGrid\Email ) {
+    $header_is_object = true;
 
-  $method   = Sendgrid_Tools::get_send_method();
+    $mail = $headers;
 
-  // Compact the input, apply the filters, and extract them back out
-  extract( apply_filters( 'wp_mail', compact( 'to', 'subject', 'message', 'headers', 'attachments' ) ) );
+    // Compact the input, apply the filters, and extract them back out - empty header
+    extract( apply_filters( 'wp_mail', compact( 'to', 'subject', 'message', '', 'attachments' ) ) );
+
+  } else {
+    $mail = new SendGrid\Email();
+
+    // Compact the input, apply the filters, and extract them back out
+    extract( apply_filters( 'wp_mail', compact( 'to', 'subject', 'message', 'headers', 'attachments' ) ) );
+  }
+ 
+  $method = Sendgrid_Tools::get_send_method();
 
   // prepare attachments
   $attached_files = array();
@@ -66,142 +78,157 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
     }
   }
 
-  $template = Sendgrid_Tools::get_template();
-  if ( $template) {
-    $mail->setTemplateId( $template );
-  }
-
   // Headers
   $cc  = array();
   $bcc = array();
   $unique_args = array();
-  if ( empty( $headers ) ) {
-    $headers = array();
-  } else {
-    if ( ! is_array( $headers ) ) {
-      // Explode the headers out, so this function can take both
-      // string headers and an array of headers.
-      $tempheaders = explode( "\n", str_replace( "\r\n", "\n", $headers ) );
+  $from_name = $mail->getFromName();
+  $from_email = $mail->getFrom();
+  $replyto = $mail->getReplyTo();
+
+  if ( false === $header_is_object ) {
+    if ( empty( $headers ) ) {
+      $headers = array();
     } else {
-      $tempheaders = $headers;
-    }
-    $headers = array();
+      if ( ! is_array( $headers ) ) {
+        // Explode the headers out, so this function can take both
+        // string headers and an array of headers.
+        $tempheaders = explode( "\n", str_replace( "\r\n", "\n", $headers ) );
+      } else {
+        $tempheaders = $headers;
+      }
+      $headers = array();
 
-    // If it's actually got contents
-    if ( ! empty( $tempheaders ) ) {
-      // Iterate through the raw headers
-      foreach ( (array) $tempheaders as $header ) {
-        if ( false === strpos( $header, ':' ) ) {
-          if ( false !== stripos( $header, 'boundary=' ) ) {
-            $parts = preg_split( '/boundary=/i', trim( $header ) );
-            $boundary = trim( str_replace( array( "'", '"' ), '', $parts[1] ) );
+      // If it's actually got contents
+      if ( ! empty( $tempheaders ) ) {
+        // Iterate through the raw headers
+        foreach ( (array) $tempheaders as $header ) {
+          if ( false === strpos( $header, ':' ) ) {
+            if ( false !== stripos( $header, 'boundary=' ) ) {
+              $parts = preg_split( '/boundary=/i', trim( $header ) );
+              $boundary = trim( str_replace( array( "'", '"' ), '', $parts[1] ) );
+            }
+            continue;
           }
-          continue;
-        }
-        // Explode them out
-        list( $name, $content ) = explode( ':', trim( $header ), 2 );
+          // Explode them out
+          list( $name, $content ) = explode( ':', trim( $header ), 2 );
 
-        // Cleanup crew
-        $name    = trim( $name    );
-        $content = trim( $content );
+          // Cleanup crew
+          $name    = trim( $name    );
+          $content = trim( $content );
 
-        switch ( strtolower( $name ) ) {
-          // Mainly for legacy -- process a From: header if it's there
-          case 'from':
-            if ( false !== strpos( $content, '<' ) ) {
-              // So... making my life hard again?
-              $from_name = substr( $content, 0, strpos( $content, '<' ) - 1 );
-              $from_name = str_replace( '"', '', $from_name );
-              $from_name = trim( $from_name );
+          switch ( strtolower( $name ) ) {
+            // Mainly for legacy -- process a From: header if it's there
+            case 'from':
+              if ( false !== strpos( $content, '<' ) ) {
+                // So... making my life hard again?
+                $from_name = substr( $content, 0, strpos( $content, '<' ) - 1 );
+                $from_name = str_replace( '"', '', $from_name );
+                $from_name = trim( $from_name );
 
-              $from_email = substr( $content, strpos( $content, '<' ) + 1 );
-              $from_email = str_replace( '>', '', $from_email );
-              $from_email = trim( $from_email );
-            } else {
-              $from_email = trim( $content );
-            }
-            break;
-          case 'content-type':
-            if ( false !== strpos( $content, ';' ) ) {
-              list( $type, $charset ) = explode( ';', $content );
-              $content_type = trim( $type );
-              if ( false !== stripos( $charset, 'charset=' ) ) {
-                $charset = trim( str_replace( array( 'charset=', '"' ), '', $charset ) );
-              } elseif ( false !== stripos( $charset, 'boundary=' ) ) {
-                $boundary = trim( str_replace( array( 'BOUNDARY=', 'boundary=', '"' ), '', $charset ) );
-                $charset = '';
+                $from_email = substr( $content, strpos( $content, '<' ) + 1 );
+                $from_email = str_replace( '>', '', $from_email );
+                $from_email = trim( $from_email );
+              } else {
+                $from_email = trim( $content );
               }
-            } else {
-              $content_type = trim( $content );
-            }
-            break;
-          case 'cc':
-            $cc = array_merge( (array) $cc, explode( ',', $content ) );
-            foreach ( $cc as $key => $recipient ) {
-              $cc[ $key ] = trim( $recipient );
-            }
-            break;
-          case 'bcc':
-            $bcc = array_merge( (array) $bcc, explode( ',', $content ) );
-            foreach ( $bcc as $key => $recipient ) {
-              $bcc[ $key ] = trim( $recipient );
-            }
-            break;
-          case 'reply-to':
-            $replyto = $content;
-            break;
-          case 'unique-args':
-            if ( false !== strpos( $content, ';' ) ) {
-              $unique_args = explode( ';', $content );
-            }
-            else {
-              $unique_args = (array) trim( $content );
-            }
-            foreach ( $unique_args as $unique_arg ) {
-              if ( false !== strpos( $content, '=' ) ) {
-                list( $key, $val ) = explode( '=', $unique_arg );
-                $mail->addUniqueArg( trim( $key ), trim( $val ) );
-              } 
-            }
-            break;
-          case 'template':
-            $template_ok = Sendgrid_Tools::check_template( trim( $content ) );
-            if ( $template_ok ) {
-              $mail->setTemplateId( trim( $content ) );
-            } elseif ( Sendgrid_Tools::get_template() ) {
-              $mail->setTemplateId( Sendgrid_Tools::get_template() );
-            }
-            break;
-          case 'categories':
-            $categories = explode( ',', trim( $content ) );
-            foreach ( $categories as $category ) {
-              $mail->addCategory( $category );
-            }
-            break;
-          case 'x-smtpapi-to':
-            $xsmtpapi_tos = explode( ',', trim( $content ) );
-            foreach ( $xsmtpapi_tos as $xsmtpapi_to ) {
-              $mail->addSmtpapiTo( $xsmtpapi_to );
-            }
-            break;
-          case 'substitutions':
-            if ( false !== strpos( $content, ';' ) ) {
-              $substitutions = explode( ';', $content );
-            }
-            else {
-              $substitutions = (array) trim( $content );
-            }
-            foreach ( $substitutions as $substitution ) {
-              if ( false !== strpos( $content, '=' ) ) {
-                list( $key, $val ) = explode( '=', $substitution );
-                $mail->addSubstitution( '%' . trim( $key ) . '%', explode( ',', trim( $val ) ) );
-              } 
-            }
-            break;
-          default:
-            // Add it to our grand headers array
-            $headers[trim( $name )] = trim( $content );
-            break;
+              break;
+            case 'content-type':
+              if ( false !== strpos( $content, ';' ) ) {
+                list( $type, $charset ) = explode( ';', $content );
+                $content_type = trim( $type );
+                if ( false !== stripos( $charset, 'charset=' ) ) {
+                  $charset = trim( str_replace( array( 'charset=', '"' ), '', $charset ) );
+                } elseif ( false !== stripos( $charset, 'boundary=' ) ) {
+                  $boundary = trim( str_replace( array( 'BOUNDARY=', 'boundary=', '"' ), '', $charset ) );
+                  $charset = '';
+                }
+              } else {
+                $content_type = trim( $content );
+              }
+              break;
+            case 'cc':
+              $cc = array_merge( (array) $cc, explode( ',', $content ) );
+              foreach ( $cc as $key => $recipient ) {
+                $cc[ $key ] = trim( $recipient );
+              }
+              break;
+            case 'bcc':
+              $bcc = array_merge( (array) $bcc, explode( ',', $content ) );
+              foreach ( $bcc as $key => $recipient ) {
+                $bcc[ $key ] = trim( $recipient );
+              }
+              break;
+            case 'reply-to':
+              $replyto = $content;
+              break;
+            case 'unique-args':
+              if ( false !== strpos( $content, ';' ) ) {
+                $unique_args = explode( ';', $content );
+              }
+              else {
+                $unique_args = (array) trim( $content );
+              }
+              foreach ( $unique_args as $unique_arg ) {
+                if ( false !== strpos( $content, '=' ) ) {
+                  list( $key, $val ) = explode( '=', $unique_arg );
+                  $mail->addUniqueArg( trim( $key ), trim( $val ) );
+                } 
+              }
+              break;
+            case 'template':
+              $template_ok = Sendgrid_Tools::check_template( trim( $content ) );
+              if ( $template_ok ) {
+                $mail->setTemplateId( trim( $content ) );
+              } elseif ( Sendgrid_Tools::get_template() ) {
+                $mail->setTemplateId( Sendgrid_Tools::get_template() );
+              }
+              break;
+            case 'categories':
+              $categories = explode( ',', trim( $content ) );
+              foreach ( $categories as $category ) {
+                $mail->addCategory( $category );
+              }
+              break;
+            case 'x-smtpapi-to':
+              $xsmtpapi_tos = explode( ',', trim( $content ) );
+              foreach ( $xsmtpapi_tos as $xsmtpapi_to ) {
+                $mail->addSmtpapiTo( $xsmtpapi_to );
+              }
+              break;
+            case 'substitutions':
+              if ( false !== strpos( $content, ';' ) ) {
+                $substitutions = explode( ';', $content );
+              }
+              else {
+                $substitutions = (array) trim( $content );
+              }
+              foreach ( $substitutions as $substitution ) {
+                if ( false !== strpos( $content, '=' ) ) {
+                  list( $key, $val ) = explode( '=', $substitution );
+                  $mail->addSubstitution( '%' . trim( $key ) . '%', explode( ',', trim( $val ) ) );
+                } 
+              }
+              break;
+            case 'sections':
+              if ( false !== strpos( $content, ';' ) ) {
+                $sections = explode( ';', $content );
+              }
+              else {
+                $sections = (array) trim( $content );
+              }
+              foreach ( $sections as $section ) {
+                if ( false !== strpos( $content, '=' ) ) {
+                  list( $key, $val ) = explode( '=', $section );
+                  $mail->addSection( '%' . trim( $key ) . '%', trim( $val ) );
+                } 
+              }
+              break;
+            default:
+              // Add it to our grand headers array
+              $headers[trim( $name )] = trim( $content );
+              break;
+          }
         }
       }
     }
@@ -209,7 +236,7 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 
   // From email and name
   // If we don't have a name from the input headers
-  if ( !isset( $from_name ) )
+  if ( ! isset( $from_name ) or ! $from_name )
     $from_name = stripslashes( Sendgrid_Tools::get_from_name() );
 
   /* If we don't have an email from the input headers default to wordpress@$sitename
@@ -219,11 +246,15 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
    * http://trac.wordpress.org/ticket/5007.
    */
 
-  if ( !isset( $from_email ) ) {
+  if ( ! isset( $from_email ) ) {
     $from_email = trim( Sendgrid_Tools::get_from_email() );
-    if (!$from_email) {
+    if (! $from_email) {
       // Get the site domain and get rid of www.
       $sitename = strtolower( $_SERVER['SERVER_NAME'] );
+      if ( ! $sitename and ( 'smtp' == $method ) ) {
+        return false;
+      }
+
       if ( 'www.' == substr( $sitename, 0, 4 ) ) {
         $sitename = substr( $sitename, 4 );
       }
@@ -265,6 +296,7 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 
   $toname = array();
   foreach ( (array) $to as $key => $recipient ) {
+    $toname[ $key ] = " ";
     // Break $recipient into name and address parts if in the format "Foo <bar@baz.com>"
     if ( preg_match(  '/(.*)<(.+)>/', $recipient, $matches ) ) {
       if ( 3 == count( $matches ) ) {
@@ -284,6 +316,15 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
     } else {
       $content_type = 'text/plain';
     }
+  }
+
+  if( ! array_key_exists( 'sendgrid_override_template' , $GLOBALS['wp_filter'] ) ) {
+    $template = Sendgrid_Tools::get_template();
+    if ( $template ) {
+      $mail->setTemplateId( $template );
+    }
+  } else {
+    $message = apply_filters( 'sendgrid_override_template', $message, $content_type );
   }
 
   $content_type = apply_filters( 'wp_mail_content_type', $content_type );
