@@ -49,7 +49,7 @@ nocache_headers();
 $step = isset( $_GET['step'] ) ? (int) $_GET['step'] : 0;
 
 /**
- * Display install header.
+ * Display installation header.
  *
  * @since 2.5.0
  *
@@ -86,6 +86,8 @@ function display_header( $body_classes = '' ) {
  * Display installer setup form.
  *
  * @since 2.8.0
+ *
+ * @global wpdb $wpdb WordPress database abstraction object.
  *
  * @param string|null $error
  */
@@ -141,7 +143,7 @@ function display_setup_form( $error = null ) {
 				<div class="">
 					<?php $initial_password = isset( $_POST['admin_password'] ) ? stripslashes( $_POST['admin_password'] ) : wp_generate_password( 18 ); ?>
 					<input type="password" name="admin_password" id="pass1" class="regular-text" autocomplete="off" data-reveal="1" data-pw="<?php echo esc_attr( $initial_password ); ?>" aria-describedby="pass-strength-result" />
-					<button type="button" class="button button-secondary wp-hide-pw hide-if-no-js" data-start-masked="<?php echo (int) isset( $_POST['admin_password'] ); ?>" data-toggle="0" aria-label="<?php esc_attr_e( 'Hide password' ); ?>">
+					<button type="button" class="button wp-hide-pw hide-if-no-js" data-start-masked="<?php echo (int) isset( $_POST['admin_password'] ); ?>" data-toggle="0" aria-label="<?php esc_attr_e( 'Hide password' ); ?>">
 						<span class="dashicons dashicons-hidden"></span>
 						<span class="text"><?php _e( 'Hide' ); ?></span>
 					</button>
@@ -232,12 +234,16 @@ $mysql_version  = $wpdb->db_version();
 $php_compat     = version_compare( $php_version, $required_php_version, '>=' );
 $mysql_compat   = version_compare( $mysql_version, $required_mysql_version, '>=' ) || file_exists( WP_CONTENT_DIR . '/db.php' );
 
-if ( !$mysql_compat && !$php_compat )
+if ( !$mysql_compat && !$php_compat ) {
+	/* translators: 1: WordPress version number, 2: Minimum required PHP version number, 3: Minimum required MySQL version number, 4: Current PHP version number, 5: Current MySQL version number */
 	$compat = sprintf( __( 'You cannot install because <a href="https://codex.wordpress.org/Version_%1$s">WordPress %1$s</a> requires PHP version %2$s or higher and MySQL version %3$s or higher. You are running PHP version %4$s and MySQL version %5$s.' ), $wp_version, $required_php_version, $required_mysql_version, $php_version, $mysql_version );
-elseif ( !$php_compat )
+} elseif ( !$php_compat ) {
+	/* translators: 1: WordPress version number, 2: Minimum required PHP version number, 3: Current PHP version number */
 	$compat = sprintf( __( 'You cannot install because <a href="https://codex.wordpress.org/Version_%1$s">WordPress %1$s</a> requires PHP version %2$s or higher. You are running version %3$s.' ), $wp_version, $required_php_version, $php_version );
-elseif ( !$mysql_compat )
+} elseif ( !$mysql_compat ) {
+	/* translators: 1: WordPress version number, 2: Minimum required MySQL version number, 3: Current MySQL version number */
 	$compat = sprintf( __( 'You cannot install because <a href="https://codex.wordpress.org/Version_%1$s">WordPress %1$s</a> requires MySQL version %2$s or higher. You are running version %3$s.' ), $wp_version, $required_mysql_version, $mysql_version );
+}
 
 if ( !$mysql_compat || !$php_compat ) {
 	display_header();
@@ -275,7 +281,7 @@ if ( defined( 'DO_NOT_UPGRADE_GLOBAL_TABLES' ) ) {
  */
 $language = '';
 if ( ! empty( $_REQUEST['language'] ) ) {
-	$language = preg_replace( '/[^a-zA-Z_]/', '', $_REQUEST['language'] );
+	$language = preg_replace( '/[^a-zA-Z0-9_]/', '', $_REQUEST['language'] );
 } elseif ( isset( $GLOBALS['wp_local_package'] ) ) {
 	$language = $GLOBALS['wp_local_package'];
 }

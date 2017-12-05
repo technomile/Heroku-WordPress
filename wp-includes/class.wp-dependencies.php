@@ -11,15 +11,14 @@
 /**
  * Core base class extended to register items.
  *
- * @package WordPress
  * @since 2.6.0
- * @uses _WP_Dependency
+ *
+ * @see _WP_Dependency
  */
 class WP_Dependencies {
 	/**
 	 * An array of registered handle objects.
 	 *
-	 * @access public
 	 * @since 2.6.8
 	 * @var array
 	 */
@@ -28,7 +27,6 @@ class WP_Dependencies {
 	/**
 	 * An array of queued _WP_Dependency handle objects.
 	 *
-	 * @access public
 	 * @since 2.6.8
 	 * @var array
 	 */
@@ -37,7 +35,6 @@ class WP_Dependencies {
 	/**
 	 * An array of _WP_Dependency handle objects to queue.
 	 *
-	 * @access public
 	 * @since 2.6.0
 	 * @var array
 	 */
@@ -46,7 +43,6 @@ class WP_Dependencies {
 	/**
 	 * An array of _WP_Dependency handle objects already queued.
 	 *
-	 * @access public
 	 * @since 2.6.0
 	 * @var array
 	 */
@@ -57,7 +53,6 @@ class WP_Dependencies {
 	 *
 	 * Arguments are appended to the item query string.
 	 *
-	 * @access public
 	 * @since 2.6.0
 	 * @var array
 	 */
@@ -66,7 +61,6 @@ class WP_Dependencies {
 	/**
 	 * An array of handle groups to enqueue.
 	 *
-	 * @access public
 	 * @since 2.8.0
 	 * @var array
 	 */
@@ -75,7 +69,6 @@ class WP_Dependencies {
 	/**
 	 * A handle group to enqueue.
 	 *
-	 * @access public
 	 * @since 2.8.0
 	 * @deprecated 4.5.0
 	 * @var int
@@ -87,7 +80,6 @@ class WP_Dependencies {
 	 *
 	 * Processes the items passed to it or the queue, and their dependencies.
 	 *
-	 * @access public
 	 * @since 2.6.0
 	 * @since 2.8.0 Added the `$group` parameter.
 	 *
@@ -124,7 +116,6 @@ class WP_Dependencies {
 	/**
 	 * Processes a dependency.
 	 *
-	 * @access public
 	 * @since 2.6.0
 	 *
 	 * @param string $handle Name of the item. Should be unique.
@@ -140,7 +131,6 @@ class WP_Dependencies {
 	 * Recursively builds an array of items to process taking
 	 * dependencies into account. Does NOT catch infinite loops.
 	 *
-	 * @access public
 	 * @since 2.1.0
 	 * @since 2.6.0 Moved from `WP_Scripts`.
 	 * @since 2.8.0 Added the `$group` parameter.
@@ -200,7 +190,6 @@ class WP_Dependencies {
 	 *
 	 * Registers the item if no item of that name already exists.
 	 *
-	 * @access public
 	 * @since 2.1.0
 	 * @since 2.6.0 Moved from `WP_Scripts`.
 	 *
@@ -211,7 +200,7 @@ class WP_Dependencies {
 	 *                                 as a query string for cache busting purposes. If version is set to false, a version
 	 *                                 number is automatically added equal to current installed WordPress version.
 	 *                                 If set to null, no version is added.
-	 * @param mixed            $args   Optional. Custom property of the item. NOT the class property $args. Examples: $media, $in_footer. 
+	 * @param mixed            $args   Optional. Custom property of the item. NOT the class property $args. Examples: $media, $in_footer.
 	 * @return bool Whether the item has been registered. True on success, false on failure.
 	 */
 	public function add( $handle, $src, $deps = array(), $ver = false, $args = null ) {
@@ -226,7 +215,6 @@ class WP_Dependencies {
 	 *
 	 * Adds data to a registered item.
 	 *
-	 * @access public
 	 * @since 2.6.0
 	 *
 	 * @param string $handle Name of the item. Should be unique.
@@ -246,7 +234,6 @@ class WP_Dependencies {
 	 *
 	 * Gets data associated with a registered item.
 	 *
-	 * @access public
 	 * @since 3.3.0
 	 *
 	 * @param string $handle Name of the item. Should be unique.
@@ -266,7 +253,6 @@ class WP_Dependencies {
 	/**
 	 * Un-register an item or items.
 	 *
-	 * @access public
 	 * @since 2.1.0
 	 * @since 2.6.0 Moved from `WP_Scripts`.
 	 *
@@ -286,7 +272,6 @@ class WP_Dependencies {
 	 * classes, $args is appended to the item url as a query string.
 	 * Note $args is NOT the $args property of items in the $registered array.
 	 *
-	 * @access public
 	 * @since 2.1.0
 	 * @since 2.6.0 Moved from `WP_Scripts`.
 	 *
@@ -309,7 +294,6 @@ class WP_Dependencies {
 	 * Decodes handles and arguments, then dequeues handles
 	 * and removes arguments from the class property $args.
 	 *
-	 * @access public
 	 * @since 2.1.0
 	 * @since 2.6.0 Moved from `WP_Scripts`.
 	 *
@@ -354,7 +338,6 @@ class WP_Dependencies {
 	/**
 	 * Query list for an item.
 	 *
-	 * @access public
 	 * @since 2.1.0
 	 * @since 2.6.0 Moved from `WP_Scripts`.
 	 *
@@ -391,7 +374,6 @@ class WP_Dependencies {
 	/**
 	 * Set item group, unless already in a lower group.
 	 *
-	 * @access public
 	 * @since 2.8.0
 	 *
 	 * @param string $handle    Name of the item. Should be unique.
@@ -411,99 +393,4 @@ class WP_Dependencies {
 		return true;
 	}
 
-} // WP_Dependencies
-
-/**
- * Class _WP_Dependency
- *
- * Helper class to register a handle and associated data.
- *
- * @access private
- * @since 2.6.0
- */
-class _WP_Dependency {
-	/**
-	 * The handle name.
-	 *
-	 * @access public
-	 * @since 2.6.0
-	 * @var null
-	 */
-	public $handle;
-
-	/**
-	 * The handle source.
-	 *
-	 * @access public
-	 * @since 2.6.0
-	 * @var null
-	 */
-	public $src;
-
-	/**
-	 * An array of handle dependencies.
-	 *
-	 * @access public
-	 * @since 2.6.0
-	 * @var array
-	 */
-	public $deps = array();
-
-	/**
-	 * The handle version.
-	 *
-	 * Used for cache-busting.
-	 *
-	 * @access public
-	 * @since 2.6.0
-	 * @var bool|string
-	 */
-	public $ver = false;
-
-	/**
-	 * Additional arguments for the handle.
-	 *
-	 * @access public
-	 * @since 2.6.0
-	 * @var null
-	 */
-	public $args = null;  // Custom property, such as $in_footer or $media.
-
-	/**
-	 * Extra data to supply to the handle.
-	 *
-	 * @access public
-	 * @since 2.6.0
-	 * @var array
-	 */
-	public $extra = array();
-
-	/**
-	 * Setup dependencies.
-	 *
-	 * @since 2.6.0
-	 */
-	public function __construct() {
-		@list( $this->handle, $this->src, $this->deps, $this->ver, $this->args ) = func_get_args();
-		if ( ! is_array($this->deps) )
-			$this->deps = array();
-	}
-
-	/**
-	 * Add handle data.
-	 *
-	 * @access public
-	 * @since 2.6.0
-	 *
-	 * @param string $name The data key to add.
-	 * @param mixed  $data The data value to add.
-	 * @return bool False if not scalar, true otherwise.
-	 */
-	public function add_data( $name, $data ) {
-		if ( !is_scalar($name) )
-			return false;
-		$this->extra[$name] = $data;
-		return true;
-	}
-
-} // _WP_Dependencies
+}

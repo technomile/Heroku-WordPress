@@ -10,14 +10,12 @@
 /** Load WordPress Administration Bootstrap */
 require_once( dirname( __FILE__ ) . '/admin.php' );
 
-/** WordPress Translation Install API */
+/** WordPress Translation Installation API */
 require_once( ABSPATH . 'wp-admin/includes/translation-install.php' );
 
-if ( ! is_multisite() )
-	wp_die( __( 'Multisite support is not enabled.' ) );
-
-if ( ! current_user_can( 'manage_sites' ) )
-	wp_die( __( 'You do not have sufficient permissions to add sites to this network.' ) );
+if ( ! current_user_can( 'create_sites' ) ) {
+	wp_die( __( 'Sorry, you are not allowed to add sites to this network.' ) );
+}
 
 get_current_screen()->add_help_tab( array(
 	'id'      => 'overview',
@@ -29,8 +27,8 @@ get_current_screen()->add_help_tab( array(
 
 get_current_screen()->set_help_sidebar(
 	'<p><strong>' . __('For more information:') . '</strong></p>' .
-	'<p>' . __('<a href="https://codex.wordpress.org/Network_Admin_Sites_Screen" target="_blank">Documentation on Site Management</a>') . '</p>' .
-	'<p>' . __('<a href="https://wordpress.org/support/forum/multisite/" target="_blank">Support Forums</a>') . '</p>'
+	'<p>' . __('<a href="https://codex.wordpress.org/Network_Admin_Sites_Screen">Documentation on Site Management</a>') . '</p>' .
+	'<p>' . __('<a href="https://wordpress.org/support/forum/multisite/">Support Forums</a>') . '</p>'
 );
 
 if ( isset($_REQUEST['action']) && 'add-site' == $_REQUEST['action'] ) {
@@ -44,7 +42,7 @@ if ( isset($_REQUEST['action']) && 'add-site' == $_REQUEST['action'] ) {
 	if ( preg_match( '|^([a-zA-Z0-9-])+$|', $blog['domain'] ) )
 		$domain = strtolower( $blog['domain'] );
 
-	// If not a subdomain install, make sure the domain isn't a reserved word
+	// If not a subdomain installation, make sure the domain isn't a reserved word
 	if ( ! is_subdomain_install() ) {
 		$subdirectory_reserved_names = get_subdirectory_reserved_names();
 
@@ -64,11 +62,17 @@ if ( isset($_REQUEST['action']) && 'add-site' == $_REQUEST['action'] ) {
 		'public' => 1
 	);
 
-	// Handle translation install for the new site.
-	if ( ! empty( $_POST['WPLANG'] ) && wp_can_install_language_pack() ) {
-		$language = wp_download_language_pack( wp_unslash( $_POST['WPLANG'] ) );
-		if ( $language ) {
-			$meta['WPLANG'] = $language;
+	// Handle translation installation for the new site.
+	if ( isset( $_POST['WPLANG'] ) ) {
+		if ( '' === $_POST['WPLANG'] ) {
+			$meta['WPLANG'] = ''; // en_US
+		} elseif ( in_array( $_POST['WPLANG'], get_available_languages() ) ) {
+			$meta['WPLANG'] = $_POST['WPLANG'];
+		} elseif ( current_user_can( 'install_languages' ) ) {
+			$language = wp_download_language_pack( wp_unslash( $_POST['WPLANG'] ) );
+			if ( $language ) {
+				$meta['WPLANG'] = $language;
+			}
 		}
 	}
 
@@ -85,11 +89,11 @@ if ( isset($_REQUEST['action']) && 'add-site' == $_REQUEST['action'] ) {
 	}
 
 	if ( is_subdomain_install() ) {
-		$newdomain = $domain . '.' . preg_replace( '|^www\.|', '', $current_site->domain );
-		$path      = $current_site->path;
+		$newdomain = $domain . '.' . preg_replace( '|^www\.|', '', get_network()->domain );
+		$path      = get_network()->path;
 	} else {
-		$newdomain = $current_site->domain;
-		$path      = $current_site->path . $domain . '/';
+		$newdomain = get_network()->domain;
+		$path      = get_network()->path . $domain . '/';
 	}
 
 	$password = 'N/A';
@@ -125,7 +129,7 @@ if ( isset($_REQUEST['action']) && 'add-site' == $_REQUEST['action'] ) {
 	}
 
 	$wpdb->hide_errors();
-	$id = wpmu_create_blog( $newdomain, $path, $title, $user_id, $meta, $current_site->id );
+	$id = wpmu_create_blog( $newdomain, $path, $title, $user_id, $meta, get_current_network_id() );
 	$wpdb->show_errors();
 	if ( ! is_wp_error( $id ) ) {
 		if ( ! is_super_admin( $user_id ) && !get_user_option( 'primary_blog', $user_id ) ) {
@@ -137,7 +141,7 @@ if ( isset($_REQUEST['action']) && 'add-site' == $_REQUEST['action'] ) {
 			sprintf(
 				/* translators: %s: network name */
 				__( '[%s] New Site Created' ),
-				$current_site->site_name
+				get_network()->site_name
 			),
 			sprintf(
 				/* translators: 1: user login, 2: site url, 3: site name/title */
@@ -197,9 +201,9 @@ if ( ! empty( $messages ) ) {
 			<th scope="row"><label for="site-address"><?php _e( 'Site Address (URL)' ) ?></label></th>
 			<td>
 			<?php if ( is_subdomain_install() ) { ?>
-				<input name="blog[domain]" type="text" class="regular-text" id="site-address" aria-describedby="site-address-desc" autocapitalize="none" autocorrect="off"/><span class="no-break">.<?php echo preg_replace( '|^www\.|', '', $current_site->domain ); ?></span>
+				<input name="blog[domain]" type="text" class="regular-text" id="site-address" aria-describedby="site-address-desc" autocapitalize="none" autocorrect="off"/><span class="no-break">.<?php echo preg_replace( '|^www\.|', '', get_network()->domain ); ?></span>
 			<?php } else {
-				echo $current_site->domain . $current_site->path ?><input name="blog[domain]" type="text" class="regular-text" id="site-address" aria-describedby="site-address-desc"  autocapitalize="none" autocorrect="off" />
+				echo get_network()->domain . get_network()->path ?><input name="blog[domain]" type="text" class="regular-text" id="site-address" aria-describedby="site-address-desc"  autocapitalize="none" autocorrect="off" />
 			<?php }
 			echo '<p class="description" id="site-address-desc">' . __( 'Only lowercase letters (a-z), numbers, and hyphens are allowed.' ) . '</p>';
 			?>
@@ -232,7 +236,7 @@ if ( ! empty( $messages ) ) {
 						'selected'                    => $lang,
 						'languages'                   => $languages,
 						'translations'                => $translations,
-						'show_available_translations' => wp_can_install_language_pack(),
+						'show_available_translations' => current_user_can( 'install_languages' ),
 					) );
 					?>
 				</td>
@@ -243,7 +247,7 @@ if ( ! empty( $messages ) ) {
 			<td><input name="blog[email]" type="email" class="regular-text wp-suggest-user" id="admin-email" data-autocomplete-type="search" data-autocomplete-field="user_email" /></td>
 		</tr>
 		<tr class="form-field">
-			<td colspan="2"><?php _e( 'A new user will be created if the above email address is not in the database.' ) ?><br /><?php _e( 'The username and password will be mailed to this email address.' ) ?></td>
+			<td colspan="2"><?php _e( 'A new user will be created if the above email address is not in the database.' ) ?><br /><?php _e( 'The username and a link to set the password will be mailed to this email address.' ) ?></td>
 		</tr>
 	</table>
 

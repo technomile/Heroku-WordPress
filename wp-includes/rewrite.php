@@ -144,7 +144,7 @@ function add_rewrite_rule( $regex, $query, $after = 'bottom' ) {
  * Add a new rewrite tag (like %postname%).
  *
  * The $query parameter is optional. If it is omitted you must ensure that
- * you call this on, or before, the 'init' hook. This is because $query defaults
+ * you call this on, or before, the {@see 'init'} hook. This is because $query defaults
  * to "$tag=", and for this to work a new query var has to be added.
  *
  * @since 2.1.0
@@ -202,7 +202,7 @@ function remove_rewrite_tag( $tag ) {
 function add_permastruct( $name, $struct, $args = array() ) {
 	global $wp_rewrite;
 
-	// backwards compatibility for the old parameters: $with_front and $ep_mask
+	// Back-compat for the old parameters: $with_front and $ep_mask.
 	if ( ! is_array( $args ) )
 		$args = array( 'with_front' => $args );
 	if ( func_num_args() == 4 )
@@ -311,7 +311,7 @@ function add_rewrite_endpoint( $name, $places, $query_var = true ) {
 }
 
 /**
- * Filter the URL base for taxonomies.
+ * Filters the URL base for taxonomies.
  *
  * To remove any manually prepended /index.php/.
  *
@@ -463,13 +463,21 @@ function url_to_postid( $url ) {
 	global $wp_rewrite;
 
 	/**
-	 * Filter the URL to derive the post ID from.
+	 * Filters the URL to derive the post ID from.
 	 *
 	 * @since 2.2.0
 	 *
 	 * @param string $url The URL to derive the post ID from.
 	 */
 	$url = apply_filters( 'url_to_postid', $url );
+
+	$url_host      = str_replace( 'www.', '', parse_url( $url, PHP_URL_HOST ) );
+	$home_url_host = str_replace( 'www.', '', parse_url( home_url(), PHP_URL_HOST ) );
+
+	// Bail early if the URL does not belong to this site.
+	if ( $url_host && $url_host !== $home_url_host ) {
+		return 0;
+	}
 
 	// First, check to see if there is a 'p=N' or 'page_id=N' to match against
 	if ( preg_match('#[?&](p|page_id|attachment_id)=(\d+)#', $url, $values) )	{

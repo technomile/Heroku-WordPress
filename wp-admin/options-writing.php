@@ -10,7 +10,7 @@
 require_once( dirname( __FILE__ ) . '/admin.php' );
 
 if ( ! current_user_can( 'manage_options' ) )
-	wp_die( __( 'You do not have sufficient permissions to manage options for this site.' ) );
+	wp_die( __( 'Sorry, you are not allowed to manage options for this site.' ) );
 
 $title = __('Writing Settings');
 $parent_file = 'options-general.php';
@@ -27,7 +27,7 @@ if ( apply_filters( 'enable_post_by_email_configuration', true ) ) {
 	get_current_screen()->add_help_tab( array(
 		'id'      => 'options-postemail',
 		'title'   => __( 'Post Via Email' ),
-		'content' => '<p>' . __( 'Post via email settings allow you to send your WordPress install an email with the content of your post. You must set up a secret email account with POP3 access to use this, and any mail received at this address will be posted, so it&#8217;s a good idea to keep this address very secret.' ) . '</p>',
+		'content' => '<p>' . __( 'Post via email settings allow you to send your WordPress installation an email with the content of your post. You must set up a secret email account with POP3 access to use this, and any mail received at this address will be posted, so it&#8217;s a good idea to keep this address very secret.' ) . '</p>',
 	) );
 }
 
@@ -42,8 +42,8 @@ if ( apply_filters( 'enable_update_services_configuration', true ) ) {
 
 get_current_screen()->set_help_sidebar(
 	'<p><strong>' . __('For more information:') . '</strong></p>' .
-	'<p>' . __('<a href="https://codex.wordpress.org/Settings_Writing_Screen" target="_blank">Documentation on Writing Settings</a>') . '</p>' .
-	'<p>' . __('<a href="https://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
+	'<p>' . __('<a href="https://codex.wordpress.org/Settings_Writing_Screen">Documentation on Writing Settings</a>') . '</p>' .
+	'<p>' . __('<a href="https://wordpress.org/support/">Support Forums</a>') . '</p>'
 );
 
 include( ABSPATH . 'wp-admin/admin-header.php' );
@@ -114,7 +114,15 @@ do_settings_fields('writing', 'remote_publishing'); // A deprecated section.
 if ( apply_filters( 'enable_post_by_email_configuration', true ) ) {
 ?>
 <h2 class="title"><?php _e( 'Post via email' ) ?></h2>
-<p><?php printf(__('To post to WordPress by email you must set up a secret email account with POP3 access. Any mail received at this address will be posted, so it&#8217;s a good idea to keep this address very secret. Here are three random strings you could use: <kbd>%s</kbd>, <kbd>%s</kbd>, <kbd>%s</kbd>.'), wp_generate_password(8, false), wp_generate_password(8, false), wp_generate_password(8, false)) ?></p>
+<p><?php
+printf(
+	/* translators: 1, 2, 3: examples of random email addresses */
+	__( 'To post to WordPress by email you must set up a secret email account with POP3 access. Any mail received at this address will be posted, so it&#8217;s a good idea to keep this address very secret. Here are three random strings you could use: %1$s, %2$s, %3$s.' ),
+	sprintf( '<kbd>%s</kbd>', wp_generate_password( 8, false ) ),
+	sprintf( '<kbd>%s</kbd>', wp_generate_password( 8, false ) ),
+	sprintf( '<kbd>%s</kbd>', wp_generate_password( 8, false ) )
+);
+?></p>
 
 <table class="form-table">
 <tr>
@@ -148,7 +156,7 @@ wp_dropdown_categories(array('hide_empty' => 0, 'name' => 'default_email_categor
 
 <?php
 /**
- * Filter whether to enable the Update Services section in the Writing settings screen.
+ * Filters whether to enable the Update Services section in the Writing settings screen.
  *
  * @since 3.0.0
  *
@@ -160,16 +168,29 @@ if ( apply_filters( 'enable_update_services_configuration', true ) ) {
 
 <?php if ( 1 == get_option('blog_public') ) : ?>
 
-<p><label for="ping_sites"><?php _e( 'When you publish a new post, WordPress automatically notifies the following site update services. For more about this, see <a href="https://codex.wordpress.org/Update_Services">Update Services</a> on the Codex. Separate multiple service URLs with line breaks.' ) ?></label></p>
+	<p><label for="ping_sites"><?php
+		printf(
+			/* translators: %s: Codex URL */
+			__( 'When you publish a new post, WordPress automatically notifies the following site update services. For more about this, see <a href="%s">Update Services</a> on the Codex. Separate multiple service URLs with line breaks.' ),
+			__( 'https://codex.wordpress.org/Update_Services' )
+		);
+	?></label></p>
 
-<textarea name="ping_sites" id="ping_sites" class="large-text code" rows="3"><?php echo esc_textarea( get_option('ping_sites') ); ?></textarea>
+	<textarea name="ping_sites" id="ping_sites" class="large-text code" rows="3"><?php echo esc_textarea( get_option('ping_sites') ); ?></textarea>
 
 <?php else : ?>
 
-	<p><?php printf(__('WordPress is not notifying any <a href="https://codex.wordpress.org/Update_Services">Update Services</a> because of your site&#8217;s <a href="%s">visibility settings</a>.'), 'options-reading.php'); ?></p>
+	<p><?php
+		printf(
+			/* translators: 1: Codex URL, 2: Reading Settings URL */
+			__( 'WordPress is not notifying any <a href="%1$s">Update Services</a> because of your site&#8217;s <a href="%2$s">visibility settings</a>.' ),
+			__( 'https://codex.wordpress.org/Update_Services' ),
+			'options-reading.php'
+		);
+	?></p>
 
 <?php endif; ?>
-<?php } // multisite ?>
+<?php } // enable_update_services_configuration ?>
 
 <?php do_settings_sections('writing'); ?>
 

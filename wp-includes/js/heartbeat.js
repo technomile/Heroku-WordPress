@@ -131,7 +131,7 @@
 				// Needed for some hosts that cannot handle frequent requests and the user may exceed the allocated server CPU time, etc.
 				// The minimal interval can be up to 600 sec. however setting it to longer than 120 sec. will limit or disable
 				// some of the functionality (like post locks).
-				// Once set at initialization, minimalInterval cannot be changed/overriden.
+				// Once set at initialization, minimalInterval cannot be changed/overridden.
 				if ( options.minimalInterval ) {
 					options.minimalInterval = parseInt( options.minimalInterval, 10 );
 					settings.minimalInterval = options.minimalInterval > 0 && options.minimalInterval <= 600 ? options.minimalInterval * 1000 : 0;
@@ -366,6 +366,10 @@
 				screen_id: settings.screenId,
 				has_focus: settings.hasFocus
 			};
+
+			if ( 'customize' === settings.screenId  ) {
+				ajaxData.wp_customize = 'on';
+			}
 
 			settings.connecting = true;
 			settings.xhr = $.ajax({
@@ -742,7 +746,11 @@
 		};
 	};
 
-	// Ensure the global `wp` object exists.
+	/**
+	 * Ensure the global `wp` object exists.
+	 *
+	 * @namespace wp
+	 */
 	window.wp = window.wp || {};
 	window.wp.heartbeat = new Heartbeat();
 

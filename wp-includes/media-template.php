@@ -163,7 +163,7 @@ function wp_print_media_templates() {
 
 	<script type="text/html" id="tmpl-media-modal">
 		<div class="<?php echo $class; ?>">
-			<button type="button" class="button-link media-modal-close"><span class="media-modal-icon"><span class="screen-reader-text"><?php _e( 'Close media panel' ); ?></span></span></button>
+			<button type="button" class="media-modal-close"><span class="media-modal-icon"><span class="screen-reader-text"><?php _e( 'Close media panel' ); ?></span></span></button>
 			<div class="media-modal-content"></div>
 		</div>
 		<div class="media-modal-backdrop"></div>
@@ -235,7 +235,10 @@ function wp_print_media_templates() {
 
 				<# if ( data.suggestedWidth && data.suggestedHeight ) { #>
 					<p class="suggested-dimensions">
-						<?php _e( 'Suggested image dimensions:' ); ?> {{data.suggestedWidth}} &times; {{data.suggestedHeight}}
+						<?php
+							/* translators: 1: suggested width number, 2: suggested height number. */
+							printf( __( 'Suggested image dimensions: %1$s by %2$s pixels.' ), '{{data.suggestedWidth}}', '{{data.suggestedHeight}}' );
+						?>
 					</p>
 				<# } #>
 
@@ -290,9 +293,9 @@ function wp_print_media_templates() {
 			<div class="thumbnail thumbnail-{{ data.type }}">
 				<# if ( data.uploading ) { #>
 					<div class="media-progress-bar"><div></div></div>
-				<# } else if ( 'image' === data.type && data.sizes && data.sizes.large ) { #>
+				<# } else if ( data.sizes && data.sizes.large ) { #>
 					<img class="details-image" src="{{ data.sizes.large.url }}" draggable="false" alt="" />
-				<# } else if ( 'image' === data.type && data.sizes && data.sizes.full ) { #>
+				<# } else if ( data.sizes && data.sizes.full ) { #>
 					<img class="details-image" src="{{ data.sizes.full.url }}" draggable="false" alt="" />
 				<# } else if ( -1 === jQuery.inArray( data.type, [ 'audio', 'video' ] ) ) { #>
 					<img class="details-image icon" src="{{ data.icon }}" draggable="false" alt="" />
@@ -325,6 +328,8 @@ function wp_print_media_templates() {
 				<div class="attachment-actions">
 					<# if ( 'image' === data.type && ! data.uploading && data.sizes && data.can.save ) { #>
 					<button type="button" class="button edit-attachment"><?php _e( 'Edit Image' ); ?></button>
+					<# } else if ( 'pdf' === data.subtype && data.sizes ) { #>
+					<?php _e( 'Document Preview' ); ?>
 					<# } #>
 				</div>
 			</div>
@@ -454,6 +459,8 @@ function wp_print_media_templates() {
 					<div class="centered">
 						<# if ( data.image && data.image.src && data.image.src !== data.icon ) { #>
 							<img src="{{ data.image.src }}" class="thumbnail" draggable="false" alt="" />
+						<# } else if ( data.sizes && data.sizes.medium ) { #>
+							<img src="{{ data.sizes.medium.url }}" class="thumbnail" draggable="false" alt="" />
 						<# } else { #>
 							<img src="{{ data.icon }}" class="icon" draggable="false" alt="" />
 						<# } #>
@@ -468,7 +475,7 @@ function wp_print_media_templates() {
 			<# } #>
 		</div>
 		<# if ( data.buttons.check ) { #>
-			<button type="button" class="button-link check" tabindex="-1"><span class="media-modal-icon"></span><span class="screen-reader-text"><?php _e( 'Deselect' ); ?></span></button>
+			<button type="button" class="check" tabindex="-1"><span class="media-modal-icon"></span><span class="screen-reader-text"><?php _e( 'Deselect' ); ?></span></button>
 		<# } #>
 		<#
 		var maybeReadOnly = data.can.save || data.allowLocalEdits ? '' : 'readonly';
@@ -601,7 +608,7 @@ function wp_print_media_templates() {
 		<h2><?php _e( 'Attachment Display Settings' ); ?></h2>
 
 		<# if ( 'image' === data.type ) { #>
-			<label class="setting">
+			<label class="setting align">
 				<span><?php _e('Alignment'); ?></span>
 				<select class="alignment"
 					data-setting="align"
@@ -610,16 +617,16 @@ function wp_print_media_templates() {
 					<# } #>>
 
 					<option value="left">
-						<?php esc_attr_e('Left'); ?>
+						<?php esc_html_e( 'Left' ); ?>
 					</option>
 					<option value="center">
-						<?php esc_attr_e('Center'); ?>
+						<?php esc_html_e( 'Center' ); ?>
 					</option>
 					<option value="right">
-						<?php esc_attr_e('Right'); ?>
+						<?php esc_html_e( 'Right' ); ?>
 					</option>
 					<option value="none" selected>
-						<?php esc_attr_e('None'); ?>
+						<?php esc_html_e( 'None' ); ?>
 					</option>
 				</select>
 			</label>
@@ -641,31 +648,31 @@ function wp_print_media_templates() {
 
 				<# if ( data.model.canEmbed ) { #>
 					<option value="embed" selected>
-						<?php esc_attr_e('Embed Media Player'); ?>
+						<?php esc_html_e( 'Embed Media Player' ); ?>
 					</option>
 					<option value="file">
 				<# } else { #>
 					<option value="none" selected>
-						<?php esc_attr_e('None'); ?>
+						<?php esc_html_e( 'None' ); ?>
 					</option>
 					<option value="file">
 				<# } #>
 					<# if ( data.model.canEmbed ) { #>
-						<?php esc_attr_e('Link to Media File'); ?>
+						<?php esc_html_e( 'Link to Media File' ); ?>
 					<# } else { #>
-						<?php esc_attr_e('Media File'); ?>
+						<?php esc_html_e( 'Media File' ); ?>
 					<# } #>
 					</option>
 					<option value="post">
 					<# if ( data.model.canEmbed ) { #>
-						<?php esc_attr_e('Link to Attachment Page'); ?>
+						<?php esc_html_e( 'Link to Attachment Page' ); ?>
 					<# } else { #>
-						<?php esc_attr_e('Attachment Page'); ?>
+						<?php esc_html_e( 'Attachment Page' ); ?>
 					<# } #>
 					</option>
 				<# if ( 'image' === data.type ) { #>
 					<option value="custom">
-						<?php esc_attr_e('Custom URL'); ?>
+						<?php esc_html_e( 'Custom URL' ); ?>
 					</option>
 				<# } #>
 				</select>
@@ -718,13 +725,13 @@ function wp_print_media_templates() {
 				<option value="post" <# if ( ! wp.media.galleryDefaults.link || 'post' == wp.media.galleryDefaults.link ) {
 					#>selected="selected"<# }
 				#>>
-					<?php esc_attr_e('Attachment Page'); ?>
+					<?php esc_html_e( 'Attachment Page' ); ?>
 				</option>
 				<option value="file" <# if ( 'file' == wp.media.galleryDefaults.link ) { #>selected="selected"<# } #>>
-					<?php esc_attr_e('Media File'); ?>
+					<?php esc_html_e( 'Media File' ); ?>
 				</option>
 				<option value="none" <# if ( 'none' == wp.media.galleryDefaults.link ) { #>selected="selected"<# } #>>
-					<?php esc_attr_e('None'); ?>
+					<?php esc_html_e( 'None' ); ?>
 				</option>
 			</select>
 		</label>
@@ -757,7 +764,7 @@ function wp_print_media_templates() {
 				<# } #>
 				>
 				<?php
-				// This filter is documented in wp-admin/includes/media.php
+				/** This filter is documented in wp-admin/includes/media.php */
 				$size_names = apply_filters( 'image_size_names_choose', array(
 					'thumbnail' => __( 'Thumbnail' ),
 					'medium'    => __( 'Medium' ),
@@ -841,16 +848,16 @@ function wp_print_media_templates() {
 			<span><?php _e('Align'); ?></span>
 			<div class="button-group button-large" data-setting="align">
 				<button class="button" value="left">
-					<?php esc_attr_e('Left'); ?>
+					<?php esc_html_e( 'Left' ); ?>
 				</button>
 				<button class="button" value="center">
-					<?php esc_attr_e('Center'); ?>
+					<?php esc_html_e( 'Center' ); ?>
 				</button>
 				<button class="button" value="right">
-					<?php esc_attr_e('Right'); ?>
+					<?php esc_html_e( 'Right' ); ?>
 				</button>
 				<button class="button active" value="none">
-					<?php esc_attr_e('None'); ?>
+					<?php esc_html_e( 'None' ); ?>
 				</button>
 			</div>
 		</div>
@@ -859,13 +866,13 @@ function wp_print_media_templates() {
 			<span><?php _e('Link To'); ?></span>
 			<div class="button-group button-large" data-setting="link">
 				<button class="button" value="file">
-					<?php esc_attr_e('Image URL'); ?>
+					<?php esc_html_e( 'Image URL' ); ?>
 				</button>
 				<button class="button" value="custom">
-					<?php esc_attr_e('Custom URL'); ?>
+					<?php esc_html_e( 'Custom URL' ); ?>
 				</button>
 				<button class="button active" value="none">
-					<?php esc_attr_e('None'); ?>
+					<?php esc_html_e( 'None' ); ?>
 				</button>
 			</div>
 			<input type="text" class="link-to-custom" data-setting="linkUrl" />
@@ -907,16 +914,16 @@ function wp_print_media_templates() {
 						<span><?php _e('Align'); ?></span>
 						<div class="button-group button-large" data-setting="align">
 							<button class="button" value="left">
-								<?php esc_attr_e('Left'); ?>
+								<?php esc_html_e( 'Left' ); ?>
 							</button>
 							<button class="button" value="center">
-								<?php esc_attr_e('Center'); ?>
+								<?php esc_html_e( 'Center' ); ?>
 							</button>
 							<button class="button" value="right">
-								<?php esc_attr_e('Right'); ?>
+								<?php esc_html_e( 'Right' ); ?>
 							</button>
 							<button class="button active" value="none">
-								<?php esc_attr_e('None'); ?>
+								<?php esc_html_e( 'None' ); ?>
 							</button>
 						</div>
 					</div>
@@ -964,21 +971,21 @@ function wp_print_media_templates() {
 						<select data-setting="link">
 						<# if ( data.attachment ) { #>
 							<option value="file">
-								<?php esc_attr_e('Media File'); ?>
+								<?php esc_html_e( 'Media File' ); ?>
 							</option>
 							<option value="post">
-								<?php esc_attr_e('Attachment Page'); ?>
+								<?php esc_html_e( 'Attachment Page' ); ?>
 							</option>
 						<# } else { #>
 							<option value="file">
-								<?php esc_attr_e('Image URL'); ?>
+								<?php esc_html_e( 'Image URL' ); ?>
 							</option>
 						<# } #>
 							<option value="custom">
-								<?php esc_attr_e('Custom URL'); ?>
+								<?php esc_html_e( 'Custom URL' ); ?>
 							</option>
 							<option value="none">
-								<?php esc_attr_e('None'); ?>
+								<?php esc_html_e( 'None' ); ?>
 							</option>
 						</select>
 						<input type="text" class="link-to-custom" data-setting="linkUrl" />
@@ -1002,7 +1009,7 @@ function wp_print_media_templates() {
 								</div>
 								<label class="setting link-rel">
 									<span><?php _e('Link Rel'); ?></span>
-									<input type="text" data-setting="linkRel" value="{{ data.model.linkClassName }}" />
+									<input type="text" data-setting="linkRel" value="{{ data.model.linkRel }}" />
 								</label>
 								<label class="setting link-class-name">
 									<span><?php _e('Link CSS Class'); ?></span>
@@ -1080,7 +1087,7 @@ function wp_print_media_templates() {
 					</div>
 				</div>
 
-				<label class="setting checkbox-setting">
+				<label class="setting checkbox-setting autoplay">
 					<input type="checkbox" data-setting="autoplay" />
 					<span><?php _e( 'Autoplay' ); ?></span>
 				</label>
@@ -1169,7 +1176,7 @@ function wp_print_media_templates() {
 					</div>
 				</div>
 
-				<label class="setting checkbox-setting">
+				<label class="setting checkbox-setting autoplay">
 					<input type="checkbox" data-setting="autoplay" />
 					<span><?php _e( 'Autoplay' ); ?></span>
 				</label>
@@ -1232,23 +1239,23 @@ function wp_print_media_templates() {
 	</script>
 
 	<script type="text/html" id="tmpl-crop-content">
-		<img class="crop-image" src="{{ data.url }}" alt="">
+		<img class="crop-image" src="{{ data.url }}" alt="<?php esc_attr_e( 'Image crop area preview. Requires mouse interaction.' ); ?>">
 		<div class="upload-errors"></div>
 	</script>
 
 	<script type="text/html" id="tmpl-site-icon-preview">
 		<h2><?php _e( 'Preview' ); ?></h2>
-		<strong><?php _e( 'As a browser icon' ); ?></strong>
+		<strong aria-hidden="true"><?php _e( 'As a browser icon' ); ?></strong>
 		<div class="favicon-preview">
-			<img src="images/browser.png" class="browser-preview" width="182" height="" alt="" />
+			<img src="<?php echo esc_url( admin_url( 'images/' . ( is_rtl() ? 'browser-rtl.png' : 'browser.png' ) ) ); ?>" class="browser-preview" width="182" height="" alt="" />
 
 			<div class="favicon">
 				<img id="preview-favicon" src="{{ data.url }}" alt="<?php esc_attr_e( 'Preview as a browser icon' ); ?>"/>
 			</div>
-			<span class="browser-title"><?php bloginfo( 'name' ); ?></span>
+			<span class="browser-title" aria-hidden="true"><?php bloginfo( 'name' ); ?></span>
 		</div>
 
-		<strong><?php _e( 'As an app icon' ); ?></strong>
+		<strong aria-hidden="true"><?php _e( 'As an app icon' ); ?></strong>
 		<div class="app-icon-preview">
 			<img id="preview-app-icon" src="{{ data.url }}" alt="<?php esc_attr_e( 'Preview as an app icon' ); ?>"/>
 		</div>

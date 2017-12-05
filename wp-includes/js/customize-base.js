@@ -1,3 +1,4 @@
+/** @namespace wp */
 window.wp = window.wp || {};
 
 (function( exports, $ ){
@@ -165,9 +166,12 @@ window.wp = window.wp || {};
 	/**
 	 * Observable values that support two-way binding.
 	 *
-	 * @constuctor
+	 * @memberOf wp.customize
+	 * @alias wp.customize.Value
+	 *
+	 * @constructor
 	 */
-	api.Value = api.Class.extend({
+	api.Value = api.Class.extend(/** @lends wp.customize.Value.prototype */{
 		/**
 		 * @param {mixed}  initial The initial value.
 		 * @param {object} options
@@ -304,11 +308,14 @@ window.wp = window.wp || {};
 	/**
 	 * A collection of observable values.
 	 *
-	 * @constuctor
+	 * @memberOf wp.customize
+	 * @alias wp.customize.Values
+	 *
+	 * @constructor
 	 * @augments wp.customize.Class
 	 * @mixes wp.customize.Events
 	 */
-	api.Values = api.Class.extend({
+	api.Values = api.Class.extend(/** @lends wp.customize.Values.prototype */{
 
 		/**
 		 * The default constructor for items of the collection.
@@ -369,29 +376,44 @@ window.wp = window.wp || {};
 		/**
 		 * Add an item to the collection.
 		 *
-		 * @param {string} id    The ID of the item.
-		 * @param {mixed}  value The item instance.
-		 * @return {mixed} The new item's instance.
+		 * @param {string|wp.customize.Class} item - The item instance to add, or the ID for the instance to add. When an ID string is supplied, then itemObject must be provided.
+		 * @param {wp.customize.Class}        [itemObject] - The item instance when the first argument is a ID string.
+		 * @return {wp.customize.Class} The new item's instance, or an existing instance if already added.
 		 */
-		add: function( id, value ) {
-			if ( this.has( id ) )
-				return this.value( id );
+		add: function( item, itemObject ) {
+			var collection = this, id, instance;
+			if ( 'string' === typeof item ) {
+				id = item;
+				instance = itemObject;
+			} else {
+				if ( 'string' !== typeof item.id ) {
+					throw new Error( 'Unknown key' );
+				}
+				id = item.id;
+				instance = item;
+			}
 
-			this._value[ id ] = value;
-			value.parent = this;
+			if ( collection.has( id ) ) {
+				return collection.value( id );
+			}
+
+			collection._value[ id ] = instance;
+			instance.parent = collection;
 
 			// Propagate a 'change' event on an item up to the collection.
-			if ( value.extended( api.Value ) )
-				value.bind( this._change );
+			if ( instance.extended( api.Value ) ) {
+				instance.bind( collection._change );
+			}
 
-			this.trigger( 'add', value );
+			collection.trigger( 'add', instance );
 
 			// If a deferred object exists for this item,
 			// resolve it.
-			if ( this._deferreds[ id ] )
-				this._deferreds[ id ].resolve();
+			if ( collection._deferreds[ id ] ) {
+				collection._deferreds[ id ].resolve();
+			}
 
-			return this._value[ id ];
+			return collection._value[ id ];
 		},
 
 		/**
@@ -426,18 +448,26 @@ window.wp = window.wp || {};
 		 * @param  {string} id The ID of the item to remove.
 		 */
 		remove: function( id ) {
-			var value;
+			var value = this.value( id );
 
-			if ( this.has( id ) ) {
-				value = this.value( id );
+			if ( value ) {
+
+				// Trigger event right before the element is removed from the collection.
 				this.trigger( 'remove', value );
-				if ( value.extended( api.Value ) )
+
+				if ( value.extended( api.Value ) ) {
 					value.unbind( this._change );
+				}
 				delete value.parent;
 			}
 
 			delete this._value[ id ];
 			delete this._deferreds[ id ];
+
+			// Trigger removed event after the item has been eliminated from the collection.
+			if ( value ) {
+				this.trigger( 'removed', value );
+			}
 		},
 
 		/**
@@ -520,11 +550,14 @@ window.wp = window.wp || {};
 	 *
 	 * Handles inputs, selects, and textareas by default.
 	 *
-	 * @constuctor
+	 * @memberOf wp.customize
+	 * @alias wp.customize.Element
+	 *
+	 * @constructor
 	 * @augments wp.customize.Value
 	 * @augments wp.customize.Class
 	 */
-	api.Element = api.Value.extend({
+	api.Element = api.Value.extend(/** @lends wp.customize.Element */{
 		initialize: function( element, options ) {
 			var self = this,
 				synchronizer = api.Element.synchronizer.html,
@@ -533,34 +566,26 @@ window.wp = window.wp || {};
 			this.element = api.ensure( element );
 			this.events = '';
 
-			if ( this.element.is('input, select, textarea') ) {
-				this.events += 'change';
+			if ( this.element.is( 'input, select, textarea' ) ) {
+				type = this.element.prop( 'type' );
+				this.events += ' change input';
 				synchronizer = api.Element.synchronizer.val;
 
-				if ( this.element.is('input') ) {
-					type = this.element.prop('type');
-					if ( api.Element.synchronizer[ type ] ) {
-						synchronizer = api.Element.synchronizer[ type ];
-					}
-					if ( 'text' === type || 'password' === type ) {
-						this.events += ' keyup';
-					} else if ( 'range' === type ) {
-						this.events += ' input propertychange';
-					}
-				} else if ( this.element.is('textarea') ) {
-					this.events += ' keyup';
+				if ( this.element.is( 'input' ) && api.Element.synchronizer[ type ] ) {
+					synchronizer = api.Element.synchronizer[ type ];
 				}
 			}
 
 			api.Value.prototype.initialize.call( this, null, $.extend( options || {}, synchronizer ) );
 			this._value = this.get();
 
-			update  = this.update;
+			update = this.update;
 			refresh = this.refresh;
 
 			this.update = function( to ) {
-				if ( to !== refresh.call( self ) )
+				if ( to !== refresh.call( self ) ) {
 					update.apply( this, arguments );
+				}
 			};
 			this.refresh = function() {
 				self.set( refresh.call( self ) );
@@ -617,11 +642,14 @@ window.wp = window.wp || {};
 	/**
 	 * A communicator for sending data from one window to another over postMessage.
 	 *
-	 * @constuctor
+	 * @memberOf wp.customize
+	 * @alias wp.customize.Messenger
+	 *
+	 * @constructor
 	 * @augments wp.customize.Class
 	 * @mixes wp.customize.Events
 	 */
-	api.Messenger = api.Class.extend({
+	api.Messenger = api.Class.extend(/** @lends wp.customize.Messenger.prototype */{
 		/**
 		 * Create a new Value.
 		 *
@@ -637,22 +665,25 @@ window.wp = window.wp || {};
 		/**
 		 * Initialize Messenger.
 		 *
-		 * @param  {object} params        Parameters to configure the messenger.
-		 *         {string} .url          The URL to communicate with.
-		 *         {window} .targetWindow The window instance to communicate with. Default window.parent.
-		 *         {string} .channel      If provided, will send the channel with each message and only accept messages a matching channel.
-		 * @param  {object} options       Extend any instance parameter or method with this object.
+		 * @param  {object} params - Parameters to configure the messenger.
+		 *         {string} params.url - The URL to communicate with.
+		 *         {window} params.targetWindow - The window instance to communicate with. Default window.parent.
+		 *         {string} params.channel - If provided, will send the channel with each message and only accept messages a matching channel.
+		 * @param  {object} options - Extend any instance parameter or method with this object.
 		 */
 		initialize: function( params, options ) {
 			// Target the parent frame by default, but only if a parent frame exists.
-			var defaultTarget = window.parent == window ? null : window.parent;
+			var defaultTarget = window.parent === window ? null : window.parent;
 
 			$.extend( this, options || {} );
 
 			this.add( 'channel', params.channel );
 			this.add( 'url', params.url || '' );
 			this.add( 'origin', this.url() ).link( this.url ).setter( function( to ) {
-				return to.replace( /([^:]+:\/\/[^\/]+).*/, '$1' );
+				var urlParser = document.createElement( 'a' );
+				urlParser.href = to;
+				// Port stripping needed by IE since it adds to host but not to event.origin.
+				return urlParser.protocol + '//' + urlParser.host.replace( /:(80|443)$/, '' );
 			});
 
 			// first add with no value
@@ -755,11 +786,129 @@ window.wp = window.wp || {};
 	// Add the Events mixin to api.Messenger.
 	$.extend( api.Messenger.prototype, api.Events );
 
+	/**
+	 * Notification.
+	 *
+	 * @class
+	 * @augments wp.customize.Class
+	 * @since 4.6.0
+	 *
+	 * @memberOf wp.customize
+	 * @alias wp.customize.Notification
+	 *
+	 * @param {string}  code - The error code.
+	 * @param {object}  params - Params.
+	 * @param {string}  params.message=null - The error message.
+	 * @param {string}  [params.type=error] - The notification type.
+	 * @param {boolean} [params.fromServer=false] - Whether the notification was server-sent.
+	 * @param {string}  [params.setting=null] - The setting ID that the notification is related to.
+	 * @param {*}       [params.data=null] - Any additional data.
+	 */
+	api.Notification = api.Class.extend(/** @lends wp.customize.Notification.prototype */{
+
+		/**
+		 * Template function for rendering the notification.
+		 *
+		 * This will be populated with template option or else it will be populated with template from the ID.
+		 *
+		 * @since 4.9.0
+		 * @var {Function}
+		 */
+		template: null,
+
+		/**
+		 * ID for the template to render the notification.
+		 *
+		 * @since 4.9.0
+		 * @var {string}
+		 */
+		templateId: 'customize-notification',
+
+		/**
+		 * Additional class names to add to the notification container.
+		 *
+		 * @since 4.9.0
+		 * @var {string}
+		 */
+		containerClasses: '',
+
+		/**
+		 * Initialize notification.
+		 *
+		 * @since 4.9.0
+		 *
+		 * @param {string}   code - Notification code.
+		 * @param {object}   params - Notification parameters.
+		 * @param {string}   params.message - Message.
+		 * @param {string}   [params.type=error] - Type.
+		 * @param {string}   [params.setting] - Related setting ID.
+		 * @param {Function} [params.template] - Function for rendering template. If not provided, this will come from templateId.
+		 * @param {string}   [params.templateId] - ID for template to render the notification.
+		 * @param {string}   [params.containerClasses] - Additional class names to add to the notification container.
+		 * @param {boolean}  [params.dismissible] - Whether the notification can be dismissed.
+		 */
+		initialize: function( code, params ) {
+			var _params;
+			this.code = code;
+			_params = _.extend(
+				{
+					message: null,
+					type: 'error',
+					fromServer: false,
+					data: null,
+					setting: null,
+					template: null,
+					dismissible: false,
+					containerClasses: ''
+				},
+				params
+			);
+			delete _params.code;
+			_.extend( this, _params );
+		},
+
+		/**
+		 * Render the notification.
+		 *
+		 * @since 4.9.0
+		 *
+		 * @returns {jQuery} Notification container element.
+		 */
+		render: function() {
+			var notification = this, container, data;
+			if ( ! notification.template ) {
+				notification.template = wp.template( notification.templateId );
+			}
+			data = _.extend( {}, notification, {
+				alt: notification.parent && notification.parent.alt
+			} );
+			container = $( notification.template( data ) );
+
+			if ( notification.dismissible ) {
+				container.find( '.notice-dismiss' ).on( 'click keydown', function( event ) {
+					if ( 'keydown' === event.type && 13 !== event.which ) {
+						return;
+					}
+
+					if ( notification.parent ) {
+						notification.parent.remove( notification.code );
+					} else {
+						container.remove();
+					}
+				});
+			}
+
+			return container;
+		}
+	});
+
 	// The main API object is also a collection of all customizer settings.
 	api = $.extend( new api.Values(), api );
 
 	/**
 	 * Get all customize settings.
+	 *
+	 * @memberOf wp.customize
 	 *
 	 * @return {object}
 	 */
@@ -773,6 +922,47 @@ window.wp = window.wp || {};
 		return result;
 	};
 
-	// Expose the API publicly on window.wp.customize
+	/**
+	 * Utility function namespace
+	 *
+	 * @namespace wp.customize.utils
+	 */
+	api.utils = {};
+
+	/**
+	 * Parse query string.
+	 *
+	 * @since 4.7.0
+	 * @access public
+	 * @memberOf wp.customize.utils
+	 *
+	 * @param {string} queryString Query string.
+	 * @returns {object} Parsed query string.
+	 */
+	api.utils.parseQueryString = function parseQueryString( queryString ) {
+		var queryParams = {};
+		_.each( queryString.split( '&' ), function( pair ) {
+			var parts, key, value;
+			parts = pair.split( '=', 2 );
+			if ( ! parts[0] ) {
+				return;
+			}
+			key = decodeURIComponent( parts[0].replace( /\+/g, ' ' ) );
+			key = key.replace( / /g, '_' ); // What PHP does.
+			if ( _.isUndefined( parts[1] ) ) {
+				value = null;
+			} else {
+				value = decodeURIComponent( parts[1].replace( /\+/g, ' ' ) );
+			}
+			queryParams[ key ] = value;
+		} );
+		return queryParams;
+	};
+
+	/**
+	 * Expose the API publicly on window.wp.customize
+	 *
+	 * @namespace wp.customize
+	 */
 	exports.customize = api;
 })( wp, jQuery );

@@ -62,11 +62,11 @@ class Akismet_Widget extends WP_Widget {
 	}
 
 	function form( $instance ) {
-		if ( $instance ) {
+		if ( $instance && isset( $instance['title'] ) ) {
 			$title = $instance['title'];
 		}
 		else {
-			$title = __( 'Spam Blocked' , 'akismet');
+			$title = __( 'Spam Blocked' , 'akismet' );
 		}
 ?>
 
@@ -85,6 +85,10 @@ class Akismet_Widget extends WP_Widget {
 
 	function widget( $args, $instance ) {
 		$count = get_option( 'akismet_spam_count' );
+
+		if ( ! isset( $instance['title'] ) ) {
+			$instance['title'] = __( 'Spam Blocked' , 'akismet' );
+		}
 
 		echo $args['before_widget'];
 		if ( ! empty( $instance['title'] ) ) {

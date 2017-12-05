@@ -32,6 +32,7 @@
  * @global bool $is_IIS
  * @global WP_Query $wp_query
  * @global wpdb $wpdb WordPress database abstraction object.
+ * @global WP $wp Current WordPress environment instance. 
  *
  * @param string $requested_url Optional. The URL that was requested, used to
  *		figure if redirect is needed.
@@ -256,9 +257,9 @@ function redirect_canonical( $requested_url = null, $do_redirect = true ) {
 			}
 		} elseif ( is_single() && strpos($wp_rewrite->permalink_structure, '%category%') !== false && $cat = get_query_var( 'category_name' ) ) {
 			$category = get_category_by_path( $cat );
-			$post_terms = wp_get_object_terms($wp_query->get_queried_object_id(), 'category', array('fields' => 'tt_ids'));
-			if ( (!$category || is_wp_error($category)) || ( !is_wp_error($post_terms) && !empty($post_terms) && !in_array($category->term_taxonomy_id, $post_terms) ) )
+			if ( ( ! $category || is_wp_error( $category ) ) || ! has_term( $category->term_id, 'category', $wp_query->get_queried_object_id() ) ) {
 				$redirect_url = get_permalink($wp_query->get_queried_object_id());
+			}
 		}
 
 		// Post Paging
@@ -391,12 +392,28 @@ function redirect_canonical( $requested_url = null, $do_redirect = true ) {
 	// trailing /index.php
 	$redirect['path'] = preg_replace('|/' . preg_quote( $wp_rewrite->index, '|' ) . '/*?$|', '/', $redirect['path']);
 
-	// Remove trailing spaces from the path
-	$redirect['path'] = preg_replace( '#(%20| )+$#', '', $redirect['path'] );
+	$punctuation_pattern = implode( '|', array_map( 'preg_quote', array(
+		' ', '%20',  // space
+		'!', '%21',  // exclamation mark
+		'"', '%22',  // double quote
+		"'", '%27',  // single quote
+		'(', '%28',  // opening bracket
+		')', '%29',  // closing bracket
+		',', '%2C',  // comma
+		'.', '%2E',  // period
+		';', '%3B',  // semicolon
+		'{', '%7B',  // opening curly bracket
+		'}', '%7D',  // closing curly bracket
+		'%E2%80%9C', // opening curly quote
+		'%E2%80%9D', // closing curly quote
+	) ) );
+
+	// Remove trailing spaces and end punctuation from the path.
+	$redirect['path'] = preg_replace( "#($punctuation_pattern)+$#", '', $redirect['path'] );
 
 	if ( !empty( $redirect['query'] ) ) {
-		// Remove trailing spaces from certain terminating query string args
-		$redirect['query'] = preg_replace( '#((p|page_id|cat|tag)=[^&]*?)(%20| )+$#', '$1', $redirect['query'] );
+		// Remove trailing spaces and end punctuation from certain terminating query string args.
+		$redirect['query'] = preg_replace( "#((p|page_id|cat|tag)=[^&]*?)($punctuation_pattern)+$#", '$1', $redirect['query'] );
 
 		// Clean up empty query strings
 		$redirect['query'] = trim(preg_replace( '#(^|&)(p|page_id|cat|tag)=?(&|$)#', '&', $redirect['query']), '&');
@@ -477,6 +494,15 @@ function redirect_canonical( $requested_url = null, $do_redirect = true ) {
 	// Hex encoded octets are case-insensitive.
 	if ( false !== strpos($requested_url, '%') ) {
 		if ( !function_exists('lowercase_octets') ) {
+			/**
+			 * Converts the first hex-encoded octet match to lowercase.
+			 *
+			 * @since 3.1.0
+			 * @ignore
+			 *
+			 * @param array $matches Hex-encoded octet matches for the requested URL.
+			 * @return string Lowercased version of the first match.
+			 */
 			function lowercase_octets($matches) {
 				return strtolower( $matches[0] );
 			}
@@ -485,7 +511,7 @@ function redirect_canonical( $requested_url = null, $do_redirect = true ) {
 	}
 
 	/**
-	 * Filter the canonical redirect URL.
+	 * Filters the canonical redirect URL.
 	 *
 	 * Returning false to this filter will cancel the redirect.
 	 *
@@ -558,7 +584,11 @@ function strip_fragment_from_url( $url ) {
 		if ( ! empty( $parsed_url['port'] ) ) {
 			$url .= ':' . $parsed_url['port'];
 		}
-		$url .= $parsed_url['path'];
+
+		if ( ! empty( $parsed_url['path'] ) ) {
+			$url .= $parsed_url['path'];
+		}
+
 		if ( ! empty( $parsed_url['query'] ) ) {
 			$url .= '?' . $parsed_url['query'];
 		}

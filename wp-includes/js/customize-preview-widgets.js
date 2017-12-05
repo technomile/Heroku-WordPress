@@ -1,4 +1,6 @@
 /* global _wpWidgetCustomizerPreviewSettings */
+
+/** @namespace wp.customize.widgetsPreview */
 wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( $, _, wp, api ) {
 
 	var self;
@@ -37,16 +39,37 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 		api.preview.bind( 'active', function() {
 			self.highlightControls();
 		} );
+
+		/*
+		 * Refresh a partial when the controls pane requests it. This is used currently just by the
+		 * Gallery widget so that when an attachment's caption is updated in the media modal,
+		 * the widget in the preview will then be refreshed to show the change. Normally doing this
+		 * would not be necessary because all of the state should be contained inside the changeset,
+		 * as everything done in the Customizer should not make a change to the site unless the
+		 * changeset itself is published. Attachments are a current exception to this rule.
+		 * For a proposal to include attachments in the customized state, see #37887.
+		 */
+		api.preview.bind( 'refresh-widget-partial', function( widgetId ) {
+			var partialId = 'widget[' + widgetId + ']';
+			if ( api.selectiveRefresh.partial.has( partialId ) ) {
+				api.selectiveRefresh.partial( partialId ).refresh();
+			} else if ( self.renderedWidgets[ widgetId ] ) {
+				api.preview.send( 'refresh' ); // Fallback in case theme does not support 'customize-selective-refresh-widgets'.
+			}
+		} );
 	};
 
 	/**
 	 * Partial representing a widget instance.
 	 *
+	 * @memberOf wp.customize.widgetsPreview
+	 * @alias wp.customize.widgetsPreview.WidgetPartial
+	 *
 	 * @class
 	 * @augments wp.customize.selectiveRefresh.Partial
 	 * @since 4.5.0
 	 */
-	self.WidgetPartial = api.selectiveRefresh.Partial.extend({
+	self.WidgetPartial = api.selectiveRefresh.Partial.extend(/** @lends wp.customize.widgetsPreview.WidgetPartial.prototype */{
 
 		/**
 		 * Constructor.
@@ -112,11 +135,14 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 	/**
 	 * Partial representing a widget area.
 	 *
+	 * @memberOf wp.customize.widgetsPreview
+	 * @alias wp.customize.widgetsPreview.SidebarPartial
+	 *
 	 * @class
 	 * @augments wp.customize.selectiveRefresh.Partial
 	 * @since 4.5.0
 	 */
-	self.SidebarPartial = api.selectiveRefresh.Partial.extend({
+	self.SidebarPartial = api.selectiveRefresh.Partial.extend(/** @lends wp.customize.widgetsPreview.SidebarPartial.prototype */{
 
 		/**
 		 * Constructor.
@@ -357,7 +383,6 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 				widgetPartial = new self.WidgetPartial( partialId, {
 					params: {}
 				} );
-				api.selectiveRefresh.partial.add( widgetPartial.id, widgetPartial );
 			}
 
 			// Make sure that there is a container element for the widget in the sidebar, if at least a placeholder.
@@ -372,9 +397,14 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 				}
 
 				widgetContainerElement = $(
-					sidebarPartial.params.sidebarArgs.before_widget.replace( '%1$s', widgetId ).replace( '%2$s', 'widget' ) +
+					sidebarPartial.params.sidebarArgs.before_widget.replace( /%1\$s/g, widgetId ).replace( /%2\$s/g, 'widget' ) +
 					sidebarPartial.params.sidebarArgs.after_widget
 				);
+
+				// Handle rare case where before_widget and after_widget are empty.
+				if ( ! widgetContainerElement[0] ) {
+					return;
+				}
 
 				widgetContainerElement.attr( 'data-customize-partial-id', widgetPartial.id );
 				widgetContainerElement.attr( 'data-customize-partial-type', 'widget' );
@@ -394,6 +424,8 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 				sidebarPlacement.endNode.parentNode.insertBefore( widgetContainerElement[0], sidebarPlacement.endNode );
 				wasInserted = true;
 			} );
+
+			api.selectiveRefresh.partial.add( widgetPartial );
 
 			if ( wasInserted ) {
 				sidebarPartial.reflowWidgets();
@@ -437,6 +469,7 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 						}
 					} );
 				}
+				delete self.renderedWidgets[ removedWidgetId ];
 			} );
 
 			// Handle insertion of widgets.
@@ -444,6 +477,7 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 			_.each( widgetsAdded, function( addedWidgetId ) {
 				var widgetPartial = sidebarPartial.ensureWidgetPlacementContainers( addedWidgetId );
 				addedWidgetPartials.push( widgetPartial );
+				self.renderedWidgets[ addedWidgetId ] = true;
 			} );
 
 			_.each( addedWidgetPartials, function( widgetPartial ) {
@@ -496,13 +530,15 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 						sidebarArgs: registeredSidebar
 					}
 				} );
-				api.selectiveRefresh.partial.add( partial.id, partial );
+				api.selectiveRefresh.partial.add( partial );
 			}
 		} );
 	};
 
 	/**
 	 * Calculate the selector for the sidebar's widgets based on the registered sidebar's info.
+	 *
+	 * @memberOf wp.customize.widgetsPreview
 	 *
 	 * @since 3.9.0
 	 */
@@ -511,7 +547,7 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 
 		$.each( self.registeredSidebars, function( i, sidebar ) {
 			var widgetTpl = [
-					sidebar.before_widget.replace( '%1$s', '' ).replace( '%2$s', '' ),
+					sidebar.before_widget,
 					sidebar.before_title,
 					sidebar.after_title,
 					sidebar.after_widget
@@ -521,16 +557,17 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 				widgetClasses;
 
 			emptyWidget = $( widgetTpl );
-			widgetSelector = emptyWidget.prop( 'tagName' );
-			widgetClasses = emptyWidget.prop( 'className' );
+			widgetSelector = emptyWidget.prop( 'tagName' ) || '';
+			widgetClasses = emptyWidget.prop( 'className' ) || '';
 
 			// Prevent a rare case when before_widget, before_title, after_title and after_widget is empty.
 			if ( ! widgetClasses ) {
 				return;
 			}
 
+			// Remove class names that incorporate the string formatting placeholders %1$s and %2$s.
+			widgetClasses = widgetClasses.replace( /\S*%[12]\$s\S*/g, '' );
 			widgetClasses = widgetClasses.replace( /^\s+|\s+$/g, '' );
-
 			if ( widgetClasses ) {
 				widgetSelector += '.' + widgetClasses.split( /\s+/ ).join( '.' );
 			}
@@ -540,6 +577,8 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 
 	/**
 	 * Highlight the widget on widget updates or widget control mouse overs.
+	 *
+	 * @memberOf wp.customize.widgetsPreview
 	 *
 	 * @since 3.9.0
 	 * @param  {string} widgetId ID of the widget.
@@ -560,11 +599,18 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 	 * Show a title and highlight widgets on hover. On shift+clicking
 	 * focus the widget control.
 	 *
+	 * @memberOf wp.customize.widgetsPreview
+	 *
 	 * @since 3.9.0
 	 */
 	self.highlightControls = function() {
 		var self = this,
 			selector = this.widgetSelectors.join( ',' );
+
+		// Skip adding highlights if not in the customizer preview iframe.
+		if ( ! api.settings.channel ) {
+			return;
+		}
 
 		$( selector ).attr( 'title', this.l10n.widgetTooltip );
 
@@ -585,6 +631,8 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 
 	/**
 	 * Parse a widget ID.
+	 *
+	 * @memberOf wp.customize.widgetsPreview
 	 *
 	 * @since 4.5.0
 	 *
@@ -611,6 +659,8 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 	/**
 	 * Parse a widget setting ID.
 	 *
+	 * @memberOf wp.customize.widgetsPreview
+	 *
 	 * @since 4.5.0
 	 *
 	 * @param {string} settingId Widget setting ID.
@@ -635,6 +685,8 @@ wp.customize.widgetsPreview = wp.customize.WidgetCustomizerPreview = (function( 
 
 	/**
 	 * Convert a widget ID into a Customizer setting ID.
+	 *
+	 * @memberOf wp.customize.widgetsPreview
 	 *
 	 * @since 4.5.0
 	 *

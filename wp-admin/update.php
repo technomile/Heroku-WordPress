@@ -21,7 +21,7 @@ if ( isset($_GET['action']) ) {
 
 	if ( 'update-selected' == $action ) {
 		if ( ! current_user_can( 'update_plugins' ) )
-			wp_die( __( 'You do not have sufficient permissions to update plugins for this site.' ) );
+			wp_die( __( 'Sorry, you are not allowed to update plugins for this site.' ) );
 
 		check_admin_referer( 'bulk-update-plugins' );
 
@@ -47,7 +47,7 @@ if ( isset($_GET['action']) ) {
 
 	} elseif ( 'upgrade-plugin' == $action ) {
 		if ( ! current_user_can('update_plugins') )
-			wp_die(__('You do not have sufficient permissions to update plugins for this site.'));
+			wp_die(__('Sorry, you are not allowed to update plugins for this site.'));
 
 		check_admin_referer('upgrade-plugin_' . $plugin);
 
@@ -68,7 +68,7 @@ if ( isset($_GET['action']) ) {
 
 	} elseif ('activate-plugin' == $action ) {
 		if ( ! current_user_can('update_plugins') )
-			wp_die(__('You do not have sufficient permissions to update plugins for this site.'));
+			wp_die(__('Sorry, you are not allowed to update plugins for this site.'));
 
 		check_admin_referer('activate-plugin_' . $plugin);
 		if ( ! isset($_GET['failure']) && ! isset($_GET['success']) ) {
@@ -93,7 +93,7 @@ if ( isset($_GET['action']) ) {
 	} elseif ( 'install-plugin' == $action ) {
 
 		if ( ! current_user_can('install_plugins') )
-			wp_die( __( 'You do not have sufficient permissions to install plugins on this site.' ) );
+			wp_die( __( 'Sorry, you are not allowed to install plugins on this site.' ) );
 
 		include_once( ABSPATH . 'wp-admin/includes/plugin-install.php' ); //for plugins_api..
 
@@ -120,7 +120,7 @@ if ( isset($_GET['action']) ) {
 	 		wp_die( $api );
 		}
 
-		$title = __('Plugin Install');
+		$title = __('Plugin Installation');
 		$parent_file = 'plugins.php';
 		$submenu_file = 'plugin-install.php';
 		require_once(ABSPATH . 'wp-admin/admin-header.php');
@@ -141,7 +141,7 @@ if ( isset($_GET['action']) ) {
 	} elseif ( 'upload-plugin' == $action ) {
 
 		if ( ! current_user_can( 'upload_plugins' ) ) {
-			wp_die( __( 'You do not have sufficient permissions to install plugins on this site.' ) );
+			wp_die( __( 'Sorry, you are not allowed to install plugins on this site.' ) );
 		}
 
 		check_admin_referer('plugin-upload');
@@ -169,11 +169,10 @@ if ( isset($_GET['action']) ) {
 	} elseif ( 'upgrade-theme' == $action ) {
 
 		if ( ! current_user_can('update_themes') )
-			wp_die(__('You do not have sufficient permissions to update themes for this site.'));
+			wp_die(__('Sorry, you are not allowed to update themes for this site.'));
 
 		check_admin_referer('upgrade-theme_' . $theme);
 
-		wp_enqueue_script( 'customize-loader' );
 		wp_enqueue_script( 'updates' );
 
 		$title = __('Update Theme');
@@ -190,7 +189,7 @@ if ( isset($_GET['action']) ) {
 		include(ABSPATH . 'wp-admin/admin-footer.php');
 	} elseif ( 'update-selected-themes' == $action ) {
 		if ( ! current_user_can( 'update_themes' ) )
-			wp_die( __( 'You do not have sufficient permissions to update themes for this site.' ) );
+			wp_die( __( 'Sorry, you are not allowed to update themes for this site.' ) );
 
 		check_admin_referer( 'bulk-update-themes' );
 
@@ -216,17 +215,16 @@ if ( isset($_GET['action']) ) {
 	} elseif ( 'install-theme' == $action ) {
 
 		if ( ! current_user_can('install_themes') )
-			wp_die( __( 'You do not have sufficient permissions to install themes on this site.' ) );
+			wp_die( __( 'Sorry, you are not allowed to install themes on this site.' ) );
 
 		include_once( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' ); //for themes_api..
 
 		check_admin_referer( 'install-theme_' . $theme );
 		$api = themes_api('theme_information', array('slug' => $theme, 'fields' => array('sections' => false, 'tags' => false) ) ); //Save on a bit of bandwidth.
 
-		if ( is_wp_error($api) )
-	 		wp_die($api);
-
-		wp_enqueue_script( 'customize-loader' );
+		if ( is_wp_error( $api ) ) {
+			wp_die( $api );
+		}
 
 		$title = __('Install Themes');
 		$parent_file = 'themes.php';
@@ -246,14 +244,12 @@ if ( isset($_GET['action']) ) {
 	} elseif ( 'upload-theme' == $action ) {
 
 		if ( ! current_user_can( 'upload_themes' ) ) {
-			wp_die( __( 'You do not have sufficient permissions to install themes on this site.' ) );
+			wp_die( __( 'Sorry, you are not allowed to install themes on this site.' ) );
 		}
 
 		check_admin_referer('theme-upload');
 
 		$file_upload = new File_Upload_Upgrader('themezip', 'package');
-
-		wp_enqueue_script( 'customize-loader' );
 
 		$title = __('Upload Theme');
 		$parent_file = 'themes.php';

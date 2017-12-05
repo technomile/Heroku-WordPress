@@ -94,7 +94,7 @@
 #TB_load {
 	position: fixed;
 	display: none;
-	z-index: 103;
+	z-index: 100050;
 	top: 50%;
 	left: 50%;
 	background-color: #E8E8E8;
@@ -144,4 +144,13 @@
 #TB_closeWindowButton:hover .tb-close-icon,
 #TB_closeWindowButton:focus .tb-close-icon {
 	color: #00a0d2;
+}
+
+#TB_closeWindowButton:focus .tb-close-icon {
+	-webkit-box-shadow:
+		0 0 0 1px #5b9dd9,
+		0 0 2px 1px rgba(30, 140, 190, .8);
+	box-shadow:
+		0 0 0 1px #5b9dd9,
+		0 0 2px 1px rgba(30, 140, 190, .8);
 }

@@ -8,52 +8,54 @@
  */
 
 /**
- * Core class used to implement the Custom Menu widget.
+ * Core class used to implement the Navigation Menu widget.
  *
  * @since 3.0.0
  *
  * @see WP_Widget
  */
- class WP_Nav_Menu_Widget extends WP_Widget {
+class WP_Nav_Menu_Widget extends WP_Widget {
 
 	/**
-	 * Sets up a new Custom Menu widget instance.
+	 * Sets up a new Navigation Menu widget instance.
 	 *
 	 * @since 3.0.0
-	 * @access public
 	 */
 	public function __construct() {
 		$widget_ops = array(
-			'description' => __( 'Add a custom menu to your sidebar.' ),
+			'description' => __( 'Add a navigation menu to your sidebar.' ),
 			'customize_selective_refresh' => true,
 		);
-		parent::__construct( 'nav_menu', __('Custom Menu'), $widget_ops );
+		parent::__construct( 'nav_menu', __('Navigation Menu'), $widget_ops );
 	}
 
 	/**
-	 * Outputs the content for the current Custom Menu widget instance.
+	 * Outputs the content for the current Navigation Menu widget instance.
 	 *
 	 * @since 3.0.0
-	 * @access public
 	 *
 	 * @param array $args     Display arguments including 'before_title', 'after_title',
 	 *                        'before_widget', and 'after_widget'.
-	 * @param array $instance Settings for the current Custom Menu widget instance.
+	 * @param array $instance Settings for the current Navigation Menu widget instance.
 	 */
 	public function widget( $args, $instance ) {
 		// Get menu
 		$nav_menu = ! empty( $instance['nav_menu'] ) ? wp_get_nav_menu_object( $instance['nav_menu'] ) : false;
 
-		if ( !$nav_menu )
+		if ( ! $nav_menu ) {
 			return;
+		}
+
+		$title = ! empty( $instance['title'] ) ? $instance['title'] : '';
 
 		/** This filter is documented in wp-includes/widgets/class-wp-widget-pages.php */
-		$instance['title'] = apply_filters( 'widget_title', empty( $instance['title'] ) ? '' : $instance['title'], $instance, $this->id_base );
+		$title = apply_filters( 'widget_title', $title, $instance, $this->id_base );
 
 		echo $args['before_widget'];
 
-		if ( !empty($instance['title']) )
-			echo $args['before_title'] . $instance['title'] . $args['after_title'];
+		if ( $title ) {
+			echo $args['before_title'] . $title . $args['after_title'];
+		}
 
 		$nav_menu_args = array(
 			'fallback_cb' => '',
@@ -61,18 +63,18 @@
 		);
 
 		/**
-		 * Filter the arguments for the Custom Menu widget.
+		 * Filters the arguments for the Navigation Menu widget.
 		 *
 		 * @since 4.2.0
 		 * @since 4.4.0 Added the `$instance` parameter.
 		 *
 		 * @param array    $nav_menu_args {
-		 *     An array of arguments passed to wp_nav_menu() to retrieve a custom menu.
+		 *     An array of arguments passed to wp_nav_menu() to retrieve a navigation menu.
 		 *
 		 *     @type callable|bool $fallback_cb Callback to fire if the menu doesn't exist. Default empty.
 		 *     @type mixed         $menu        Menu ID, slug, or name.
 		 * }
-		 * @param stdClass $nav_menu      Nav menu object for the current menu.
+		 * @param WP_Term  $nav_menu      Nav menu object for the current menu.
 		 * @param array    $args          Display arguments for the current widget.
 		 * @param array    $instance      Array of settings for the current widget.
 		 */
@@ -82,10 +84,9 @@
 	}
 
 	/**
-	 * Handles updating settings for the current Custom Menu widget instance.
+	 * Handles updating settings for the current Navigation Menu widget instance.
 	 *
 	 * @since 3.0.0
-	 * @access public
 	 *
 	 * @param array $new_instance New settings for this instance as input by the user via
 	 *                            WP_Widget::form().
@@ -104,14 +105,15 @@
 	}
 
 	/**
-	 * Outputs the settings form for the Custom Menu widget.
+	 * Outputs the settings form for the Navigation Menu widget.
 	 *
 	 * @since 3.0.0
-	 * @access public
 	 *
 	 * @param array $instance Current settings.
+	 * @global WP_Customize_Manager $wp_customize
 	 */
 	public function form( $instance ) {
+		global $wp_customize;
 		$title = isset( $instance['title'] ) ? $instance['title'] : '';
 		$nav_menu = isset( $instance['nav_menu'] ) ? $instance['nav_menu'] : '';
 
@@ -122,7 +124,7 @@
 		?>
 		<p class="nav-menu-widget-no-menus-message" <?php if ( ! empty( $menus ) ) { echo ' style="display:none" '; } ?>>
 			<?php
-			if ( isset( $GLOBALS['wp_customize'] ) && $GLOBALS['wp_customize'] instanceof WP_Customize_Manager ) {
+			if ( $wp_customize instanceof WP_Customize_Manager ) {
 				$url = 'javascript: wp.customize.panel( "nav_menus" ).focus();';
 			} else {
 				$url = admin_url( 'nav-menus.php' );
@@ -146,6 +148,11 @@
 					<?php endforeach; ?>
 				</select>
 			</p>
+			<?php if ( $wp_customize instanceof WP_Customize_Manager ) : ?>
+				<p class="edit-selected-nav-menu" style="<?php if ( ! $nav_menu ) { echo 'display: none;'; } ?>">
+					<button type="button" class="button"><?php _e( 'Edit Menu' ) ?></button>
+				</p>
+			<?php endif; ?>
 		</div>
 		<?php
 	}

@@ -34,8 +34,9 @@
 /**
  * You can override this in a plugin.
  *
- * The wp_kses_allowed_html filter is more powerful and supplies context.
- * CUSTOM_TAGS is not recommended and should be considered deprecated.
+ * The {@see 'wp_kses_allowed_html'} filter is more powerful and supplies context.
+ *
+ * `CUSTOM_TAGS` is not recommended and should be considered deprecated.
  *
  * @see wp_kses_allowed_html()
  *
@@ -526,7 +527,6 @@ function wp_kses( $string, $allowed_html, $allowed_protocols = array() ) {
 	if ( empty( $allowed_protocols ) )
 		$allowed_protocols = wp_allowed_protocols();
 	$string = wp_kses_no_null( $string, array( 'slash_zero' => 'keep' ) );
-	$string = wp_kses_js_entities($string);
 	$string = wp_kses_normalize_entities($string);
 	$string = wp_kses_hook($string, $allowed_html, $allowed_protocols); // WP changed the order of these funcs and added args to wp_kses_hook
 	return wp_kses_split($string, $allowed_html, $allowed_protocols);
@@ -549,7 +549,6 @@ function wp_kses_one_attr( $string, $element ) {
 	$allowed_html = wp_kses_allowed_html( 'post' );
 	$allowed_protocols = wp_allowed_protocols();
 	$string = wp_kses_no_null( $string, array( 'slash_zero' => 'keep' ) );
-	$string = wp_kses_js_entities( $string );
 	
 	// Preserve leading and trailing whitespace.
 	$matches = array();
@@ -616,9 +615,9 @@ function wp_kses_one_attr( $string, $element ) {
  * @global array $allowedtags
  * @global array $allowedentitynames
  *
- * @param string $context The context for which to retrieve tags.
- *                        Allowed values are post, strip, data,entities, or
- *                        the name of a field filter such as pre_user_description.
+ * @param string|array $context The context for which to retrieve tags.
+ *                              Allowed values are post, strip, data, entities, or
+ *                              the name of a field filter such as pre_user_description.
  * @return array List of allowed tags and their allowed attributes.
  */
 function wp_kses_allowed_html( $context = '' ) {
@@ -626,13 +625,12 @@ function wp_kses_allowed_html( $context = '' ) {
 
 	if ( is_array( $context ) ) {
 		/**
-		 * Filter HTML elements allowed for a given context.
+		 * Filters HTML elements allowed for a given context.
 		 *
 		 * @since 3.5.0
 		 *
-		 * @param string $tags    Allowed tags, attributes, and/or entities.
-		 * @param string $context Context to judge allowed tags by. Allowed values are 'post',
-		 *                        'data', 'strip', 'entities', 'explicit', or the name of a filter.
+		 * @param array  $context      Context to judge allowed tags by.
+		 * @param string $context_type Context type (explicit).
 		 */
 		return apply_filters( 'wp_kses_allowed_html', $context, 'explicit' );
 	}
@@ -667,19 +665,19 @@ function wp_kses_allowed_html( $context = '' ) {
 /**
  * You add any kses hooks here.
  *
- * There is currently only one kses WordPress hook and it is called here. All
- * parameters are passed to the hooks and expected to receive a string.
+ * There is currently only one kses WordPress hook, {@see 'pre_kses'}, and it is called here.
+ * All parameters are passed to the hooks and expected to receive a string.
  *
  * @since 1.0.0
  *
  * @param string $string            Content to filter through kses
  * @param array  $allowed_html      List of allowed HTML elements
  * @param array  $allowed_protocols Allowed protocol in links
- * @return string Filtered content through 'pre_kses' hook
+ * @return string Filtered content through {@see 'pre_kses'} hook.
  */
 function wp_kses_hook( $string, $allowed_html, $allowed_protocols ) {
 	/**
-	 * Filter content to be run through kses.
+	 * Filters content to be run through kses.
 	 *
 	 * @since 2.3.0
 	 *
@@ -780,7 +778,7 @@ function wp_kses_split2($string, $allowed_html, $allowed_protocols) {
 	}
 	// Allow HTML comments
 
-	if (!preg_match('%^<\s*(/\s*)?([a-zA-Z0-9]+)([^>]*)>?$%', $string, $matches))
+	if (!preg_match('%^<\s*(/\s*)?([a-zA-Z0-9-]+)([^>]*)>?$%', $string, $matches))
 		return '';
 	// It's seriously malformed
 
@@ -829,8 +827,9 @@ function wp_kses_attr($element, $attr, $allowed_html, $allowed_protocols) {
 		$xhtml_slash = ' /';
 
 	// Are any attributes allowed at all for this element?
-	if ( ! isset($allowed_html[strtolower($element)]) || count($allowed_html[strtolower($element)]) == 0 )
+	if ( ! isset( $allowed_html[ strtolower( $element ) ] ) || true === $allowed_html[ strtolower( $element ) ] || count( $allowed_html[ strtolower( $element ) ] ) == 0 ) {
 		return "<$element$xhtml_slash>";
+	}
 
 	// Split it
 	$attrarr = wp_kses_hair($attr, $allowed_protocols);
@@ -1295,18 +1294,6 @@ function wp_kses_array_lc($inarray) {
 }
 
 /**
- * Removes the HTML JavaScript entities found in early versions of Netscape 4.
- *
- * @since 1.0.0
- *
- * @param string $string
- * @return string
- */
-function wp_kses_js_entities($string) {
-	return preg_replace('%&\s*\{[^}]*(\}\s*;?|$)%', '', $string);
-}
-
-/**
  * Handles parsing errors in wp_kses_hair().
  *
  * The general plan is to remove everything to and including some whitespace,
@@ -1432,7 +1419,7 @@ function wp_kses_named_entities($matches) {
 /**
  * Callback for wp_kses_normalize_entities() regular expression.
  *
- * This function helps {@see wp_kses_normalize_entities()} to only accept 16-bit
+ * This function helps wp_kses_normalize_entities() to only accept 16-bit
  * values and nothing more for `&#number;` entities.
  *
  * @access private
@@ -1462,6 +1449,7 @@ function wp_kses_normalize_entities2($matches) {
  * This function helps wp_kses_normalize_entities() to only accept valid Unicode
  * numeric entities in hex form.
  *
+ * @since 2.7.0
  * @access private
  *
  * @param array $matches preg_replace_callback() matches array
@@ -1477,6 +1465,8 @@ function wp_kses_normalize_entities3($matches) {
 
 /**
  * Helper function to determine if a Unicode value is valid.
+ *
+ * @since 2.7.0
  *
  * @param int $i Unicode value
  * @return bool True if the value was a valid Unicode number
@@ -1510,6 +1500,8 @@ function wp_kses_decode_entities($string) {
 /**
  * Regex callback for wp_kses_decode_entities()
  *
+ * @since 2.9.0
+ *
  * @param array $match preg match
  * @return string
  */
@@ -1519,6 +1511,8 @@ function _wp_kses_decode_entities_chr( $match ) {
 
 /**
  * Regex callback for wp_kses_decode_entities()
+ *
+ * @since 2.9.0
  *
  * @param array $match preg match
  * @return string
@@ -1641,8 +1635,8 @@ function kses_init_filters() {
  * A quick procedural method to removing all of the filters that kses uses for
  * content in WordPress Loop.
  *
- * Does not remove the kses_init() function from 'init' hook (priority is
- * default). Also does not remove kses_init() function from 'set_current_user'
+ * Does not remove the kses_init() function from {@see 'init'} hook (priority is
+ * default). Also does not remove kses_init() function from {@see 'set_current_user'}
  * hook (priority is also default).
  *
  * @since 2.0.6
@@ -1664,8 +1658,8 @@ function kses_remove_filters() {
 /**
  * Sets up most of the Kses filters for input form content.
  *
- * If you remove the kses_init() function from 'init' hook and
- * 'set_current_user' (priority is default), then none of the Kses filter hooks
+ * If you remove the kses_init() function from {@see 'init'} hook and
+ * {@see 'set_current_user'} (priority is default), then none of the Kses filter hooks
  * will be added.
  *
  * First removes all of the Kses filters in case the current user does not need
@@ -1704,23 +1698,84 @@ function safecss_filter_attr( $css, $deprecated = '' ) {
 	$css_array = explode( ';', trim( $css ) );
 
 	/**
-	 * Filter list of allowed CSS attributes.
+	 * Filters list of allowed CSS attributes.
 	 *
 	 * @since 2.8.1
+	 * @since 4.4.0 Added support for `min-height`, `max-height`, `min-width`, and `max-width`.
+	 * @since 4.6.0 Added support for `list-style-type`.
 	 *
 	 * @param array $attr List of allowed CSS attributes.
 	 */
-	$allowed_attr = apply_filters( 'safe_style_css', array( 'text-align', 'margin', 'color', 'float',
-	'border', 'background', 'background-color', 'border-bottom', 'border-bottom-color',
-	'border-bottom-style', 'border-bottom-width', 'border-collapse', 'border-color', 'border-left',
-	'border-left-color', 'border-left-style', 'border-left-width', 'border-right', 'border-right-color',
-	'border-right-style', 'border-right-width', 'border-spacing', 'border-style', 'border-top',
-	'border-top-color', 'border-top-style', 'border-top-width', 'border-width', 'caption-side',
-	'clear', 'cursor', 'direction', 'font', 'font-family', 'font-size', 'font-style',
-	'font-variant', 'font-weight', 'height', 'min-height','max-height' , 'letter-spacing', 'line-height', 'margin-bottom',
-	'margin-left', 'margin-right', 'margin-top', 'overflow', 'padding', 'padding-bottom',
-	'padding-left', 'padding-right', 'padding-top', 'text-decoration', 'text-indent', 'vertical-align',
-	'width', 'min-width', 'max-width' ) );
+	$allowed_attr = apply_filters( 'safe_style_css', array(
+		'background',
+		'background-color',
+
+		'border',
+		'border-width',
+		'border-color',
+		'border-style',
+		'border-right',
+		'border-right-color',
+		'border-right-style',
+		'border-right-width',
+		'border-bottom',
+		'border-bottom-color',
+		'border-bottom-style',
+		'border-bottom-width',
+		'border-left',
+		'border-left-color',
+		'border-left-style',
+		'border-left-width',
+		'border-top',
+		'border-top-color',
+		'border-top-style',
+		'border-top-width',
+
+		'border-spacing',
+		'border-collapse',
+		'caption-side',
+
+		'color',
+		'font',
+		'font-family',
+		'font-size',
+		'font-style',
+		'font-variant',
+		'font-weight',
+		'letter-spacing',
+		'line-height',
+		'text-decoration',
+		'text-indent',
+		'text-align',
+
+		'height',
+		'min-height',
+		'max-height',
+
+		'width',
+		'min-width',
+		'max-width',
+
+		'margin',
+		'margin-right',
+		'margin-bottom',
+		'margin-left',
+		'margin-top',
+
+		'padding',
+		'padding-right',
+		'padding-bottom',
+		'padding-left',
+		'padding-top',
+
+		'clear',
+		'cursor',
+		'direction',
+		'float',
+		'overflow',
+		'vertical-align',
+		'list-style-type',
+	) );
 
 	if ( empty($allowed_attr) )
 		return $css;

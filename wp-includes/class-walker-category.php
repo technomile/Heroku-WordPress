@@ -20,7 +20,6 @@ class Walker_Category extends Walker {
 	 * What the class handles.
 	 *
 	 * @since 2.1.0
-	 * @access public
 	 * @var string
 	 *
 	 * @see Walker::$tree_type
@@ -31,7 +30,6 @@ class Walker_Category extends Walker {
 	 * Database fields to use.
 	 *
 	 * @since 2.1.0
-	 * @access public
 	 * @var array
 	 *
 	 * @see Walker::$db_fields
@@ -43,7 +41,6 @@ class Walker_Category extends Walker {
 	 * Starts the list before the elements are added.
 	 *
 	 * @since 2.1.0
-	 * @access public
 	 *
 	 * @see Walker::start_lvl()
 	 *
@@ -64,7 +61,6 @@ class Walker_Category extends Walker {
 	 * Ends the list of after the elements are added.
 	 *
 	 * @since 2.1.0
-	 * @access public
 	 *
 	 * @see Walker::end_lvl()
 	 *
@@ -85,11 +81,10 @@ class Walker_Category extends Walker {
 	 * Starts the element output.
 	 *
 	 * @since 2.1.0
-	 * @access public
 	 *
 	 * @see Walker::start_el()
 	 *
-	 * @param string $output   Passed by reference. Used to append additional content.
+	 * @param string $output   Used to append additional content (passed by reference).
 	 * @param object $category Category data object.
 	 * @param int    $depth    Optional. Depth of category in reference to parents. Default 0.
 	 * @param array  $args     Optional. An array of arguments. See wp_list_categories(). Default empty array.
@@ -111,7 +106,7 @@ class Walker_Category extends Walker {
 		$link = '<a href="' . esc_url( get_term_link( $category ) ) . '" ';
 		if ( $args['use_desc_for_title'] && ! empty( $category->description ) ) {
 			/**
-			 * Filter the category description for display.
+			 * Filters the category description for display.
 			 *
 			 * @since 1.2.0
 			 *
@@ -189,7 +184,7 @@ class Walker_Category extends Walker {
 			}
 
 			/**
-			 * Filter the list of CSS classes to include with each category in the list.
+			 * Filters the list of CSS classes to include with each category in the list.
 			 *
 			 * @since 4.2.0
 			 *
@@ -215,11 +210,10 @@ class Walker_Category extends Walker {
 	 * Ends the element output, if needed.
 	 *
 	 * @since 2.1.0
-	 * @access public
 	 *
 	 * @see Walker::end_el()
 	 *
-	 * @param string $output Passed by reference. Used to append additional content.
+	 * @param string $output Used to append additional content (passed by reference).
 	 * @param object $page   Not used.
 	 * @param int    $depth  Optional. Depth of category. Not used.
 	 * @param array  $args   Optional. An array of arguments. Only uses 'list' for whether should append

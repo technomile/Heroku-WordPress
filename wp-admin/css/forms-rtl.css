@@ -1,8 +1,6 @@
 /* Include margin and padding in the width calculation of input and textarea. */
 input,
 textarea {
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
 	box-sizing: border-box;
 }
 
@@ -16,7 +14,6 @@ input[type="datetime-local"],
 input[type="email"],
 input[type="month"],
 input[type="number"],
-input[type="password"],
 input[type="search"],
 input[type="radio"],
 input[type="tel"],
@@ -27,12 +24,10 @@ input[type="week"],
 select,
 textarea {
 	border: 1px solid #ddd;
-	-webkit-box-shadow: inset 0 1px 2px rgba( 0, 0, 0, 0.07 );
 	box-shadow: inset 0 1px 2px rgba( 0, 0, 0, 0.07 );
 	background-color: #fff;
 	color: #32373c;
 	outline: none;
-	-webkit-transition: 0.05s border-color ease-in-out;
 	transition: 0.05s border-color ease-in-out;
 }
 
@@ -45,7 +40,6 @@ input[type="datetime-local"]:focus,
 input[type="email"]:focus,
 input[type="month"]:focus,
 input[type="number"]:focus,
-input[type="password"]:focus,
 input[type="search"]:focus,
 input[type="tel"]:focus,
 input[type="text"]:focus,
@@ -57,7 +51,6 @@ input[type="radio"]:focus,
 select:focus,
 textarea:focus {
 	border-color: #5b9dd9;
-	-webkit-box-shadow: 0 0 2px rgba( 30, 140, 190, 0.8 );
 	box-shadow: 0 0 2px rgba( 30, 140, 190, 0.8 );
 }
 
@@ -70,7 +63,7 @@ input[type="url"] {
 /* Vertically align the number selector with the input. */
 input[type="number"] {
 	height: 28px;
-	line-height: inherit;
+	line-height: 1;
 }
 
 input[type="checkbox"],
@@ -91,9 +84,7 @@ input[type="radio"] {
 	width: 16px;
 	min-width: 16px;
 	-webkit-appearance: none;
-	-webkit-box-shadow: inset 0 1px 2px rgba( 0, 0, 0, 0.1 );
 	box-shadow: inset 0 1px 2px rgba( 0, 0, 0, 0.1 );
-	-webkit-transition: .05s border-color ease-in-out;
 	transition: .05s border-color ease-in-out;
 }
 
@@ -121,7 +112,6 @@ td > input[type="checkbox"],
 }
 
 input[type="radio"] {
-	-webkit-border-radius: 50%;
 	border-radius: 50%;
 	margin-left: 4px;
 	line-height: 10px;
@@ -148,7 +138,6 @@ input[type="checkbox"]:checked:before {
 input[type="radio"]:checked:before {
 	content: "\2022";
 	text-indent: -9999px;
-	-webkit-border-radius: 50px;
 	border-radius: 50px;
 	font-size: 24px;
 	width: 6px;
@@ -193,7 +182,6 @@ input,
 select {
 	font-size: 14px;
 	padding: 3px 5px;
-	-webkit-border-radius: 0;
 	border-radius: 0; /* Reset mobile webkit's default element styling */
 }
 
@@ -206,6 +194,7 @@ textarea {
 
 .wp-admin input[type="file"] {
 	padding: 3px 0;
+	cursor: pointer;
 }
 
 label {
@@ -250,8 +239,7 @@ textarea[readonly] {
 .form-invalid input, .form-invalid input:focus,
 .form-invalid select, .form-invalid select:focus {
 	border-color: #dc3232 !important;
-	-webkit-box-shadow: 0 0 2px rgba( 204, 0, 0, 0.8 );
- 	box-shadow: 0 0 2px rgba( 204, 0, 0, 0.8 );
+ box-shadow: 0 0 2px rgba( 204, 0, 0, 0.8 );
 }
 
 .form-table .form-required.form-invalid td:after {
@@ -287,7 +275,6 @@ textarea:disabled,
 textarea.disabled {
 	background: rgba( 255, 255, 255, 0.5 );
 	border-color: rgba( 222, 222, 222, 0.75 );
-	-webkit-box-shadow: inset 0 1px 2px rgba( 0, 0, 0, 0.04 );
 	box-shadow: inset 0 1px 2px rgba( 0, 0, 0, 0.04 );
 	color: rgba( 51, 51, 51, 0.5 );
 }
@@ -297,8 +284,8 @@ input[type="file"].disabled,
 input[type="range"]:disabled,
 input[type="range"].disabled {
 	background: none;
-	-webkit-box-shadow: none;
 	box-shadow: none;
+	cursor: default;
 }
 
 input[type="checkbox"]:disabled,
@@ -340,9 +327,7 @@ input[type="radio"].disabled:checked:before {
 .submit {
 	padding: 1.5em 0;
 	margin: 5px 0;
-	-webkit-border-bottom-right-radius: 3px;
 	border-bottom-right-radius: 3px;
-	-webkit-border-bottom-left-radius: 3px;
 	border-bottom-left-radius: 3px;
 	border: none;
 }
@@ -386,7 +371,7 @@ textarea.large-text {
 	width: 99%;
 }
 
-input.regular-text {
+.regular-text {
 	width: 25em;
 }
 
@@ -458,21 +443,6 @@ fieldset label,
 	vertical-align: baseline;
 }
 
-#misc-publishing-actions label[for="post_status"]:before {
-	content: "\f173";
-	display: inline-block;
-	font: normal 20px/1 dashicons;
-	speak: none;
-	right: -1px;
-	padding: 0 0 0 5px;
-	position: relative;
-	top: 0;
-	text-decoration: none !important;
-	vertical-align: top;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-}
-
 #pass-strength-result {
 	background-color: #eee;
 	border: 1px solid #ddd;
@@ -481,8 +451,6 @@ fieldset label,
 	padding: 3px 5px;
 	text-align: center;
 	width: 25em;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
 	box-sizing: border-box;
 	opacity: 0;
 }
@@ -566,6 +534,16 @@ p.search-box {
 	margin: 0 0 0 4px;
 }
 
+.js.plugins-php .search-box .wp-filter-search {
+	margin: 0;
+	width: 280px;
+	font-size: 16px;
+	font-weight: 300;
+	line-height: 1.5;
+	padding: 3px 5px;
+	height: 32px;
+}
+
 input[type="text"].ui-autocomplete-loading,
 input[type="email"].ui-autocomplete-loading {
 	background-image: url(../images/loading.gif);
@@ -589,7 +567,6 @@ ul#add-to-blog-users {
 	position: absolute;
 	z-index: 10000;
 	border: 1px solid #5b9dd9;
-	-webkit-box-shadow: 0 1px 2px rgba( 30, 140, 190, 0.8 );
 	box-shadow: 0 1px 2px rgba( 30, 140, 190, 0.8 );
 	background-color: #fff;
 }
@@ -599,11 +576,18 @@ ul#add-to-blog-users {
 	padding: 4px 10px;
 	white-space: nowrap;
 	text-align: right;
+	cursor: pointer;
 }
 
-.ui-autocomplete li.ui-state-focus {
+/* Colors for the wplink toolbar autocomplete. */
+.ui-autocomplete .ui-state-focus {
 	background-color: #ddd;
-	cursor: pointer;
+}
+
+/* Colors for the tags autocomplete. */
+.wp-tags-autocomplete .ui-state-focus {
+	background-color: #0073aa;
+	color: #fff;
 }
 
 /*------------------------------------------------------------------------------
@@ -620,8 +604,7 @@ ul#add-to-blog-users {
 .form-table,
 .form-table td,
 .form-table th,
-.form-table td p,
-.form-wrap label {
+.form-table td p {
 	font-size: 14px;
 }
 
@@ -635,7 +618,7 @@ ul#add-to-blog-users {
 .form-table th,
 .form-wrap label {
 	color: #23282d;
-	font-weight: normal;
+	font-weight: 400;
 	text-shadow: none;
 	vertical-align: baseline;
 }
@@ -649,8 +632,10 @@ ul#add-to-blog-users {
 	font-weight: 600;
 }
 
-.form-table th.th-full {
+.form-table th.th-full, /* Not used by core. Back-compat for pre-4.8 */
+.form-table .td-full {
 	width: auto;
+	padding: 20px 0 20px 10px;
 	font-weight: 400;
 }
 
@@ -729,8 +714,6 @@ table.form-table td .updated p {
 	display: inline-block;
 	width: 24%;
 	padding: 5px 15px 15px;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
 	box-sizing: border-box;
 	margin-bottom: 3px;
 }
@@ -762,7 +745,7 @@ table.form-table td .updated p {
 .tool-box .title {
 	margin: 8px 0;
 	font-size: 18px;
-	font-weight: normal;
+	font-weight: 400;
 	line-height: 24px;
 }
 
@@ -787,7 +770,6 @@ table.form-table td .updated p {
 	min-width: 255px;
 	max-width: 520px;
 	border: 1px solid #e5e5e5;
-	-webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.04);
 	box-shadow: 0 1px 1px rgba(0,0,0,0.04);
 	background: #fff;
 }
@@ -823,7 +805,6 @@ table.form-table td .updated p {
 	cursor: move;
 	color: #32373c;
 	background: #e5e5e5;
-	-webkit-border-radius: 5px;
 	border-radius: 5px;
 	border: 1px solid #b4b9be;
 	font-style: normal;
@@ -846,17 +827,13 @@ table.form-table td .updated p {
 	bottom: 9px;
 	background: transparent;
 	-webkit-transform: skew(-20deg) rotate(-6deg);
-	-ms-transform: skew(-20deg) rotate(-6deg);
 	transform: skew(-20deg) rotate(-6deg);
-	-webkit-box-shadow: 0 10px 8px rgba(0, 0, 0, 0.6);
 	box-shadow: 0 10px 8px rgba(0, 0, 0, 0.6);
 }
 
 .pressthis-bookmarklet:hover:after {
 	-webkit-transform: skew(-20deg) rotate(-9deg);
-	-ms-transform: skew(-20deg) rotate(-9deg);
 	transform: skew(-20deg) rotate(-9deg);
-	-webkit-box-shadow: 0 10px 8px rgba(0, 0, 0, 0.7);
 	box-shadow: 0 10px 8px rgba(0, 0, 0, 0.7);
 }
 
@@ -920,7 +897,7 @@ table.form-table td .updated p {
 
 .options-general-php .spinner {
 	float: none;
-	margin: 0 3px;
+	margin: -3px 3px 0;
 }
 
 .settings-php .language-install-spinner,
@@ -929,6 +906,11 @@ table.form-table td .updated p {
 	float: none;
 	margin: -3px 5px 0;
 	vertical-align: middle;
+}
+
+.form-table.permalink-structure .available-structure-tags li {
+	float: right;
+	margin-left: 5px;
 }
 
 /*------------------------------------------------------------------------------
@@ -970,10 +952,12 @@ table.form-table td .updated p {
 
 .request-filesystem-credentials-dialog {
 	display: none;
+	/* The customizer uses visibility: hidden on the body for full-overlays. */
+	visibility: visible;
 }
 
 .request-filesystem-credentials-dialog .notification-dialog {
-	top: 15%;
+	top: 10%;
 	max-height: 85%;
 }
 
@@ -1031,6 +1015,10 @@ table.form-table td .updated p {
 	margin-left: 10px;
 }
 
+.request-filesystem-credentials-dialog #auth-keys-desc {
+	margin-bottom: 0;
+}
+
 #request-filesystem-credentials-dialog .button:not(:last-child) {
 	margin-left: 10px;
 }
@@ -1041,6 +1029,43 @@ table.form-table td .updated p {
 
 #request-filesystem-credentials-dialog .cancel-button {
 	display: inline;
+}
+
+.request-filesystem-credentials-dialog .ftp-username,
+.request-filesystem-credentials-dialog .ftp-password {
+	float: none;
+	width: auto;
+}
+
+.request-filesystem-credentials-dialog .ftp-username {
+	margin-bottom: 1em;
+}
+
+.request-filesystem-credentials-dialog .ftp-password {
+	margin: 0;
+}
+
+.request-filesystem-credentials-dialog .ftp-password em {
+	color: #888;
+}
+
+.request-filesystem-credentials-dialog label {
+	display: block;
+	line-height: 1.5;
+	margin-bottom: 1em;
+}
+
+.request-filesystem-credentials-form legend {
+	padding-bottom: 0;
+}
+
+.request-filesystem-credentials-form #ssh-keys legend {
+	font-size: 1.3em;
+}
+
+.request-filesystem-credentials-form .notice {
+	margin: 0 0 20px 0;
+	clear: both;
 }
 
 
@@ -1132,8 +1157,6 @@ table.form-table td .updated p {
 	}
 
 	.form-table {
-		-webkit-box-sizing: border-box;
-		-moz-box-sizing: border-box;
 		box-sizing: border-box;
 	}
 
@@ -1180,8 +1203,6 @@ table.form-table td .updated p {
 		padding: 7px 10px;
 		display: block;
 		max-width: none;
-		-webkit-box-sizing: border-box;
-		-moz-box-sizing: border-box;
 		box-sizing: border-box;
 	}
 
@@ -1201,7 +1222,7 @@ table.form-table td .updated p {
 	input[type="number"].small-text,
 	.form-table input[type="text"].small-text {
 		width: auto;
-		max-width: 55px;
+		max-width: 4.375em; /* 70px, enough for 4 digits to fit comfortably */
 		display: inline;
 		padding: 3px 6px;
 		margin: 0 3px;
@@ -1209,8 +1230,6 @@ table.form-table td .updated p {
 
 	#pass-strength-result {
 		width: 100%;
-		-webkit-box-sizing: border-box;
-		-moz-box-sizing: border-box;
 		box-sizing: border-box;
 		padding: 8px;
 	}
@@ -1303,7 +1322,6 @@ table.form-table td .updated p {
 	.wp-pwd button.button {
 		background: transparent;
 		border: none;
-		-webkit-box-shadow: none;
 		box-shadow: none;
 		line-height: 2;
 		margin: 0;
@@ -1324,7 +1342,7 @@ table.form-table td .updated p {
 	}
 
 	.options-general-php input[type="text"].small-text {
-		max-width: 60px;
+		max-width: 6.25em;
 		margin: 0;
 	}
 }
@@ -1349,9 +1367,10 @@ table.form-table td .updated p {
 	}
 }
 
-@media only screen and (max-height: 480px) {
-	/*  Request Credentials */
-	.request-filesystem-credentials-dialog .notification-dialog{
+@media only screen and (max-height: 480px), screen and (max-width: 450px) {
+	/*  Request Credentials / File Editor Warning */
+	.request-filesystem-credentials-dialog .notification-dialog,
+	.file-editor-warning .notification-dialog {
 		width: 100%;
 		height: 100%;
 		max-height: 100%;

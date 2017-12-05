@@ -36,12 +36,7 @@ $charset_collate = $wpdb->get_charset_collate();
 function wp_get_db_schema( $scope = 'all', $blog_id = null ) {
 	global $wpdb;
 
-	$charset_collate = '';
-
-	if ( ! empty($wpdb->charset) )
-		$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
-	if ( ! empty($wpdb->collate) )
-		$charset_collate .= " COLLATE $wpdb->collate";
+	$charset_collate = $wpdb->get_charset_collate();
 
 	if ( $blog_id && $blog_id != $wpdb->blogid )
 		$old_blog_id = $wpdb->set_blog_id( $blog_id );
@@ -170,7 +165,7 @@ CREATE TABLE $wpdb->posts (
   post_status varchar(20) NOT NULL default 'publish',
   comment_status varchar(20) NOT NULL default 'open',
   ping_status varchar(20) NOT NULL default 'open',
-  post_password varchar(20) NOT NULL default '',
+  post_password varchar(255) NOT NULL default '',
   post_name varchar(200) NOT NULL default '',
   to_ping text NOT NULL,
   pinged text NOT NULL,
@@ -386,7 +381,7 @@ function populate_options() {
 	$timezone_string = '';
 	$gmt_offset = 0;
 	/* translators: default GMT offset or timezone string. Must be either a valid offset (-12 to 14)
-	   or a valid timezone string (America/New_York). See http://us3.php.net/manual/en/timezones.php
+	   or a valid timezone string (America/New_York). See https://secure.php.net/manual/en/timezones.php
 	   for all timezone strings supported by PHP.
 	*/
 	$offset_or_tz = _x( '0', 'default GMT offset or timezone string' );
@@ -420,11 +415,11 @@ function populate_options() {
 	'default_ping_status' => 'open',
 	'default_pingback_flag' => 1,
 	'posts_per_page' => 10,
-	/* translators: default date format, see http://php.net/date */
+	/* translators: default date format, see https://secure.php.net/date */
 	'date_format' => __('F j, Y'),
-	/* translators: default time format, see http://php.net/date */
+	/* translators: default time format, see https://secure.php.net/date */
 	'time_format' => __('g:i a'),
-	/* translators: links last updated date format, see http://php.net/date */
+	/* translators: links last updated date format, see https://secure.php.net/date */
 	'links_updated_date_format' => __('F j, Y g:i a'),
 	'comment_moderation' => 0,
 	'moderation_notify' => 1,
@@ -532,7 +527,7 @@ function populate_options() {
 	// 3.0 multisite
 	if ( is_multisite() ) {
 		/* translators: site tagline */
-		$options[ 'blogdescription' ] = sprintf(__('Just another %s site'), get_current_site()->site_name );
+		$options[ 'blogdescription' ] = sprintf(__('Just another %s site'), get_network()->site_name );
 		$options[ 'permalink_structure' ] = '/%year%/%monthnum%/%day%/%postname%/';
 	}
 
@@ -589,27 +584,8 @@ function populate_options() {
 	// Delete obsolete magpie stuff.
 	$wpdb->query("DELETE FROM $wpdb->options WHERE option_name REGEXP '^rss_[0-9a-f]{32}(_ts)?$'");
 
-	/*
-	 * Deletes all expired transients. The multi-table delete syntax is used
-	 * to delete the transient record from table a, and the corresponding
-	 * transient_timeout record from table b.
-	 */
-	$time = time();
-	$sql = "DELETE a, b FROM $wpdb->options a, $wpdb->options b
-		WHERE a.option_name LIKE %s
-		AND a.option_name NOT LIKE %s
-		AND b.option_name = CONCAT( '_transient_timeout_', SUBSTRING( a.option_name, 12 ) )
-		AND b.option_value < %d";
-	$wpdb->query( $wpdb->prepare( $sql, $wpdb->esc_like( '_transient_' ) . '%', $wpdb->esc_like( '_transient_timeout_' ) . '%', $time ) );
-
-	if ( is_main_site() && is_main_network() ) {
-		$sql = "DELETE a, b FROM $wpdb->options a, $wpdb->options b
-			WHERE a.option_name LIKE %s
-			AND a.option_name NOT LIKE %s
-			AND b.option_name = CONCAT( '_site_transient_timeout_', SUBSTRING( a.option_name, 17 ) )
-			AND b.option_value < %d";
-		$wpdb->query( $wpdb->prepare( $sql, $wpdb->esc_like( '_site_transient_' ) . '%', $wpdb->esc_like( '_site_transient_timeout_' ) . '%', $time ) );
-	}
+	// Clear expired transients
+	delete_expired_transients( true );
 }
 
 /**
@@ -866,13 +842,12 @@ function populate_roles_300() {
 	}
 }
 
+if ( !function_exists( 'install_network' ) ) :
 /**
  * Install Network.
  *
  * @since 3.0.0
- *
  */
-if ( !function_exists( 'install_network' ) ) :
 function install_network() {
 	if ( ! defined( 'WP_INSTALLING_NETWORK' ) )
 		define( 'WP_INSTALLING_NETWORK', true );
@@ -896,9 +871,9 @@ endif;
  * @param string $email             Email address for the network administrator.
  * @param string $site_name         The name of the network.
  * @param string $path              Optional. The path to append to the network's domain name. Default '/'.
- * @param bool   $subdomain_install Optional. Whether the network is a subdomain install or a subdirectory install.
- *                                  Default false, meaning the network is a subdirectory install.
- * @return bool|WP_Error True on success, or WP_Error on warning (with the install otherwise successful,
+ * @param bool   $subdomain_install Optional. Whether the network is a subdomain installation or a subdirectory installation.
+ *                                  Default false, meaning the network is a subdirectory installation.
+ * @return bool|WP_Error True on success, or WP_Error on warning (with the installation otherwise successful,
  *                       so the error code must be checked) or failure.
  */
 function populate_network( $network_id = 1, $domain = '', $email = '', $site_name = '', $path = '/', $subdomain_install = false ) {
@@ -911,8 +886,16 @@ function populate_network( $network_id = 1, $domain = '', $email = '', $site_nam
 		$errors->add( 'empty_sitename', __( 'You must provide a name for your network of sites.' ) );
 
 	// Check for network collision.
-	if ( $network_id == $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $wpdb->site WHERE id = %d", $network_id ) ) )
-		$errors->add( 'siteid_exists', __( 'The network already exists.' ) );
+	$network_exists = false;
+	if ( is_multisite() ) {
+		if ( get_network( (int) $network_id ) ) {
+			$errors->add( 'siteid_exists', __( 'The network already exists.' ) );
+		}
+	} else {
+		if ( $network_id == $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $wpdb->site WHERE id = %d", $network_id ) ) ) {
+			$errors->add( 'siteid_exists', __( 'The network already exists.' ) );
+		}
+	}
 
 	if ( ! is_email( $email ) )
 		$errors->add( 'invalid_email', __( 'You must provide a valid email address.' ) );
@@ -957,12 +940,16 @@ function populate_network( $network_id = 1, $domain = '', $email = '', $site_nam
 
 	if ( !is_multisite() ) {
 		$site_admins = array( $site_user->user_login );
-		$users = get_users( array( 'fields' => array( 'ID', 'user_login' ) ) );
+		$users = get_users( array(
+			'fields' => array( 'user_login' ),
+			'role'   => 'administrator',
+		) );
 		if ( $users ) {
 			foreach ( $users as $user ) {
-				if ( is_super_admin( $user->ID ) && !in_array( $user->user_login, $site_admins ) )
-					$site_admins[] = $user->user_login;
+				$site_admins[] = $user->user_login;
 			}
+
+			$site_admins = array_unique( $site_admins );
 		}
 	} else {
 		$site_admins = get_site_option( 'site_admins' );
@@ -1028,7 +1015,7 @@ We hope you enjoy your new site. Thanks!
 		$sitemeta['illegal_names'][] = 'blog';
 
 	/**
-	 * Filter meta for a network on creation.
+	 * Filters meta for a network on creation.
 	 *
 	 * @since 3.7.0
 	 *

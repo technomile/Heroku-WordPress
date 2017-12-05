@@ -11,11 +11,10 @@
  * WordPress Error class.
  *
  * Container for checking for WordPress errors and error messages. Return
- * WP_Error and use {@link is_wp_error()} to check if this class is returned.
- * Many core WordPress functions pass this class in the event of an error and
+ * WP_Error and use is_wp_error() to check if this class is returned. Many
+ * core WordPress functions pass this class in the event of an error and
  * if not handled properly will result in code errors.
  *
- * @package WordPress
  * @since 2.1.0
  */
 class WP_Error {
@@ -66,7 +65,6 @@ class WP_Error {
 	 * Retrieve all error codes.
 	 *
 	 * @since 2.1.0
-	 * @access public
 	 *
 	 * @return array List of error codes, if available.
 	 */
@@ -81,7 +79,6 @@ class WP_Error {
 	 * Retrieve first error code available.
 	 *
 	 * @since 2.1.0
-	 * @access public
 	 *
 	 * @return string|int Empty string, if no error codes.
 	 */
@@ -158,7 +155,6 @@ class WP_Error {
 	 * Add an error or append additional message to an existing error.
 	 *
 	 * @since 2.1.0
-	 * @access public
 	 *
 	 * @param string|int $code Error code.
 	 * @param string $message Error message.
@@ -201,18 +197,4 @@ class WP_Error {
 		unset( $this->errors[ $code ] );
 		unset( $this->error_data[ $code ] );
 	}
-}
-
-/**
- * Check whether variable is a WordPress Error.
- *
- * Returns true if $thing is an object of the WP_Error class.
- *
- * @since 2.1.0
- *
- * @param mixed $thing Check if unknown variable is a WP_Error object.
- * @return bool True, if WP_Error. False, if not WP_Error.
- */
-function is_wp_error( $thing ) {
-	return ( $thing instanceof WP_Error );
 }

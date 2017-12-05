@@ -1,20 +1,47 @@
 ( function( window, document, settings ) {
 	var src, ready, ii, tests;
 
+	/*
+	 * Create a canvas element for testing native browser support
+	 * of emoji.
+	 */
+	var canvas = document.createElement( 'canvas' );
+	var context = canvas.getContext && canvas.getContext( '2d' );
+
+	/**
+	 * Check if two sets of Emoji characters render the same.
+	 *
+	 * @param set1 array Set of Emoji characters.
+	 * @param set2 array Set of Emoji characters.
+	 * @returns {boolean} True if the two sets render the same.
+	 */
+	function emojiSetsRenderIdentically( set1, set2 ) {
+		var stringFromCharCode = String.fromCharCode;
+
+		// Cleanup from previous test.
+		context.clearRect( 0, 0, canvas.width, canvas.height );
+		context.fillText( stringFromCharCode.apply( this, set1 ), 0, 0 );
+		var rendered1 = canvas.toDataURL();
+
+		// Cleanup from previous test.
+		context.clearRect( 0, 0, canvas.width, canvas.height );
+		context.fillText( stringFromCharCode.apply( this, set2 ), 0, 0 );
+		var rendered2 = canvas.toDataURL();
+
+		return rendered1 === rendered2;
+	}
+
 	/**
 	 * Detect if the browser supports rendering emoji or flag emoji. Flag emoji are a single glyph
 	 * made of two characters, so some browsers (notably, Firefox OS X) don't support them.
 	 *
 	 * @since 4.2.0
 	 *
-	 * @param type {String} Whether to test for support of "simple", "flag", "diversity" or "unicode8" emoji.
+	 * @param type {String} Whether to test for support of "flag" or "emoji".
 	 * @return {Boolean} True if the browser can render emoji, false if it cannot.
 	 */
 	function browserSupportsEmoji( type ) {
-		var canvas = document.createElement( 'canvas' ),
-			context = canvas.getContext && canvas.getContext( '2d' ),
-			stringFromCharCode = String.fromCharCode,
-			tonedata, tone, tone2;
+		var isIdentical;
 
 		if ( ! context || ! context.fillText ) {
 			return false;
@@ -31,48 +58,47 @@
 		switch ( type ) {
 			case 'flag':
 				/*
-				 * This works because the image will be one of three things:
-				 * - Two empty squares, if the browser doesn't render emoji
-				 * - Two squares with 'A' and 'U' in them, if the browser doesn't render flag emoji
-				 * - The Australian flag
+				 * Test for UN flag compatibility. This is the least supported of the letter locale flags,
+				 * so gives us an easy test for full support.
 				 *
-				 * The first two will encode to small images (1-2KB data URLs), the third will encode
-				 * to a larger image (4-5KB data URL).
+				 * To test for support, we try to render it, and compare the rendering to how it would look if
+				 * the browser doesn't render it correctly ([U] + [N]).
 				 */
-				context.fillText( stringFromCharCode( 55356, 56806, 55356, 56826 ), 0, 0 );
-				return canvas.toDataURL().length > 3000;
-			case 'diversity':
-				/*
-				 * This tests if the browser supports the Emoji Diversity specification, by rendering an
-				 * emoji with no skin tone specified (in this case, Santa). It then adds a skin tone, and
-				 * compares if the emoji rendering has changed.
-				 */
-				context.fillText( stringFromCharCode( 55356, 57221 ), 0, 0 );
-				tonedata = context.getImageData( 16, 16, 1, 1 ).data;
-				tone = tonedata[0] + ',' + tonedata[1] + ',' + tonedata[2] + ',' + tonedata[3];
+				isIdentical = emojiSetsRenderIdentically(
+					[ 55356, 56826, 55356, 56819 ],
+					[ 55356, 56826, 8203, 55356, 56819 ]
+				);
 
-				context.fillText( stringFromCharCode( 55356, 57221, 55356, 57343 ), 0, 0 );
-				// Chrome has issues comparing arrays, and Safari has issues converting arrays to strings.
-				// So, we create our own string and compare that, instead.
-				tonedata = context.getImageData( 16, 16, 1, 1 ).data;
-				tone2 = tonedata[0] + ',' + tonedata[1] + ',' + tonedata[2] + ',' + tonedata[3];
+				if ( isIdentical ) {
+					return false;
+				}
 
-				return tone !== tone2;
-			case 'simple':
 				/*
-				 * This creates a smiling emoji, and checks to see if there is any image data in the
-				 * center pixel. In browsers that don't support emoji, the character will be rendered
-				 * as an empty square, so the center pixel will be blank.
+				 * Test for English flag compatibility. England is a country in the United Kingdom, it
+				 * does not have a two letter locale code but rather an five letter sub-division code.
+				 *
+				 * To test for support, we try to render it, and compare the rendering to how it would look if
+				 * the browser doesn't render it correctly (black flag emoji + [G] + [B] + [E] + [N] + [G]).
 				 */
-				context.fillText( stringFromCharCode( 55357, 56835 ), 0, 0 );
-				return context.getImageData( 16, 16, 1, 1 ).data[0] !== 0;
-			case 'unicode8':
+				isIdentical = emojiSetsRenderIdentically(
+					[ 55356, 57332, 56128, 56423, 56128, 56418, 56128, 56421, 56128, 56430, 56128, 56423, 56128, 56447 ],
+					[ 55356, 57332, 8203, 56128, 56423, 8203, 56128, 56418, 8203, 56128, 56421, 8203, 56128, 56430, 8203, 56128, 56423, 8203, 56128, 56447 ]
+				);
+
+				return ! isIdentical;
+			case 'emoji':
 				/*
-				 * To check for Unicode 8 support, let's try rendering the most important advancement
-				 * that the Unicode Consortium have made in years: the burrito.
+				 * Emoji 5 has fairies of all genders.
+				 *
+				 * To test for support, try to render a new emoji (fairy, male), then compares
+				 * it to how it would look if the browser doesn't render it correctly
+				 * (fairy + male sign).
 				 */
-				context.fillText( stringFromCharCode( 55356, 57135 ), 0, 0 );
-				return context.getImageData( 16, 16, 1, 1 ).data[0] !== 0;
+				isIdentical = emojiSetsRenderIdentically(
+					[ 55358, 56794, 8205, 9794, 65039 ],
+					[ 55358, 56794, 8203, 9794, 65039 ]
+				);
+				return ! isIdentical;
 		}
 
 		return false;
@@ -82,11 +108,11 @@
 		var script = document.createElement( 'script' );
 
 		script.src = src;
-		script.type = 'text/javascript';
+		script.defer = script.type = 'text/javascript';
 		document.getElementsByTagName( 'head' )[0].appendChild( script );
 	}
 
-	tests = Array( 'simple', 'flag', 'unicode8', 'diversity' );
+	tests = Array( 'flag', 'emoji' );
 
 	settings.supports = {
 		everything: true,

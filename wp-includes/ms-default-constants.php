@@ -14,12 +14,8 @@
  * wp-includes/ms-files.php (wp-content/blogs.php in MU).
  *
  * @since 3.0.0
- *
- * @global wpdb $wpdb WordPress database abstraction object.
  */
 function ms_upload_constants() {
-	global $wpdb;
-
 	// This filter is attached in ms-default-filters.php but that file is not included during SHORTINIT.
 	add_filter( 'default_site_option_ms_files_rewriting', '__return_true' );
 
@@ -33,11 +29,13 @@ function ms_upload_constants() {
 	// Note, the main site in a post-MU network uses wp-content/uploads.
 	// This is handled in wp_upload_dir() by ignoring UPLOADS for this case.
 	if ( ! defined( 'UPLOADS' ) ) {
-		define( 'UPLOADS', UPLOADBLOGSDIR . "/{$wpdb->blogid}/files/" );
+		$site_id = get_current_blog_id();
+
+		define( 'UPLOADS', UPLOADBLOGSDIR . '/' . $site_id . '/files/' );
 
 		// Uploads dir relative to ABSPATH
 		if ( 'wp-content/blogs.dir' == UPLOADBLOGSDIR && ! defined( 'BLOGUPLOADDIR' ) )
-			define( 'BLOGUPLOADDIR', WP_CONTENT_DIR . "/blogs.dir/{$wpdb->blogid}/files/" );
+			define( 'BLOGUPLOADDIR', WP_CONTENT_DIR . '/blogs.dir/' . $site_id . '/files/' );
 	}
 }
 
@@ -47,19 +45,19 @@ function ms_upload_constants() {
  * @since 3.0.0
  */
 function ms_cookie_constants(  ) {
-	$current_site = get_current_site();
+	$current_network = get_network();
 
 	/**
 	 * @since 1.2.0
 	 */
 	if ( !defined( 'COOKIEPATH' ) )
-		define( 'COOKIEPATH', $current_site->path );
+		define( 'COOKIEPATH', $current_network->path );
 
 	/**
 	 * @since 1.5.0
 	 */
 	if ( !defined( 'SITECOOKIEPATH' ) )
-		define( 'SITECOOKIEPATH', $current_site->path );
+		define( 'SITECOOKIEPATH', $current_network->path );
 
 	/**
 	 * @since 2.6.0
@@ -76,10 +74,10 @@ function ms_cookie_constants(  ) {
 	 * @since 2.0.0
 	 */
 	if ( !defined('COOKIE_DOMAIN') && is_subdomain_install() ) {
-		if ( !empty( $current_site->cookie_domain ) )
-			define('COOKIE_DOMAIN', '.' . $current_site->cookie_domain);
+		if ( !empty( $current_network->cookie_domain ) )
+			define('COOKIE_DOMAIN', '.' . $current_network->cookie_domain);
 		else
-			define('COOKIE_DOMAIN', '.' . $current_site->domain);
+			define('COOKIE_DOMAIN', '.' . $current_network->domain);
 	}
 }
 
@@ -140,7 +138,7 @@ function ms_subdomain_constants() {
 		if ( $subdomain_error_warn ) {
 			trigger_error( __( '<strong>Conflicting values for the constants VHOST and SUBDOMAIN_INSTALL.</strong> The value of SUBDOMAIN_INSTALL will be assumed to be your subdomain configuration setting.' ) . ' ' . $vhost_deprecated, E_USER_WARNING );
 		} else {
-	 		_deprecated_argument( 'define()', '3.0', $vhost_deprecated );
+	 		_deprecated_argument( 'define()', '3.0.0', $vhost_deprecated );
 		}
 		return;
 	}

@@ -220,12 +220,15 @@ setCommentsList = function() {
 			if ( settings.data.id == replyID )
 				replyButton.text(adminCommentsL10n.replyApprove);
 
-			c.find('div.comment_status').html('0');
+			c.find( '.row-actions span.view' ).addClass( 'hidden' ).end()
+				.find( 'div.comment_status' ).html( '0' );
+
 		} else {
 			if ( settings.data.id == replyID )
 				replyButton.text(adminCommentsL10n.reply);
 
-			c.find('div.comment_status').html('1');
+			c.find( '.row-actions span.view' ).removeClass( 'hidden' ).end()
+				.find( 'div.comment_status' ).html( '1' );
 		}
 
 		diff = $('#' + settings.element).is('.' + settings.dimClass) ? 1 : -1;
@@ -458,6 +461,13 @@ setCommentsList = function() {
 			updateCountText( 'span.trash-count', trashDiff );
 		}
 
+		if (
+			( ( 'trash' === settings.data.comment_status ) && !getCount( $( 'span.trash-count' ) ) ) ||
+			( ( 'spam' === settings.data.comment_status ) && !getCount( $( 'span.spam-count' ) ) )
+		) {
+			$( '#delete_all' ).hide();
+		}
+
 		if ( ! isDashboard ) {
 			total = totalInput.val() ? parseInt( totalInput.val(), 10 ) : 0;
 			if ( $(settings.target).parent().is('span.undo') )
@@ -563,6 +573,7 @@ setCommentsList = function() {
 commentReply = {
 	cid : '',
 	act : '',
+	originalContent : '',
 
 	init : function() {
 		var row = $('#replyrow');
@@ -642,10 +653,13 @@ commentReply = {
 		$('#com-reply').append( replyrow );
 		$('#replycontent').css('height', '').val('');
 		$('#edithead input').val('');
-		$('.error', replyrow).empty().hide();
+		$( '.notice-error', replyrow )
+			.addClass( 'hidden' )
+			.find( '.error' ).empty();
 		$( '.spinner', replyrow ).removeClass( 'is-active' );
 
 		this.cid = '';
+		this.originalContent = '';
 	},
 
 	open : function(comment_id, post_id, action) {
@@ -655,6 +669,10 @@ commentReply = {
 			h = c.height(),
 			colspanVal = 0;
 
+		if ( ! this.discardCommentChanges() ) {
+			return false;
+		}
+
 		t.close();
 		t.cid = comment_id;
 
@@ -663,6 +681,7 @@ commentReply = {
 		action = action || 'replyto';
 		act = 'edit' == action ? 'edit' : 'replyto';
 		act = t.act = act + '-comment';
+		t.originalContent = $('textarea.comment', rowData).val();
 		colspanVal = $( '> th:visible, > td:visible', c ).length;
 
 		// Make sure it's actually a table and there's a `colspan` value to apply.
@@ -737,9 +756,10 @@ commentReply = {
 	},
 
 	send : function() {
-		var post = {};
+		var post = {},
+			$errorNotice = $( '#replysubmit .error-notice' );
 
-		$('#replysubmit .error').hide();
+		$errorNotice.addClass( 'hidden' );
 		$( '#replysubmit .spinner' ).addClass( 'is-active' );
 
 		$('#replyrow input').not(':button').each(function() {
@@ -830,16 +850,19 @@ commentReply = {
 	},
 
 	error : function(r) {
-		var er = r.statusText;
+		var er = r.statusText,
+			$errorNotice = $( '#replysubmit .notice-error' ),
+			$error = $errorNotice.find( '.error' );
 
 		$( '#replysubmit .spinner' ).removeClass( 'is-active' );
 
 		if ( r.responseText )
 			er = r.responseText.replace( /<.[^<>]*?>/g, '' );
 
-		if ( er )
-			$('#replysubmit .error').html(er).show();
-
+		if ( er ) {
+			$errorNotice.removeClass( 'hidden' );
+			$error.html( er );
+		}
 	},
 
 	addcomment: function(post_id) {
@@ -850,6 +873,22 @@ commentReply = {
 			$('table.comments-box').css('display', '');
 			$('#no-comments').remove();
 		});
+	},
+
+	/**
+	 * Alert the user if they have unsaved changes on a comment that will be
+	 * lost if they proceed.
+	 *
+	 * @returns {boolean}
+	 */
+	discardCommentChanges: function() {
+		var editRow = $( '#replyrow' );
+
+		if  ( this.originalContent === $( '#replycontent', editRow ).val() ) {
+			return true;
+		}
+
+		return window.confirm( adminCommentsL10n.warnCommentChanges );
 	}
 };
 

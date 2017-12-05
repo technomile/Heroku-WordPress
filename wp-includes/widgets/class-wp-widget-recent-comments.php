@@ -20,7 +20,6 @@ class WP_Widget_Recent_Comments extends WP_Widget {
 	 * Sets up a new Recent Comments widget instance.
 	 *
 	 * @since 2.8.0
-	 * @access public
 	 */
 	public function __construct() {
 		$widget_ops = array(
@@ -40,11 +39,10 @@ class WP_Widget_Recent_Comments extends WP_Widget {
 	 * Outputs the default styles for the Recent Comments widget.
 	 *
 	 * @since 2.8.0
-	 * @access public
 	 */
 	public function recent_comments_style() {
 		/**
-		 * Filter the Recent Comments default widget styles.
+		 * Filters the Recent Comments default widget styles.
 		 *
 		 * @since 3.1.0
 		 *
@@ -63,7 +61,6 @@ class WP_Widget_Recent_Comments extends WP_Widget {
 	 * Outputs the content for the current Recent Comments widget instance.
 	 *
 	 * @since 2.8.0
-	 * @access public
 	 *
 	 * @param array $args     Display arguments including 'before_title', 'after_title',
 	 *                        'before_widget', and 'after_widget'.
@@ -85,19 +82,21 @@ class WP_Widget_Recent_Comments extends WP_Widget {
 			$number = 5;
 
 		/**
-		 * Filter the arguments for the Recent Comments widget.
+		 * Filters the arguments for the Recent Comments widget.
 		 *
 		 * @since 3.4.0
+		 * @since 4.9.0 Added the `$instance` parameter.
 		 *
 		 * @see WP_Comment_Query::query() for information on accepted arguments.
 		 *
 		 * @param array $comment_args An array of arguments used to retrieve the recent comments.
+		 * @param array $instance     Array of settings for the current widget.
 		 */
 		$comments = get_comments( apply_filters( 'widget_comments_args', array(
 			'number'      => $number,
 			'status'      => 'approve',
 			'post_status' => 'publish'
-		) ) );
+		), $instance ) );
 
 		$output .= $args['before_widget'];
 		if ( $title ) {
@@ -130,7 +129,6 @@ class WP_Widget_Recent_Comments extends WP_Widget {
 	 * Handles updating settings for the current Recent Comments widget instance.
 	 *
 	 * @since 2.8.0
-	 * @access public
 	 *
 	 * @param array $new_instance New settings for this instance as input by the user via
 	 *                            WP_Widget::form().
@@ -148,7 +146,6 @@ class WP_Widget_Recent_Comments extends WP_Widget {
 	 * Outputs the settings form for the Recent Comments widget.
 	 *
 	 * @since 2.8.0
-	 * @access public
 	 *
 	 * @param array $instance Current settings.
 	 */
@@ -168,11 +165,10 @@ class WP_Widget_Recent_Comments extends WP_Widget {
 	 * Flushes the Recent Comments widget cache.
 	 *
 	 * @since 2.8.0
-	 * @access public
 	 *
 	 * @deprecated 4.4.0 Fragment caching was removed in favor of split queries.
 	 */
 	public function flush_widget_cache() {
-		_deprecated_function( __METHOD__, '4.4' );
+		_deprecated_function( __METHOD__, '4.4.0' );
 	}
 }

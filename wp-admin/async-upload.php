@@ -1,6 +1,6 @@
 <?php
 /**
- * Server-side file upload handler from wp-plupload, swfupload or other asynchronous upload methods.
+ * Server-side file upload handler from wp-plupload or other asynchronous upload methods.
  *
  * @package WordPress
  * @subpackage Administration
@@ -14,20 +14,10 @@ if ( ! defined( 'WP_ADMIN' ) ) {
 	define( 'WP_ADMIN', true );
 }
 
-if ( defined('ABSPATH') )
-	require_once(ABSPATH . 'wp-load.php');
-else
+if ( defined( 'ABSPATH' ) ) {
+	require_once( ABSPATH . 'wp-load.php' );
+} else {
 	require_once( dirname( dirname( __FILE__ ) ) . '/wp-load.php' );
-
-if ( ! ( isset( $_REQUEST['action'] ) && 'upload-attachment' == $_REQUEST['action'] ) ) {
-	// Flash often fails to send cookies with the POST or upload, so we need to pass it in GET or POST instead
-	if ( is_ssl() && empty($_COOKIE[SECURE_AUTH_COOKIE]) && !empty($_REQUEST['auth_cookie']) )
-		$_COOKIE[SECURE_AUTH_COOKIE] = $_REQUEST['auth_cookie'];
-	elseif ( empty($_COOKIE[AUTH_COOKIE]) && !empty($_REQUEST['auth_cookie']) )
-		$_COOKIE[AUTH_COOKIE] = $_REQUEST['auth_cookie'];
-	if ( empty($_COOKIE[LOGGED_IN_COOKIE]) && !empty($_REQUEST['logged_in_cookie']) )
-		$_COOKIE[LOGGED_IN_COOKIE] = $_REQUEST['logged_in_cookie'];
-	unset($current_user);
 }
 
 require_once( ABSPATH . 'wp-admin/admin.php' );
@@ -45,16 +35,16 @@ if ( isset( $_REQUEST['action'] ) && 'upload-attachment' === $_REQUEST['action']
 }
 
 if ( ! current_user_can( 'upload_files' ) ) {
-	wp_die( __( 'You do not have permission to upload files.' ) );
+	wp_die( __( 'Sorry, you are not allowed to upload files.' ) );
 }
 
 // just fetch the detail form for that attachment
 if ( isset($_REQUEST['attachment_id']) && ($id = intval($_REQUEST['attachment_id'])) && $_REQUEST['fetch'] ) {
 	$post = get_post( $id );
 	if ( 'attachment' != $post->post_type )
-		wp_die( __( 'Unknown post type.' ) );
+		wp_die( __( 'Invalid post type.' ) );
 	if ( ! current_user_can( 'edit_post', $id ) )
-		wp_die( __( 'You are not allowed to edit this item.' ) );
+		wp_die( __( 'Sorry, you are not allowed to edit this item.' ) );
 
 	switch ( $_REQUEST['fetch'] ) {
 		case 3 :
@@ -105,7 +95,7 @@ if ( $_REQUEST['short'] ) {
 	$type = $_REQUEST['type'];
 
 	/**
-	 * Filter the returned ID of an uploaded attachment.
+	 * Filters the returned ID of an uploaded attachment.
 	 *
 	 * The dynamic portion of the hook name, `$type`, refers to the attachment type,
 	 * such as 'image', 'audio', 'video', 'file', etc.

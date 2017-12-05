@@ -13,7 +13,6 @@
 	// Link settings
 	api.Widgets.data = _wpCustomizeWidgetsSettings || {};
 	l10n = api.Widgets.data.l10n;
-	delete api.Widgets.data.l10n;
 
 	/**
 	 * wp.customize.Widgets.WidgetModel
@@ -70,8 +69,7 @@
 				this.search( this.terms );
 			}
 
-			// If search is blank, show all themes
-			// Useful for resetting the views when you clean the input
+			// If search is blank, set all the widgets as they matched the search to reset the views.
 			if ( this.terms === '' ) {
 				this.each( function ( widget ) {
 					widget.set( 'search_matched', true );
@@ -149,8 +147,6 @@
 		events: {
 			'input #widgets-search': 'search',
 			'keyup #widgets-search': 'search',
-			'change #widgets-search': 'search',
-			'search #widgets-search': 'search',
 			'focus .widget-tpl' : 'focus',
 			'click .widget-tpl' : '_submit',
 			'keypress .widget-tpl' : '_submit',
@@ -163,17 +159,24 @@
 		// Cache sidebar control which has opened panel
 		currentSidebarControl: null,
 		$search: null,
+		$clearResults: null,
+		searchMatchesCount: null,
 
 		initialize: function() {
 			var self = this;
 
 			this.$search = $( '#widgets-search' );
 
+			this.$clearResults = this.$el.find( '.clear-results' );
+
 			_.bindAll( this, 'close' );
 
 			this.listenTo( this.collection, 'change', this.updateList );
 
 			this.updateList();
+
+			// Set the initial search count to the number of available widgets.
+			this.searchMatchesCount = this.collection.length;
 
 			// If the available widgets panel is open and the customize controls are
 			// interacted with (i.e. available widgets panel is blurred) then close the
@@ -185,6 +188,11 @@
 				}
 			} );
 
+			// Clear the search results and trigger a `keyup` event to fire a new search.
+			this.$clearResults.on( 'click', function() {
+				self.$search.val( '' ).focus().trigger( 'keyup' );
+			} );
+
 			// Close the panel if the URL in the preview changes
 			api.previewer.bind( 'url', this.close );
 		},
@@ -194,6 +202,10 @@
 			var firstVisible;
 
 			this.collection.doSearch( event.target.value );
+			// Update the search matches count.
+			this.updateSearchMatchesCount();
+			// Announce how many search results.
+			this.announceSearchMatches();
 
 			// Remove a widget from being selected if it is no longer visible
 			if ( this.selected && ! this.selected.is( ':visible' ) ) {
@@ -214,7 +226,37 @@
 					this.select( firstVisible );
 				}
 			}
+
+			// Toggle the clear search results button.
+			if ( '' !== event.target.value ) {
+				this.$clearResults.addClass( 'is-visible' );
+			} else if ( '' === event.target.value ) {
+				this.$clearResults.removeClass( 'is-visible' );
+			}
+
+			// Set a CSS class on the search container when there are no search results.
+			if ( ! this.searchMatchesCount ) {
+				this.$el.addClass( 'no-widgets-found' );
+			} else {
+				this.$el.removeClass( 'no-widgets-found' );
+			}
 		},
+
+		// Update the count of the available widgets that have the `search_matched` attribute.
+		updateSearchMatchesCount: function() {
+			this.searchMatchesCount = this.collection.where({ search_matched: true }).length;
+		},
+
+		// Send a message to the aria-live region to announce how many search results.
+		announceSearchMatches: _.debounce( function() {
+			var message = l10n.widgetsFound.replace( '%d', this.searchMatchesCount ) ;
+
+			if ( ! this.searchMatchesCount ) {
+				message = l10n.noWidgetsFound;
+			}
+
+			wp.a11y.speak( message );
+		}, 500 ),
 
 		// Changes visibility of available widgets
 		updateList: function() {
@@ -287,6 +329,10 @@
 					control.collapseForm();
 				}
 			} );
+
+			if ( api.section.has( 'publish_settings' ) ) {
+				api.section( 'publish_settings' ).collapse();
+			}
 
 			$( 'body' ).addClass( 'adding-widget' );
 
@@ -430,6 +476,7 @@
 				args = $.extend( {}, control.defaultExpandedArguments, args );
 				control.onChangeExpanded( expanded, args );
 			});
+			control.altNotice = true;
 
 			api.Control.prototype.initialize.call( control, id, options );
 		},
@@ -507,6 +554,10 @@
 			}
 			control.widgetContentEmbedded = true;
 
+			// Update the notification container element now that the widget content has been embedded.
+			control.notifications.container = control.getNotificationsContainerElement();
+			control.notifications.render();
+
 			widgetContent = $( control.params.widget_content );
 			control.container.find( '.widget-content:first' ).append( widgetContent );
 
@@ -550,7 +601,7 @@
 			var self = this, $widgetInside, $widgetForm, $customizeSidebar,
 				$themeControlsContainer, positionWidget;
 
-			if ( ! this.params.is_wide ) {
+			if ( ! this.params.is_wide || $( window ).width() <= 640 /* max-width breakpoint in customize-controls.css */ ) {
 				return;
 			}
 
@@ -559,7 +610,7 @@
 			$customizeSidebar = $( '.wp-full-overlay-sidebar-content:first' );
 			this.container.addClass( 'wide-widget-control' );
 
-			this.container.find( '.widget-content:first' ).css( {
+			this.container.find( '.form:first' ).css( {
 				'max-width': this.params.width,
 				'min-height': this.params.height
 			} );
@@ -834,7 +885,7 @@
 			$saveBtn = this.container.find( '.widget-control-save' );
 			$saveBtn.val( l10n.saveBtnLabel );
 			$saveBtn.attr( 'title', l10n.saveBtnTooltip );
-			$saveBtn.removeClass( 'button-primary' ).addClass( 'button-secondary' );
+			$saveBtn.removeClass( 'button-primary' );
 			$saveBtn.on( 'click', function( e ) {
 				e.preventDefault();
 				self.updateWidget( { disable_form: true } ); // @todo disable_form is unused?
@@ -909,7 +960,7 @@
 			var self = this, $removeBtn, replaceDeleteWithRemove;
 
 			// Configure remove button
-			$removeBtn = this.container.find( 'a.widget-control-remove' );
+			$removeBtn = this.container.find( '.widget-control-remove' );
 			$removeBtn.on( 'click', function( e ) {
 				e.preventDefault();
 
@@ -945,7 +996,7 @@
 			} );
 
 			replaceDeleteWithRemove = function() {
-				$removeBtn.text( l10n.removeBtnLabel ); // wp_widget_control() outputs the link as "Delete"
+				$removeBtn.text( l10n.removeBtnLabel ); // wp_widget_control() outputs the button as "Delete"
 				$removeBtn.attr( 'title', l10n.removeBtnTooltip );
 			};
 
@@ -1110,7 +1161,7 @@
 			params.action = 'update-widget';
 			params.wp_customize = 'on';
 			params.nonce = api.settings.nonce['update-widget'];
-			params.theme = api.settings.theme.stylesheet;
+			params.customize_theme = api.settings.theme.stylesheet;
 			params.customized = wp.customize.previewer.query().customized;
 
 			data = $.param( params );
@@ -1324,7 +1375,7 @@
 		 * @param {Object} args  merged on top of this.defaultActiveArguments
 		 */
 		onChangeExpanded: function ( expanded, args ) {
-			var self = this, $widget, $inside, complete, prevComplete;
+			var self = this, $widget, $inside, complete, prevComplete, expandControl, $toggleBtn;
 
 			self.embedWidgetControl(); // Make sure the outer form is embedded so that the expanded state can be set in the UI.
 			if ( expanded ) {
@@ -1343,12 +1394,9 @@
 
 			$widget = this.container.find( 'div.widget:first' );
 			$inside = $widget.find( '.widget-inside:first' );
+			$toggleBtn = this.container.find( '.widget-top button.widget-action' );
 
-			if ( expanded ) {
-
-				if ( self.section() && api.section( self.section() ) ) {
-					self.expandControlSection();
-				}
+			expandControl = function() {
 
 				// Close all other widget controls before expanding this one
 				api.control.each( function( otherControl ) {
@@ -1360,6 +1408,8 @@
 				complete = function() {
 					self.container.removeClass( 'expanding' );
 					self.container.addClass( 'expanded' );
+					$widget.addClass( 'open' );
+					$toggleBtn.attr( 'aria-expanded', 'true' );
 					self.container.trigger( 'expanded' );
 				};
 				if ( args.completeCallback ) {
@@ -1378,11 +1428,22 @@
 
 				self.container.trigger( 'expand' );
 				self.container.addClass( 'expanding' );
-			} else {
+			};
 
+			if ( expanded ) {
+				if ( api.section.has( self.section() ) ) {
+					api.section( self.section() ).expand( {
+						completeCallback: expandControl
+					} );
+				} else {
+					expandControl();
+				}
+			} else {
 				complete = function() {
 					self.container.removeClass( 'collapsing' );
 					self.container.removeClass( 'expanded' );
+					$widget.removeClass( 'open' );
+					$toggleBtn.attr( 'aria-expanded', 'false' );
 					self.container.trigger( 'collapsed' );
 				};
 				if ( args.completeCallback ) {
@@ -1527,36 +1588,86 @@
 			api.Panel.prototype.ready.call( panel );
 
 			panel.deferred.embedded.done(function() {
-				var panelMetaContainer, noRenderedAreasNotice, shouldShowNotice;
+				var panelMetaContainer, noticeContainer, updateNotice, getActiveSectionCount, shouldShowNotice;
 				panelMetaContainer = panel.container.find( '.panel-meta' );
-				noRenderedAreasNotice = $( '<div></div>', {
+
+				// @todo This should use the Notifications API introduced to panels. See <https://core.trac.wordpress.org/ticket/38794>.
+				noticeContainer = $( '<div></div>', {
 					'class': 'no-widget-areas-rendered-notice'
 				});
-				noRenderedAreasNotice.append( $( '<em></em>', {
-					text: l10n.noAreasRendered
-				} ) );
-				panelMetaContainer.append( noRenderedAreasNotice );
+				panelMetaContainer.append( noticeContainer );
 
-				shouldShowNotice = function() {
-					return ( 0 === _.filter( panel.sections(), function( section ) {
+				/**
+				 * Get the number of active sections in the panel.
+				 *
+				 * @return {number} Number of active sidebar sections.
+				 */
+				getActiveSectionCount = function() {
+					return _.filter( panel.sections(), function( section ) {
 						return section.active();
-					} ).length );
+					} ).length;
 				};
+
+				/**
+				 * Determine whether or not the notice should be displayed.
+				 *
+				 * @return {boolean}
+				 */
+				shouldShowNotice = function() {
+					var activeSectionCount = getActiveSectionCount();
+					if ( 0 === activeSectionCount ) {
+						return true;
+					} else {
+						return activeSectionCount !== api.Widgets.data.registeredSidebars.length;
+					}
+				};
+
+				/**
+				 * Update the notice.
+				 *
+				 * @returns {void}
+				 */
+				updateNotice = function() {
+					var activeSectionCount = getActiveSectionCount(), someRenderedMessage, nonRenderedAreaCount, registeredAreaCount;
+					noticeContainer.empty();
+
+					registeredAreaCount = api.Widgets.data.registeredSidebars.length;
+					if ( activeSectionCount !== registeredAreaCount ) {
+
+						if ( 0 !== activeSectionCount ) {
+							nonRenderedAreaCount = registeredAreaCount - activeSectionCount;
+							someRenderedMessage = l10n.someAreasShown[ nonRenderedAreaCount ];
+						} else {
+							someRenderedMessage = l10n.noAreasShown;
+						}
+						if ( someRenderedMessage ) {
+							noticeContainer.append( $( '<p></p>', {
+								text: someRenderedMessage
+							} ) );
+						}
+
+						noticeContainer.append( $( '<p></p>', {
+							text: l10n.navigatePreview
+						} ) );
+					}
+				};
+				updateNotice();
 
 				/*
 				 * Set the initial visibility state for rendered notice.
 				 * Update the visibility of the notice whenever a reflow happens.
 				 */
-				noRenderedAreasNotice.toggle( shouldShowNotice() );
+				noticeContainer.toggle( shouldShowNotice() );
 				api.previewer.deferred.active.done( function () {
-					noRenderedAreasNotice.toggle( shouldShowNotice() );
+					noticeContainer.toggle( shouldShowNotice() );
 				});
 				api.bind( 'pane-contents-reflowed', function() {
 					var duration = ( 'resolved' === api.previewer.deferred.active.state() ) ? 'fast' : 0;
+					updateNotice();
 					if ( shouldShowNotice() ) {
-						noRenderedAreasNotice.slideDown( duration );
+						noticeContainer.slideDown( duration );
 					} else {
-						noRenderedAreasNotice.slideUp( duration );
+						noticeContainer.slideUp( duration );
 					}
 				});
 			});
@@ -1901,7 +2012,7 @@
 		/**
 		 * Get the widget_form Customize controls associated with the current sidebar.
 		 *
-		 * @since 3.9
+		 * @since 3.9.0
 		 * @return {wp.customize.controlConstructor.widget_form[]}
 		 */
 		getWidgetFormControls: function() {
@@ -1991,24 +2102,20 @@
 
 			controlConstructor = api.controlConstructor[controlType];
 			widgetFormControl = new controlConstructor( settingId, {
-				params: {
-					settings: {
-						'default': settingId
-					},
-					content: controlContainer,
-					sidebar_id: self.params.sidebar_id,
-					widget_id: widgetId,
-					widget_id_base: widget.get( 'id_base' ),
-					type: controlType,
-					is_new: ! isExistingWidget,
-					width: widget.get( 'width' ),
-					height: widget.get( 'height' ),
-					is_wide: widget.get( 'is_wide' ),
-					active: true
+				settings: {
+					'default': settingId
 				},
-				previewer: self.setting.previewer
+				content: controlContainer,
+				sidebar_id: self.params.sidebar_id,
+				widget_id: widgetId,
+				widget_id_base: widget.get( 'id_base' ),
+				type: controlType,
+				is_new: ! isExistingWidget,
+				width: widget.get( 'width' ),
+				height: widget.get( 'height' ),
+				is_wide: widget.get( 'is_wide' )
 			} );
-			api.control.add( settingId, widgetFormControl );
+			api.control.add( widgetFormControl );
 
 			// Make sure widget is removed from the other sidebars
 			api.each( function( otherSetting ) {
@@ -2138,6 +2245,58 @@
 
 		return foundControl;
 	};
+
+	/**
+	 * Initialize Edit Menu button in Nav Menu widget.
+	 */
+	$( document ).on( 'widget-added', function( event, widgetContainer ) {
+		var parsedWidgetId, widgetControl, navMenuSelect, editMenuButton;
+		parsedWidgetId = parseWidgetId( widgetContainer.find( '> .widget-inside > .form > .widget-id' ).val() );
+		if ( 'nav_menu' !== parsedWidgetId.id_base ) {
+			return;
+		}
+		widgetControl = api.control( 'widget_nav_menu[' + String( parsedWidgetId.number ) + ']' );
+		if ( ! widgetControl ) {
+			return;
+		}
+		navMenuSelect = widgetContainer.find( 'select[name*="nav_menu"]' );
+		editMenuButton = widgetContainer.find( '.edit-selected-nav-menu > button' );
+		if ( 0 === navMenuSelect.length || 0 === editMenuButton.length ) {
+			return;
+		}
+		navMenuSelect.on( 'change', function() {
+			if ( api.section.has( 'nav_menu[' + navMenuSelect.val() + ']' ) ) {
+				editMenuButton.parent().show();
+			} else {
+				editMenuButton.parent().hide();
+			}
+		});
+		editMenuButton.on( 'click', function() {
+			var section = api.section( 'nav_menu[' + navMenuSelect.val() + ']' );
+			if ( section ) {
+				focusConstructWithBreadcrumb( section, widgetControl );
+			}
+		} );
+	} );
+
+	/**
+	 * Focus (expand) one construct and then focus on another construct after the first is collapsed.
+	 *
+	 * This overrides the back button to serve the purpose of breadcrumb navigation.
+	 *
+	 * @param {wp.customize.Section|wp.customize.Panel|wp.customize.Control} focusConstruct - The object to initially focus.
+	 * @param {wp.customize.Section|wp.customize.Panel|wp.customize.Control} returnConstruct - The object to return focus.
+	 */
+	function focusConstructWithBreadcrumb( focusConstruct, returnConstruct ) {
+		focusConstruct.focus();
+		function onceCollapsed( isExpanded ) {
+			if ( ! isExpanded ) {
+				focusConstruct.expanded.unbind( onceCollapsed );
+				returnConstruct.focus();
+			}
+		}
+		focusConstruct.expanded.bind( onceCollapsed );
+	}
 
 	/**
 	 * @param {String} widgetId
