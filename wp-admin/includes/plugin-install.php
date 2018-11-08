@@ -584,12 +584,20 @@ function install_plugin_information() {
 				<li>
 					<strong><?php _e( 'Requires WordPress Version:' ); ?></strong>
 					<?php
-					/* translators: %s: WordPress version */
+					/* translators: %s: version number */
 					printf( __( '%s or higher' ), $api->requires );
 					?>
 				</li>
 			<?php } if ( ! empty( $api->tested ) ) { ?>
 				<li><strong><?php _e( 'Compatible up to:' ); ?></strong> <?php echo $api->tested; ?></li>
+			<?php } if ( ! empty( $api->requires_php ) ) { ?>
+				<li>
+					<strong><?php _e( 'Requires PHP Version:' ); ?></strong>
+					<?php
+					/* translators: %s: version number */
+					printf( __( '%s or higher' ), $api->requires_php );
+					?>
+				</li>
 			<?php } if ( isset( $api->active_installs ) ) { ?>
 				<li><strong><?php _e( 'Active Installations:' ); ?></strong> <?php
 					if ( $api->active_installs >= 1000000 ) {
@@ -628,7 +636,7 @@ function install_plugin_information() {
 				) );
 				?>
 				<div class="counter-container">
-						<span class="counter-label"><a href="https://wordpress.org/support/view/plugin-reviews/<?php echo $api->slug; ?>?filter=<?php echo $key; ?>"
+						<span class="counter-label"><a href="https://wordpress.org/support/plugin/<?php echo $api->slug; ?>/reviews/?filter=<?php echo $key; ?>"
 						                               target="_blank" aria-label="<?php echo $aria_label; ?>"><?php printf( _n( '%d star', '%d stars', $key ), $key ); ?></a></span>
 						<span class="counter-back">
 							<span class="counter-bar" style="width: <?php echo 92 * $_rating; ?>px;"></span>

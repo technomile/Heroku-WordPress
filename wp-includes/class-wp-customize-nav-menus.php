@@ -313,7 +313,7 @@ final class WP_Customize_Nav_Menus {
 
 		// Prepend list of posts with nav_menus_created_posts search results on first page.
 		$nav_menus_created_posts_setting = $this->manager->get_setting( 'nav_menus_created_posts' );
-		if ( 1 === $args['pagenum'] && $nav_menus_created_posts_setting && count( $nav_menus_created_posts_setting ) > 0 ) {
+		if ( 1 === $args['pagenum'] && $nav_menus_created_posts_setting && count( $nav_menus_created_posts_setting->value() ) > 0 ) {
 			$stub_post_query = new WP_Query( array_merge(
 				$query,
 				array(
@@ -366,6 +366,22 @@ final class WP_Customize_Nav_Menus {
 					'object'     => $term->taxonomy,
 					'object_id'  => intval( $term->term_id ),
 					'url'        => get_term_link( intval( $term->term_id ), $term->taxonomy ),
+				);
+			}
+		}
+
+		// Add "Home" link if search term matches. Treat as a page, but switch to custom on add.
+		if ( isset( $args['s'] ) ) {
+			$title = _x( 'Home', 'nav menu home label' );
+			$matches = function_exists( 'mb_stripos' ) ? false !== mb_stripos( $title, $args['s'] ) : false !== stripos( $title, $args['s'] );
+			if ( $matches ) {
+				$items[] = array(
+					'id'         => 'home',
+					'title'      => $title,
+					'type'       => 'custom',
+					'type_label' => __( 'Custom Link' ),
+					'object'     => '',
+					'url'        => home_url(),
 				);
 			}
 		}

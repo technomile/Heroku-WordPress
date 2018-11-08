@@ -88,15 +88,15 @@
 				return ! isIdentical;
 			case 'emoji':
 				/*
-				 * Emoji 5 has fairies of all genders.
+				 * She's the hero Emoji deserves, but not the one it needs right now.
 				 *
-				 * To test for support, try to render a new emoji (fairy, male), then compares
-				 * it to how it would look if the browser doesn't render it correctly
-				 * (fairy + male sign).
+				 * To test for support, try to render a new emoji (female superhero),
+				 * then compare it to how it would look if the browser doesn't render it correctly
+				 * (superhero + female sign).
 				 */
 				isIdentical = emojiSetsRenderIdentically(
-					[ 55358, 56794, 8205, 9794, 65039 ],
-					[ 55358, 56794, 8203, 9794, 65039 ]
+					[55358, 56760, 9792, 65039],
+					[55358, 56760, 8203, 9792, 65039]
 				);
 				return ! isIdentical;
 		}
